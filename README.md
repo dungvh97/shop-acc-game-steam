@@ -351,6 +351,8 @@ npm run build
 - **Backend**: `http://localhost:8080/api/health`
 - **Database**: `http://localhost:5050` (pgAdmin)
 - **Webhook**: `https://api.gurroshop.com/api/sepay/webhook/health`
+- **Swagger UI**: `http://localhost:8080/api/swagger-ui.html`
+- **API Docs**: `http://localhost:8080/api/v3/api-docs`
 
 ## 🤝 Contributing
 

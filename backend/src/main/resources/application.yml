@@ -78,6 +78,17 @@ rawg:
     key: ${RAWG_API_KEY:5901cb0625a547eb922e9c700744032e}
     base-url: https://api.rawg.io/api
 
+# OpenAPI/Swagger Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+  show-actuator: false
+
 # Google OAuth2 Configuration
 google:
   oauth2:

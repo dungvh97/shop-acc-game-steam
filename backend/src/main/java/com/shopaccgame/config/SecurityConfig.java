@@ -43,7 +43,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/uploads/**").permitAll()
                 .requestMatchers("/api/games/**").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
+                .requestMatchers("/swagger-ui.html").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll()
+                .requestMatchers("/v3/api-docs").permitAll()
+                .requestMatchers("/swagger-resources/**").permitAll()
+                .requestMatchers("/webjars/**").permitAll()
                 .requestMatchers("/sepay/webhook/**").permitAll() // Allow sepay webhook without authentication
                 .requestMatchers("/steam-accounts/**").permitAll() // Allow viewing steam accounts without auth
                 .requestMatchers("/steam-account-orders/**").authenticated() // Require auth for orders
