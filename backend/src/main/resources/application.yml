@@ -1,0 +1,103 @@
+spring:
+  application:
+    name: shop-acc-game-backend
+  
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/shop_acc_game}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      connection-test-query: SELECT 1
+      validation-timeout: 3000
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        jdbc:
+          time_zone: UTC
+          batch_size: 20
+        connection:
+          characterEncoding: UTF-8
+          useUnicode: true
+        order_inserts: true
+        order_updates: true
+        batch_versioned_data: true
+        # Disable Hibernate caching
+        cache:
+          use_second_level_cache: false
+          use_query_cache: false
+        # Force fresh data
+        flush_mode: AUTO
+    open-in-view: false
+  
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:gurroshop@gmail.com}
+    password: ${MAIL_PASSWORD:ijhfgedfazirgdrx}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: "*"
+        mime:
+          charset: UTF-8
+          encoding: UTF-8
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:your-super-secret-jwt-key-here-make-it-long-and-secure}
+  expiration: 86400000 # 24 hours in milliseconds
+
+# File Upload Configuration
+file:
+  upload-dir: ./uploads
+
+# RAWG.io API Configuration
+rawg:
+  api:
+    key: ${RAWG_API_KEY:5901cb0625a547eb922e9c700744032e}
+    base-url: https://api.rawg.io/api
+
+# Google OAuth2 Configuration
+google:
+  oauth2:
+    client-id: ${GOOGLE_CLIENT_ID:915027856276-41dpec5j8s73178jkiojn5nd15pb5sh5.apps.googleusercontent.com}
+    client-secret: ${GOOGLE_CLIENT_SECRET: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}
+
+# Application Configuration
+app:
+  images:
+    directory: ./uploads/games
+  db:
+    readiness:
+      enabled: ${DB_READINESS_ENABLED:true}
+
+
+# Logging - Reduced for better performance
+logging:
+  level:
+    com.shopaccgame: INFO
+    org.springframework.security: WARN
+    com.zaxxer.hikari: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
