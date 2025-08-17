@@ -14,10 +14,6 @@ pnpm-debug.log*
 # Frontend builds
 frontend/dist/
 frontend/build/
-frontend/.next/
-frontend/.nuxt/
-frontend/.output/
-frontend/.svelte-kit/
 
 # Backend builds
 backend/target/
@@ -45,8 +41,6 @@ out/
 .env.test.local
 .env.production
 .env.production.local
-.env.staging
-.env.staging.local
 
 # ===========================================
 # IDE AND EDITOR FILES
@@ -204,10 +198,6 @@ backend/application-*.properties
 # ===========================================
 # FRONTEND SPECIFIC
 # ===========================================
-# Storybook
-.storybook-out
-.out
-
 # Vite
 .vite/
 
