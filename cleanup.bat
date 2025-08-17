@@ -12,10 +12,6 @@ if exist "frontend\dist" (
     echo - frontend\dist already clean
 )
 
-if exist "frontend\node_modules" (
-    echo - Keeping frontend\node_modules (use 'npm ci' to reinstall)
-)
-
 echo.
 echo Cleaning backend build artifacts...
 if exist "backend\target" (
@@ -36,14 +32,11 @@ if exist "logs" (
 
 echo.
 echo Cleaning temporary files...
-if exist "*.tmp" (
-    del /q "*.tmp"
-    echo ✓ Removed temporary files
-)
-
-if exist "*.log" (
-    del /q "*.log"
-    echo ✓ Removed log files
+for %%f in (*.tmp *.log) do (
+    if exist "%%f" (
+        del /q "%%f"
+        echo ✓ Removed %%f
+    )
 )
 
 echo.
@@ -63,8 +56,7 @@ echo ========================================
 echo Cleanup completed!
 echo ========================================
 echo.
-echo To reinstall dependencies:
-echo   Frontend: cd frontend ^&^& npm ci
-echo   Backend:  cd backend ^&^& mvn clean install
+echo To rebuild and deploy to Cloudflare:
+echo   deploy-cloudflare.bat
 echo.
 pause 
