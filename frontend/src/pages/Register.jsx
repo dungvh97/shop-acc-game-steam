@@ -58,17 +58,34 @@ const Register = () => {
     }
 
     setSendingCode(true);
-    const result = await sendVerificationCode(formData.email);
-    
-    if (result.success) {
-      toast({
-        title: "Mã xác thực đã được gửi",
-        description: "Vui lòng kiểm tra email của bạn và nhập mã xác thực.",
-      });
-    } else {
+    try {
+      const result = await sendVerificationCode(formData.email);
+      
+      // Check if response has 'message' (success) or 'error' (failure)
+      if (result.message) {
+        toast({
+          title: "Mã xác thực đã được gửi",
+          description: "Vui lòng kiểm tra email của bạn và nhập mã xác thực.",
+        });
+      } else if (result.error) {
+        toast({
+          title: "Gửi mã xác thực thất bại",
+          description: result.error,
+          variant: "destructive",
+        });
+      } else {
+        // Fallback for unexpected response format
+        toast({
+          title: "Gửi mã xác thực thất bại",
+          description: "Phản hồi không xác định từ máy chủ.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Send verification error:', error);
       toast({
         title: "Gửi mã xác thực thất bại",
-        description: result.error,
+        description: error.message || "Đã xảy ra lỗi khi gửi mã xác thực.",
         variant: "destructive",
       });
     }
@@ -87,18 +104,35 @@ const Register = () => {
     }
 
     setVerifyingCode(true);
-    const result = await verifyEmail(formData.email, verificationCode);
-    
-    if (result.success) {
-      setIsEmailVerified(true);
-      toast({
-        title: "Xác thực email thành công",
-        description: "Email của bạn đã được xác thực.",
-      });
-    } else {
+    try {
+      const result = await verifyEmail(formData.email, verificationCode);
+      
+      // Check if response has 'verified' (success) or 'error' (failure)
+      if (result.verified) {
+        setIsEmailVerified(true);
+        toast({
+          title: "Xác thực email thành công",
+          description: "Email của bạn đã được xác thực.",
+        });
+      } else if (result.error) {
+        toast({
+          title: "Xác thực email thất bại",
+          description: result.error,
+          variant: "destructive",
+        });
+      } else {
+        // Fallback for unexpected response format
+        toast({
+          title: "Xác thực email thất bại",
+          description: "Phản hồi không xác định từ máy chủ.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Verify email error:', error);
       toast({
         title: "Xác thực email thất bại",
-        description: result.error,
+        description: error.message || "Đã xảy ra lỗi khi xác thực email.",
         variant: "destructive",
       });
     }
@@ -137,18 +171,35 @@ const Register = () => {
       lastName: formData.lastName
     };
 
-    const result = await register(userData);
-    
-    if (result.success) {
-      toast({
-        title: "Đăng ký thành công",
-        description: "Tài khoản của bạn đã được tạo thành công!",
-      });
-      navigate('/login');
-    } else {
+    try {
+      const result = await register(userData);
+      
+      // Check if response has user data (success) or error (failure)
+      if (result.id || result.username) {
+        toast({
+          title: "Đăng ký thành công",
+          description: "Tài khoản của bạn đã được tạo thành công!",
+        });
+        navigate('/login');
+      } else if (result.error) {
+        toast({
+          title: "Đăng ký thất bại",
+          description: result.error,
+          variant: "destructive",
+        });
+      } else {
+        // Fallback for unexpected response format
+        toast({
+          title: "Đăng ký thất bại",
+          description: "Phản hồi không xác định từ máy chủ.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
       toast({
         title: "Đăng ký thất bại",
-        description: result.error,
+        description: error.message || "Đã xảy ra lỗi khi đăng ký.",
         variant: "destructive",
       });
     }

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { decodeUserNames } from '../utils/encoding';
+import { API_BASE_URL } from '../lib/config';
 
 const AuthContext = createContext();
 
@@ -22,7 +23,7 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         try {
-          const res = await axios.get('/api/auth/me');
+          const res = await axios.get(`${API_BASE_URL}/auth/me`);
           // Decode user names to handle encoding issues
           setUser(decodeUserNames(res.data));
         } catch (e) {
@@ -39,96 +40,75 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = async (username, password) => {
+    const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+      username,
+      password,
+    });
+    const { token: newToken, user: userData } = response.data;
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+    // Decode user names to handle encoding issues
+    setUser(decodeUserNames(userData));
+    return response.data;
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    delete axios.defaults.headers.common['Authorization'];
+    setToken(null);
+    setUser(null);
+  };
+
+  const loginWithGoogle = async (oauthData) => {
     try {
-      const response = await axios.post('/api/auth/login', {
-        username,
-        password
-      });
-      
+      const response = await axios.post(`${API_BASE_URL}/auth/oauth/login`, oauthData);
       const { token: newToken, user: userData } = response.data;
       
       localStorage.setItem('token', newToken);
       setToken(newToken);
-      // Decode user names to handle encoding issues
-      const decodedUser = decodeUserNames(userData);
-      setUser(decodedUser);
       axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
-      
-      return { success: true, user: decodedUser };
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Login failed' 
-      };
-    }
-  };
-
-  const oauthLogin = async (oauthData) => {
-    try {
-      const response = await axios.post('/api/auth/oauth/login', oauthData);
-      
-      const { token: newToken, user: userData } = response.data;
-      
-      localStorage.setItem('token', newToken);
-      setToken(newToken);
       // Decode user names to handle encoding issues
-      const decodedUser = decodeUserNames(userData);
-      setUser(decodedUser);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+      setUser(decodeUserNames(userData));
       
-      return { success: true, user: decodedUser };
+      return response.data;
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'OAuth login failed' 
-      };
+      console.error('Google login error:', error);
+      throw error;
     }
   };
 
-  const sendVerificationCode = async (email) => {
+  const sendVerificationEmail = async (email) => {
     try {
-      const response = await axios.post('/api/auth/send-verification', { email });
-      return { success: true, data: response.data };
+      const response = await axios.post(`${API_BASE_URL}/auth/send-verification`, { email });
+      return response.data;
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Failed to send verification code' 
-      };
+      console.error('Send verification email error:', error);
+      throw error;
     }
   };
 
-  const verifyEmail = async (email, verificationCode) => {
+  const verifyEmail = async (email, code) => {
     try {
-      const response = await axios.post('/api/auth/verify-email', { 
-        email, 
-        verificationCode 
+      const response = await axios.post(`${API_BASE_URL}/auth/verify-email`, {
+        email,
+        verificationCode: code
       });
-      return { success: true, data: response.data };
+      return response.data;
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Email verification failed' 
-      };
+      console.error('Email verification error:', error);
+      throw error;
     }
   };
 
   const register = async (userData) => {
     try {
-      const response = await axios.post('/api/auth/register', userData);
-      return { success: true, data: response.data };
+      const response = await axios.post(`${API_BASE_URL}/auth/register`, userData);
+      return response.data;
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Registration failed' 
-      };
+      console.error('Registration error:', error);
+      throw error;
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('token');
-    setToken(null);
-    setUser(null);
-    delete axios.defaults.headers.common['Authorization'];
   };
 
   const value = {
@@ -136,8 +116,8 @@ export const AuthProvider = ({ children }) => {
     token,
     loading,
     login,
-    oauthLogin,
-    sendVerificationCode,
+    oauthLogin: loginWithGoogle, // Renamed to avoid conflict with new loginWithGoogle
+    sendVerificationCode: sendVerificationEmail, // Renamed to avoid conflict with new sendVerificationEmail
     verifyEmail,
     register,
     logout,

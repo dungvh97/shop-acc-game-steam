@@ -10,6 +10,7 @@ import {
   getAvailableSteamAccountsByType
 } from '../lib/api';
 import PaymentDialog from '../components/PaymentDialog';
+import { BACKEND_CONFIG } from '../lib/config';
 
 const SteamAccounts = () => {
   const navigate = useNavigate();
@@ -229,7 +230,7 @@ const SteamAccounts = () => {
                 <div className="relative h-48 bg-gray-100">
                   {account.imageUrl ? (
                     <img
-                      src={account.imageUrl}
+                      src={BACKEND_CONFIG.getImageUrl(account.imageUrl)}
                       alt={account.username}
                       className="w-full h-full object-cover"
                       onError={(e) => {

@@ -6,6 +6,7 @@ import { Input } from '../components/ui/input';
 import { Star, Search, Gamepad2 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import { listGamesPage, searchGamesPage, getGamesByCategoryPage, transformGames } from '../lib/api';
+import { BACKEND_CONFIG } from '../lib/config';
 
 const Games = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -190,7 +191,7 @@ const Games = () => {
               <CardHeader className="p-0">
                 <Link to={`/games/${game.id}`}>
                   <img 
-                    src={game.imageUrl?.startsWith('/uploads/') ? `/api${game.imageUrl}` : game.imageUrl}
+                    src={BACKEND_CONFIG.getImageUrl(game.imageUrl)}
                     alt={game.name}
                     className="w-full h-40 object-cover hover:opacity-90 transition-opacity"
                     onError={(e) => {

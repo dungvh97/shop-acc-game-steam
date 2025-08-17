@@ -4,6 +4,7 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { useToast } from '../hooks/use-toast';
 import { transformGame, getSteamAccountsByGameId, getGameById } from '../lib/api';
+import { BACKEND_CONFIG } from '../lib/config';
 
 const GameDetail = () => {
   const { id } = useParams();
@@ -65,7 +66,7 @@ const GameDetail = () => {
     );
   }
 
-  const imageSrc = game.imageUrl?.startsWith('/uploads/') ? `/api${game.imageUrl}` : game.imageUrl;
+  const imageSrc = BACKEND_CONFIG.getImageUrl(game.imageUrl);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -171,7 +172,7 @@ const GameDetail = () => {
                   <div className="relative h-32 bg-gray-100">
                     {account.imageUrl ? (
                       <img
-                        src={account.imageUrl}
+                        src={BACKEND_CONFIG.getImageUrl(account.imageUrl)}
                         alt={account.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {

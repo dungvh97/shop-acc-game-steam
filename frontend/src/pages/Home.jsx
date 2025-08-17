@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Star, TrendingUp, Gamepad2, User, Package } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import { getFeaturedGames, listGamesPage, transformGames } from '../lib/api.js';
+import { BACKEND_CONFIG } from '../lib/config';
 
 const Home = () => {
   const [featuredGames, setFeaturedGames] = useState([]);
@@ -151,7 +152,7 @@ const Home = () => {
                   <CardHeader className="p-0">
                     <Link to={`/games/${game.id}`}>
                       <img 
-                        src={game.imageUrl?.startsWith('/uploads/') ? `/api${game.imageUrl}` : game.imageUrl}
+                        src={BACKEND_CONFIG.getImageUrl(game.imageUrl)}
                         alt={game.name}
                         className="w-full h-32 md:h-40 object-cover hover:opacity-90 transition-opacity"
                         onError={(e) => {
@@ -223,7 +224,7 @@ const Home = () => {
                   <CardHeader className="p-0">
                     <Link to={`/games/${game.id}`}>
                       <img 
-                        src={game.imageUrl?.startsWith('/uploads/') ? `/api${game.imageUrl}` : game.imageUrl}
+                        src={BACKEND_CONFIG.getImageUrl(game.imageUrl)}
                         alt={game.name}
                         className="w-full h-32 md:h-40 object-cover hover:opacity-90 transition-opacity"
                         onError={(e) => {

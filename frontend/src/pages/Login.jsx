@@ -30,24 +30,34 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
 
-    const result = await login(formData.username, formData.password);
-    
-    if (result.success) {
-      toast({
-        title: "Đăng nhập thành công",
-        description: "Chào mừng bạn trở lại!",
-      });
+    try {
+      const result = await login(formData.username, formData.password);
       
-      // Redirect based on user role
-      if (result.user && result.user.role === 'ADMIN') {
-        navigate('/admin');
+      // Check if response has token and user data (success)
+      if (result.token && result.user) {
+        toast({
+          title: "Đăng nhập thành công",
+          description: "Chào mừng bạn trở lại!",
+        });
+        
+        // Redirect based on user role
+        if (result.user.role === 'ADMIN') {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
       } else {
-        navigate('/');
+        toast({
+          title: "Đăng nhập thất bại",
+          description: "Phản hồi không hợp lệ từ máy chủ",
+          variant: "destructive",
+        });
       }
-    } else {
+    } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: "Đăng nhập thất bại",
-        description: result.error,
+        description: error.response?.data?.message || error.message || "Đã xảy ra lỗi khi đăng nhập",
         variant: "destructive",
       });
     }
@@ -77,14 +87,15 @@ const Login = () => {
 
       const result = await oauthLogin(oauthData);
       
-      if (result.success) {
+      // Check if response has token and user data (success)
+      if (result.token && result.user) {
         toast({
           title: "Đăng nhập thành công",
           description: "Chào mừng bạn trở lại!",
         });
         
         // Redirect based on user role
-        if (result.user && result.user.role === 'ADMIN') {
+        if (result.user.role === 'ADMIN') {
           navigate('/admin');
         } else {
           navigate('/');
@@ -92,7 +103,7 @@ const Login = () => {
       } else {
         toast({
           title: "Đăng nhập thất bại",
-          description: result.error,
+          description: "Phản hồi không hợp lệ từ máy chủ",
           variant: "destructive",
         });
       }

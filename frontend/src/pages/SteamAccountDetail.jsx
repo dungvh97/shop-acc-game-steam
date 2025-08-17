@@ -6,6 +6,7 @@ import { Card, CardContent } from '../components/ui/card';
 import { useToast } from '../hooks/use-toast';
 import { getSteamAccountById } from '../lib/api';
 import PaymentDialog from '../components/PaymentDialog';
+import { BACKEND_CONFIG } from '../lib/config';
 
 
 const SteamAccountDetail = () => {
@@ -119,7 +120,7 @@ const SteamAccountDetail = () => {
           <CardContent className="p-0">
             {account.imageUrl ? (
                           <img 
-              src={account.imageUrl} 
+              src={BACKEND_CONFIG.getImageUrl(account.imageUrl)} 
               alt={account.name} 
               className="w-full h-[360px] object-cover"
                 onError={(e) => {
@@ -222,7 +223,7 @@ const SteamAccountDetail = () => {
                 <CardContent className="p-0">
                   <Link to={`/games/${game.id}`}>
                     <img 
-                      src={game.imageUrl?.startsWith('/uploads/') ? `/api${game.imageUrl}` : game.imageUrl}
+                      src={BACKEND_CONFIG.getImageUrl(game.imageUrl)}
                       alt={game.name}
                       className="w-full h-32 object-cover hover:opacity-90 transition-opacity"
                       onError={(e) => {

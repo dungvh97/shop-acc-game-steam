@@ -15,6 +15,7 @@ import {
   getGameNames,
   uploadImage
 } from '../lib/api';
+import { BACKEND_CONFIG } from '../lib/config';
 
 // Game Selector Component
 const GameSelector = ({ 
@@ -798,7 +799,7 @@ const SteamAccountManager = () => {
                     <div className="mt-2">
                       <label className="text-sm text-gray-600">Current Image:</label>
                       <img
-                        src={formData.imageUrl}
+                        src={BACKEND_CONFIG.getImageUrl(formData.imageUrl)}
                         alt="Current"
                         className="w-32 h-32 object-cover rounded border mt-1"
                         onError={(e) => {
@@ -884,7 +885,7 @@ const SteamAccountManager = () => {
                          {/* Account Image */}
                          {account.imageUrl && (
                            <img
-                             src={account.imageUrl}
+                             src={BACKEND_CONFIG.getImageUrl(account.imageUrl)}
                              alt={account.name}
                              className="w-16 h-16 object-cover rounded border"
                              onError={(e) => {
