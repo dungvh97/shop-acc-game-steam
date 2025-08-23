@@ -28,7 +28,6 @@ import {
   EyeOff
 } from 'lucide-react';
 import { getAllUserOrders } from '../lib/api.js';
-import Banner from '../components/Banner';
 
 const Profile = () => {
   const { user, logout, isAuthenticated, loading } = useAuth();
@@ -251,7 +250,6 @@ const Profile = () => {
   if (loading) {
     return (
       <div>
-        <Banner />
         <div className="p-6">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-600"></div>
@@ -268,7 +266,6 @@ const Profile = () => {
 
   return (
     <div>
-      <Banner />
       
       {/* Main Content Area - Fixed container width to match header/footer */}
       <div className="container mx-auto px-4 py-6">
