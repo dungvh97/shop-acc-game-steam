@@ -138,7 +138,7 @@ const SteamAccountDetail = () => {
       
       {/* Area 1: Breadcrumbs */}
       <div className="bg-gray-50 py-3">
-        <div className="w-full max-w-7xl mx-auto px-4">
+        <div className="w-full max-w-8xl mx-auto px-4">
           <nav className="flex text-sm text-gray-600">
             <Link to="/" className="hover:text-red-600">Home</Link>
             <span className="mx-2">{'>'}</span>
@@ -152,7 +152,7 @@ const SteamAccountDetail = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="w-full max-w-7xl mx-auto px-4 py-8">
+      <div className="w-full max-w-8xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           {/* Left Column - Game Image */}

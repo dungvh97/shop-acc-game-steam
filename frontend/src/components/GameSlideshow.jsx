@@ -40,7 +40,7 @@ const GameSlideshow = () => {
   };
 
   return (
-            <div className="w-full max-w-7xl mx-auto px-4">
+            <div className="w-full max-w-8xl mx-auto px-4">
       {/* Main container with tighter grid layout */}
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-2 items-stretch h-82">
         

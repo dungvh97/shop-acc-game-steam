@@ -19,6 +19,17 @@ export default {
       },
     },
     extend: {
+      maxWidth: {
+        "7xl": "80rem",   // 1280px
+        "8xl": "90rem",   // 1440px
+        "9xl": "96rem",   // 1536px
+        "10xl": "102rem", // 1632px
+        "11xl": "108rem", // 1728px
+        "12xl": "114rem", // 1824px
+        "13xl": "120rem", // 1920px
+        "14xl": "126rem", // 2016px
+        "15xl": "132rem", // 2112px
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -77,4 +88,3 @@ export default {
   },
   plugins: [require("tailwindcss-animate")],
 }
-
