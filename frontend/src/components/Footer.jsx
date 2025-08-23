@@ -1,109 +1,100 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Mail, Phone, MapPin, Shield, Truck, CreditCard } from 'lucide-react';
+import { Facebook, Instagram } from 'lucide-react';
+import { SiTiktok } from "react-icons/si";
 
 const Footer = () => {
   return (
-    <footer className="bg-background border-t border-border mt-auto">
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Company Info */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <img src="/logo.png" alt="Gurro Shop" className="w-8 h-8 object-contain" />
-              <span className="text-xl font-bold text-foreground">Gurro Shop</span>
-            </div>
-            <p className="text-muted-foreground text-sm">
-              Chuyên cung cấp game keys, tài khoản Steam và các sản phẩm gaming chất lượng cao với giá tốt nhất.
+    <footer className="bg-white border-t border-gray-200 mt-auto">
+      <div className="w-full max-w-6xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          
+          {/* Column 1: Introduction */}
+          <div className="space-y-3">
+            <h3 className="font-bold text-black text-lg">Giới thiệu</h3>
+            <p className="text-black text-sm leading-relaxed">
+              Chúng tôi là những "thợ săn" thực thụ, lùng sục khắp nơi để mang về cho bạn những tài khoản Steam chất lượng với mức giá siêu tiết kiệm.
             </p>
-
           </div>
 
-          {/* Quick Links */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-foreground">Liên kết nhanh</h3>
+          {/* Column 2: Instructions & FAQ */}
+          <div className="space-y-3">
+            <h3 className="font-bold text-black text-lg">Hướng dẫn & Câu hỏi thường gặp</h3>
             <ul className="space-y-2 text-sm">
-              <li>
-                <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
-                  Trang chủ
+              <li className="text-black">
+                <Link to="/deposit-guide" className="hover:text-red-600 transition-colors">
+                  Hướng dẫn nộp tiền
                 </Link>
               </li>
-              <li>
-                <Link to="/games" className="text-muted-foreground hover:text-primary transition-colors">
-                  Games
+              <li className="text-black">
+                <Link to="/payment-guide" className="hover:text-red-600 transition-colors">
+                  Hướng dẫn thanh toán
                 </Link>
               </li>
-              <li>
-                <Link to="/steam-accounts" className="text-muted-foreground hover:text-primary transition-colors">
-                  Tài khoản Steam
+              <li className="text-black">
+                <Link to="/change-info-guide" className="hover:text-red-600 transition-colors">
+                  Hướng dẫn đổi thông tin khi mua sản phẩm
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Services */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-foreground">Dịch vụ</h3>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-center space-x-2 text-muted-foreground">
-                <Shield className="h-4 w-4" />
-                <span>Bảo hành uy tín</span>
+          {/* Column 3: Contact */}
+          <div className="space-y-3">
+            <h3 className="font-bold text-black text-lg">Liên hệ</h3>
+            <ul className="space-y-3 text-sm">
+              <li className="text-black">
+                <a 
+                  href="https://www.facebook.com/GurroShop" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-3 hover:text-red-600 transition-colors group"
+                >
+                  <Facebook className="h-5 w-5 text-blue-600 group-hover:text-red-600 transition-colors" />
+                  <span>Fanpage</span>
+                </a>
               </li>
-              <li className="flex items-center space-x-2 text-muted-foreground">
-                <Truck className="h-4 w-4" />
-                <span>Giao hàng nhanh chóng</span>
+              <li className="text-black">
+                <a 
+                  href="https://www.instagram.com/gurroshopvn/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-3 hover:text-red-600 transition-colors group"
+                >
+                  <Instagram className="h-5 w-5 text-pink-600 group-hover:text-red-600 transition-colors" />
+                  <span>Instagram</span>
+                </a>
               </li>
-              <li className="flex items-center space-x-2 text-muted-foreground">
-                <CreditCard className="h-4 w-4" />
-                <span>Thanh toán an toàn</span>
+              <li className="text-black">
+                <a 
+                  href="https://www.tiktok.com/@gurro.shop" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-3 hover:text-red-600 transition-colors group"
+                >
+                  <SiTiktok className="h-5 w-5 text-black group-hover:text-red-600 transition-colors" />
+                  <span>Tiktok</span>
+                </a>
               </li>
             </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-foreground">Liên hệ</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center space-x-2 text-muted-foreground">
-                <Mail className="h-4 w-4" />
-                <span>support@gurroshop.com</span>
-              </div>
-              <div className="flex items-center space-x-2 text-muted-foreground">
-                <Phone className="h-4 w-4" />
-                <span>+84 123 456 789</span>
-              </div>
-              <div className="flex items-center space-x-2 text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>Việt Nam</span>
-              </div>
-              <a 
-                href="https://www.facebook.com/GurroShop" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center space-x-2 text-muted-foreground hover:text-primary transition-colors"
-              >
-                <Facebook className="h-4 w-4" />
-                <span>Facebook GurroShop</span>
-              </a>
-            </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-border mt-8 pt-6">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-sm text-muted-foreground">
+        {/* Bottom Line with Copyright and Policy */}
+        <div className="border-t border-gray-200 mt-8 pt-6">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
+            <p className="text-xs text-gray-500">
               © 2024 Gurro Shop. Tất cả quyền được bảo lưu.
             </p>
-            <div className="flex space-x-6 text-sm">
-              <Link to="/terms" className="text-muted-foreground hover:text-primary transition-colors">
+            <div className="flex space-x-4 text-xs">
+              <Link to="/terms" className="text-gray-500 hover:text-red-600 transition-colors">
                 Điều khoản sử dụng
               </Link>
-              <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
+              <Link to="/privacy" className="text-gray-500 hover:text-red-600 transition-colors">
                 Chính sách bảo mật
               </Link>
-              <Link to="/refund" className="text-muted-foreground hover:text-primary transition-colors">
-                Chính sách hoàn tiền
+              <Link to="/warranty" className="text-gray-500 hover:text-red-600 transition-colors">
+                Chính sách bảo hành
               </Link>
             </div>
           </div>

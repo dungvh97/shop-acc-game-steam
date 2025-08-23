@@ -15,6 +15,7 @@ import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import SteamAccounts from './pages/SteamAccounts';
 import SteamAccountDetail from './pages/SteamAccountDetail';
+import Cart from './pages/Cart';
 
 function App() {
   return (
@@ -23,7 +24,7 @@ function App() {
         <AuthProvider>
           <div className="min-h-screen bg-gray-50 flex flex-col">
             <Navbar />
-            <main className="container mx-auto px-4 py-8 flex-1 pb-20 md:pb-8">
+            <main className="flex-1 w-full">
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
@@ -34,6 +35,7 @@ function App() {
                 <Route path="/steam-accounts/:id" element={<SteamAccountDetail />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/admin" element={<Admin />} />
+                <Route path="/cart" element={<Cart />} />
               </Routes>
             </main>
             <Footer />

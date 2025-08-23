@@ -51,16 +51,18 @@ const GameDetail = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <div className="w-full max-w-6xl mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-600"></div>
+        </div>
       </div>
     );
   }
 
   if (!game) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <p className="text-muted-foreground">Không tìm thấy game.</p>
+      <div className="w-full max-w-6xl mx-auto px-4 py-8">
+        <p className="text-gray-500">Không tìm thấy game.</p>
         <Link to="/games" className="underline">Quay lại danh sách games</Link>
       </div>
     );
@@ -90,166 +92,160 @@ const GameDetail = () => {
     }
   };
 
-  const getTypeLabel = (type) => {
-    const typeMap = {
-      'STEAM_ACCOUNT_ONLINE': 'Steam Online',
-      'STEAM_ACCOUNT_OFFLINE': 'Steam Offline',
-      'EPIC_ACCOUNT': 'Epic Account',
-      'ORIGIN_ACCOUNT': 'Origin Account',
-      'UPLAY_ACCOUNT': 'Uplay Account',
-      'GOG_ACCOUNT': 'GOG Account',
-      'OTHER_ACCOUNT': 'Other Account'
-    };
-    return typeMap[type] || type;
-  };
-
-
-
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="grid md:grid-cols-2 gap-8">
-        <Card className="overflow-hidden">
-          <CardContent className="p-0">
-            <img src={imageSrc} alt={game.name} className="w-full h-[360px] object-cover" />
-          </CardContent>
-        </Card>
-        <div>
-          <h1 className="text-3xl font-bold mb-4">{game.name}</h1>
-          <p className="text-muted-foreground mb-4">{game.description}</p>
-          <div className="flex items-center gap-3 mb-6">
-            {game.originalPrice && game.originalPrice > game.price && (
-              <span className="text-muted-foreground line-through">{game.originalPrice} VND</span>
-            )}
-            <span className="text-3xl font-bold text-primary">{game.price} VND</span>
+    <div className="w-full max-w-6xl mx-auto px-4 py-8">
+      {/* Game Header */}
+      <div className="mb-8">
+        <Link to="/games" className="text-blue-600 hover:underline mb-4 inline-block">
+          ← Quay lại danh sách games
+        </Link>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{game.name}</h1>
+        {game.description && (
+          <p className="text-gray-600 text-lg">{game.description.replace(/<[^>]*>/g, '')}</p>
+        )}
+      </div>
+
+      {/* Game Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Game Image */}
+        <div className="lg:col-span-2">
+          <img 
+            src={imageSrc} 
+            alt={game.name} 
+            className="w-full h-96 object-cover rounded-lg shadow-lg"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+          <div className="w-full h-96 bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center rounded-lg shadow-lg hidden">
+            <div className="text-white text-center">
+              <div className="text-6xl mb-4">🎮</div>
+              <p>Không có hình ảnh</p>
+            </div>
           </div>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-blue-800 font-medium">
+        </div>
+
+        {/* Game Info */}
+        <div className="space-y-6">
+          {/* Price */}
+          <div className="bg-white p-6 rounded-lg shadow-lg border">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Thông tin giá</h3>
+            <div className="space-y-3">
+              {game.originalPrice && game.originalPrice > game.price && (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Giá gốc:</span>
+                  <span className="text-gray-500 line-through">{formatPrice(game.originalPrice)}</span>
+                </div>
+              )}
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Giá hiện tại:</span>
+                <span className="text-2xl font-bold text-red-600">{formatPrice(game.price)}</span>
+              </div>
+              {game.discountPercentage > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Giảm giá:</span>
+                  <span className="text-green-600 font-semibold">-{game.discountPercentage}%</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Game Details */}
+          <div className="bg-white p-6 rounded-lg shadow-lg border">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Chi tiết game</h3>
+            <div className="space-y-3">
+              {game.releaseDate && (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Năm phát hành:</span>
+                  <span className="text-gray-900">{new Date(game.releaseDate).getFullYear()}</span>
+                </div>
+              )}
+              {game.rating && (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Đánh giá:</span>
+                  <span className="text-yellow-600 font-semibold">★ {game.rating.toFixed(1)}</span>
+                </div>
+              )}
+              {game.genres && game.genres.length > 0 && (
+                <div className="flex justify-between items-start">
+                  <span className="text-gray-600">Thể loại:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {game.genres.map((genre, index) => (
+                      <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
+                        {genre}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Action Button */}
+          <div className="bg-white p-6 rounded-lg shadow-lg border">
+            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-3">
               Lựa chọn các account bên dưới để mua tài khoản chơi game này
-            </p>
+            </Button>
           </div>
         </div>
       </div>
-      {game.genres && game.genres.length > 0 && (
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold mb-3">Thể loại</h2>
-          <div className="flex flex-wrap gap-2">
-            {game.genres.map((g, i) => (
-              <span key={i} className="text-xs bg-muted px-2 py-1 rounded">{g}</span>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Related Steam Accounts */}
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Steam Accounts with this Game</h2>
+      <div className="mt-12">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Steam Accounts with this Game</h2>
+        
         {loadingAccounts ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(3)].map((_, i) => (
-              <Card key={i} className="animate-pulse">
-                <div className="h-32 bg-gray-200 rounded-t-lg"></div>
-                <CardContent className="p-4">
-                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-                </CardContent>
-              </Card>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
+                <div className="space-y-2">
+                  <div className="bg-gray-200 h-4 w-3/4 rounded"></div>
+                  <div className="bg-gray-200 h-4 w-1/2 rounded"></div>
+                </div>
+              </div>
             ))}
           </div>
-        ) : relatedAccounts.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">No Steam accounts found with this game</p>
-            <Link to="/steam-accounts" className="text-primary hover:underline mt-2 inline-block">
-              Browse all Steam accounts
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        ) : relatedAccounts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {relatedAccounts.map((account) => (
               <Card key={account.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <Link to={`/steam-accounts/${account.id}`} className="block">
-                  {/* Account Image */}
-                  <div className="relative h-32 bg-gray-100">
-                    {account.imageUrl ? (
-                      <img
-                        src={BACKEND_CONFIG.getImageUrl(account.imageUrl)}
-                        alt={account.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
-                      />
-                    ) : null}
-                    <div className="absolute inset-0 flex items-center justify-center text-gray-400" style={{ display: account.imageUrl ? 'none' : 'flex' }}>
-                      <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    
-                    {/* Status Badge */}
+                <CardContent className="p-0">
+                  <div className="relative">
+                    <img 
+                      src={BACKEND_CONFIG.getImageUrl(account.imageUrl)} 
+                      alt={account.name} 
+                      className="w-full h-48 object-cover"
+                    />
                     <div className="absolute top-2 right-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(account.status)}`}>
+                      <span className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(account.status)}`}>
                         {account.status}
                       </span>
                     </div>
-                    
-                    {/* Discount Badge */}
-                    {account.discountPercentage !== null && account.discountPercentage !== undefined && account.discountPercentage > 0 && (
-                      <div className="absolute top-2 left-2">
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-500 text-white">
-                          -{account.discountPercentage}%
-                        </span>
-                      </div>
-                    )}
                   </div>
-                </Link>
-
-                <CardContent className="p-4">
-                  {/* Account Type */}
-                  <div className="mb-2">
-                    <span className="text-xs text-muted-foreground bg-gray-100 px-2 py-1 rounded">
-                      {getTypeLabel(account.accountType)}
-                    </span>
-                  </div>
-
-                  {/* Username */}
-                  <h3 className="font-semibold text-sm mb-2 truncate" title={account.name}>
-                    {account.name}
-                  </h3>
-
-                  {/* Price */}
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-sm font-bold text-primary">
-                      {formatPrice(account.price)}
-                    </span>
-                    {account.originalPrice && account.originalPrice > account.price && (
-                      <span className="text-xs text-muted-foreground line-through">
-                        {formatPrice(account.originalPrice)}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Stock */}
-                  <div className="text-xs text-muted-foreground mb-3">
-                    Stock: {account.stockQuantity} available
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2">
-                    <Link to={`/steam-accounts/${account.id}`} className="w-full">
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">{account.name}</h3>
+                    <p className="text-gray-600 text-sm mb-3">{account.description}</p>
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-bold text-red-600">{formatPrice(account.price)}</span>
                       <Button 
-                        size="sm"
-                        className="w-full"
-                        disabled={account.status !== 'AVAILABLE' || account.stockQuantity <= 0}
+                        className="bg-blue-600 hover:bg-blue-700"
+                        disabled={account.status !== 'AVAILABLE'}
                       >
-                        View
+                        {account.status === 'AVAILABLE' ? 'Mua ngay' : 'Không khả dụng'}
                       </Button>
-                    </Link>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">🎮</div>
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">Không có tài khoản Steam nào</h3>
+            <p className="text-gray-500">Hiện tại không có tài khoản Steam nào có game này</p>
           </div>
         )}
       </div>

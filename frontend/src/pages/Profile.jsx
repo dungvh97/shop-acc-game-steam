@@ -28,6 +28,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { getAllUserOrders } from '../lib/api.js';
+import Banner from '../components/Banner';
 
 const Profile = () => {
   const { user, logout, isAuthenticated, loading } = useAuth();
@@ -249,9 +250,12 @@ const Profile = () => {
   // Show loading spinner while checking authentication
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <div>
+        <Banner />
+        <div className="p-6">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-600"></div>
+          </div>
         </div>
       </div>
     );
@@ -263,515 +267,264 @@ const Profile = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Hồ sơ cá nhân</h1>
-            <p className="text-muted-foreground mt-1">
-              Quản lý thông tin tài khoản và cài đặt bảo mật
-            </p>
+    <div>
+      <Banner />
+      
+      {/* Main Content Area - Fixed container width to match header/footer */}
+      <div className="container mx-auto px-4 py-6">
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800">Hồ sơ cá nhân</h1>
+              <p className="text-gray-600 mt-1">
+                Quản lý thông tin tài khoản và cài đặt bảo mật
+              </p>
+            </div>
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Đăng xuất
+            </Button>
           </div>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Đăng xuất
-          </Button>
-        </div>
 
-        <Tabs defaultValue={searchParams.get('tab') || "profile"} className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="profile">Thông tin cá nhân</TabsTrigger>
-            <TabsTrigger value="security">Bảo mật</TabsTrigger>
-            <TabsTrigger value="activity">Hoạt động</TabsTrigger>
-          </TabsList>
+          <Tabs defaultValue={searchParams.get('tab') || "profile"} className="space-y-6">
+            <TabsList>
+              <TabsTrigger value="profile">Thông tin cá nhân</TabsTrigger>
+              <TabsTrigger value="security">Bảo mật</TabsTrigger>
+              <TabsTrigger value="activity">Hoạt động</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="profile" className="space-y-6">
-            {/* Profile Overview */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  Thông tin cơ bản
-                </CardTitle>
-                <CardDescription>
-                  Thông tin cá nhân và tài khoản của bạn
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Avatar and Basic Info */}
-                <div className="flex items-start gap-6">
-                  <Avatar className="w-24 h-24">
-                    <AvatarImage src={decodedUser.profilePicture} alt={safeDisplayName(decodedUser.firstName)} />
-                    <AvatarFallback>
-                      {safeDisplayName(decodedUser.firstName)?.charAt(0)}{safeDisplayName(decodedUser.lastName)?.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  <div className="flex-1 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm font-medium">Họ và tên</label>
-                        {isEditing ? (
-                          <div className="grid grid-cols-2 gap-2 mt-1">
+            <TabsContent value="profile" className="space-y-6">
+              {/* Profile Overview */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="w-5 h-5" />
+                    Thông tin cơ bản
+                  </CardTitle>
+                  <CardDescription>
+                    Thông tin cá nhân và tài khoản của bạn
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Avatar and Basic Info */}
+                  <div className="flex items-start gap-6">
+                    <Avatar className="w-24 h-24">
+                      <AvatarImage src={decodedUser.profilePicture} alt={safeDisplayName(decodedUser.firstName)} />
+                      <AvatarFallback>
+                        {safeDisplayName(decodedUser.firstName)?.charAt(0)}{safeDisplayName(decodedUser.lastName)?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="flex-1 space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm font-medium">Họ và tên</label>
+                          {isEditing ? (
+                            <div className="grid grid-cols-2 gap-2 mt-1">
+                              <Input
+                                name="firstName"
+                                value={formData.firstName}
+                                onChange={handleChange}
+                                placeholder="Tên"
+                              />
+                              <Input
+                                name="lastName"
+                                value={formData.lastName}
+                                onChange={handleChange}
+                                placeholder="Họ"
+                              />
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-500 mt-1">
+                              {safeDisplayName(decodedUser.firstName)} {safeDisplayName(decodedUser.lastName)}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div>
+                          <label className="text-sm font-medium">Tên đăng nhập</label>
+                          {isEditing ? (
                             <Input
-                              name="firstName"
-                              value={formData.firstName}
+                              name="username"
+                              value={formData.username}
                               onChange={handleChange}
-                              placeholder="Tên"
+                              className="mt-1"
                             />
-                            <Input
-                              name="lastName"
-                              value={formData.lastName}
-                              onChange={handleChange}
-                              placeholder="Họ"
-                            />
-                          </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {safeDisplayName(decodedUser.firstName)} {safeDisplayName(decodedUser.lastName)}
-                          </p>
-                        )}
-                      </div>
-                      
-                      <div>
-                        <label className="text-sm font-medium">Tên đăng nhập</label>
-                        {isEditing ? (
-                          <Input
-                            name="username"
-                            value={formData.username}
-                            onChange={handleChange}
-                            className="mt-1"
-                          />
-                        ) : (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {safeDisplayName(decodedUser.username)}
-                          </p>
-                        )}
-                      </div>
-                      
-                      <div>
-                        <label className="text-sm font-medium">Email</label>
-                        <div className="flex items-center gap-2 mt-1">
-                          <p className="text-sm text-muted-foreground">
-                            {decodedUser.email}
-                          </p>
-                          {user.emailVerified && (
-                            <Badge variant="secondary" className="text-xs">
-                              Đã xác thực
-                            </Badge>
+                          ) : (
+                            <p className="text-sm text-gray-500 mt-1">
+                              {safeDisplayName(decodedUser.username)}
+                            </p>
                           )}
                         </div>
                       </div>
                       
-                      <div>
-                        <label className="text-sm font-medium">Số điện thoại</label>
-                        {isEditing ? (
-                          <Input
-                            name="phoneNumber"
-                            value={formData.phoneNumber}
-                            onChange={handleChange}
-                            className="mt-1"
-                            placeholder="Nhập số điện thoại"
-                          />
-                        ) : (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {decodedUser.phoneNumber || 'Chưa cập nhật'}
-                          </p>
-                        )}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm font-medium">Email</label>
+                          {isEditing ? (
+                            <Input
+                              name="email"
+                              value={formData.email}
+                              onChange={handleChange}
+                              className="mt-1"
+                            />
+                          ) : (
+                            <p className="text-sm text-gray-500 mt-1">
+                              {decodedUser.email}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div>
+                          <label className="text-sm font-medium">Số điện thoại</label>
+                          {isEditing ? (
+                            <Input
+                              name="phoneNumber"
+                              value={formData.phoneNumber}
+                              onChange={handleChange}
+                              className="mt-1"
+                            />
+                          ) : (
+                            <p className="text-sm text-gray-500 mt-1">
+                              {decodedUser.phoneNumber || 'Chưa cập nhật'}
+                            </p>
+                          )}
+                        </div>
                       </div>
+
+                      {/* Edit Actions */}
+                      {isEditing ? (
+                        <div className="flex gap-2 pt-2">
+                          <Button onClick={handleSave} disabled={profileLoading}>
+                            {profileLoading ? 'Đang lưu...' : <><Save className="w-4 h-4 mr-2" />Lưu thay đổi</>}
+                          </Button>
+                          <Button variant="outline" onClick={handleCancel}>
+                            <X className="w-4 h-4 mr-2" />Hủy
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button variant="outline" onClick={() => setIsEditing(true)}>
+                          <Edit className="w-4 h-4 mr-2" />Chỉnh sửa
+                        </Button>
+                      )}
                     </div>
-                    
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Account Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="w-5 h-5" />
+                    Thông tin tài khoản
+                  </CardTitle>
+                  <CardDescription>
+                    Chi tiết về tài khoản và phương thức đăng nhập
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium">Phương thức đăng nhập</label>
+                      <label className="text-sm font-medium">Loại tài khoản</label>
                       <div className="flex items-center gap-2 mt-1">
-                        {getOAuthProviderIcon(decodedUser.oauthProvider)}
-                        <span className="text-sm text-muted-foreground">
-                          {getOAuthProviderName(decodedUser.oauthProvider)}
+                        {getOAuthProviderIcon(decodedUser.oAuthProvider)}
+                        <span className="text-sm text-gray-500">
+                          {getOAuthProviderName(decodedUser.oAuthProvider)}
                         </span>
                       </div>
                     </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-2">
-                  {isEditing ? (
-                    <>
-                      <Button onClick={handleSave} disabled={profileLoading}>
-                        <Save className="w-4 h-4 mr-2" />
-                        {profileLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
-                      </Button>
-                      <Button variant="outline" onClick={handleCancel}>
-                        <X className="w-4 h-4 mr-2" />
-                        Hủy
-                      </Button>
-                    </>
-                  ) : (
-                    <Button onClick={() => setIsEditing(true)}>
-                      <Edit className="w-4 h-4 mr-2" />
-                      Chỉnh sửa
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Account Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Key className="w-5 h-5" />
-                  Chi tiết tài khoản
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-3">
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    
                     <div>
-                      <p className="text-sm font-medium">Ngày tham gia</p>
-                      <p className="text-sm text-muted-foreground">
-                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : 'Không xác định'}
+                      <label className="text-sm font-medium">Ngày tạo</label>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {decodedUser.createdAt ? new Date(decodedUser.createdAt).toLocaleDateString('vi-VN') : 'Không xác định'}
                       </p>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <Shield className="w-4 h-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Vai trò</p>
-                      <p className="text-sm text-muted-foreground">
-                        {user.role === 'ADMIN' ? 'Quản trị viên' : 'Người dùng'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          <TabsContent value="security" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="w-5 h-5" />
-                  Bảo mật tài khoản
-                </CardTitle>
-                <CardDescription>
-                  Quản lý mật khẩu và cài đặt bảo mật
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <h3 className="font-medium">Đổi mật khẩu</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Cập nhật mật khẩu tài khoản của bạn
-                    </p>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    Thay đổi
-                  </Button>
-                </div>
-                
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <h3 className="font-medium">Xác thực hai yếu tố</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Bảo vệ tài khoản bằng mã xác thực
-                    </p>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    Bật
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="activity" className="space-y-6">
-            {/* Latest Purchase Credentials Panel */}
-            {userOrders.length > 0 && userOrders.find(order => order.status === 'PAID' && order.accountUsername) && (
-              <Card className="border-green-200 bg-gradient-to-r from-green-50 to-green-100">
+            <TabsContent value="security" className="space-y-6">
+              {/* Security Settings */}
+              <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-green-800">
-                    <Key className="w-5 h-5" />
-                    Tài khoản mới nhất đã mua
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="w-5 h-5" />
+                    Cài đặt bảo mật
                   </CardTitle>
-                  <CardDescription className="text-green-700">
-                    Thông tin đăng nhập cho tài khoản vừa được thanh toán
+                  <CardDescription>
+                    Quản lý mật khẩu và các tùy chọn bảo mật
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="text-center py-8">
+                    <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-600 mb-2">Tính năng đang phát triển</h3>
+                    <p className="text-gray-500">
+                      Cài đặt bảo mật sẽ có sẵn trong phiên bản tiếp theo
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="activity" className="space-y-6">
+              {/* Activity History */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    Lịch sử hoạt động
+                  </CardTitle>
+                  <CardDescription>
+                    Theo dõi các hoạt động và giao dịch của bạn
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {(() => {
-                    const latestPaidOrder = userOrders
-                      .filter(order => order.status === 'PAID' && order.accountUsername)
-                      .sort((a, b) => new Date(b.paidAt || b.createdAt) - new Date(a.paidAt || a.createdAt))[0];
-                    
-                    if (!latestPaidOrder) return null;
-                    
-                    return (
-                      <div className="space-y-4">
-                        {/* Account Info Header */}
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="font-semibold text-green-800 text-lg">{latestPaidOrder.accountName}</h3>
-                            <p className="text-sm text-green-600">
-                              Mã đơn hàng: {latestPaidOrder.orderId} • {latestPaidOrder.accountType}
-                            </p>
+                  {ordersLoading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+                      <p className="text-gray-500 mt-2">Đang tải...</p>
+                    </div>
+                  ) : userOrders.length > 0 ? (
+                    <div className="space-y-4">
+                      {userOrders.map((order) => (
+                        <div key={order.orderId} className="border rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium">Đơn hàng #{order.orderId}</h4>
+                            <Badge variant={order.status === 'COMPLETED' ? 'default' : 'secondary'}>
+                              {order.status === 'COMPLETED' ? 'Hoàn thành' : order.status}
+                            </Badge>
                           </div>
-                          <div className="text-right">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-200 text-green-800">
-                              ✓ Đã thanh toán
-                            </span>
-                            <p className="text-xs text-green-600 mt-1">
-                              {formatDate(latestPaidOrder.paidAt || latestPaidOrder.createdAt)}
-                            </p>
-                          </div>
+                          <p className="text-sm text-gray-600 mb-2">
+                            {order.accountName} - {order.accountType}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {new Date(order.createdAt).toLocaleDateString('vi-VN')}
+                          </p>
                         </div>
-
-                        {/* Credentials Display */}
-                        <div className="bg-white rounded-lg border border-green-200 p-4 space-y-4">
-                          <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                            <Shield className="w-4 h-4" />
-                            Thông tin đăng nhập
-                          </h4>
-                          
-                          {/* Username Field */}
-                          <div>
-                            <label className="text-sm font-medium text-gray-700 mb-2 block">
-                              Tên đăng nhập
-                            </label>
-                            <div className="flex items-center gap-3">
-                              <input
-                                type="text"
-                                value={latestPaidOrder.accountUsername}
-                                readOnly
-                                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-base bg-gray-50 font-mono"
-                              />
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => copyToClipboard(latestPaidOrder.accountUsername, `latest-username`)}
-                                className="h-12 px-4"
-                              >
-                                {copiedField === `latest-username` ? (
-                                  <Check className="h-4 w-4 text-green-600" />
-                                ) : (
-                                  <Copy className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </div>
-                          </div>
-
-                          {/* Password Field */}
-                          <div>
-                            <label className="text-sm font-medium text-gray-700 mb-2 block">
-                              Mật khẩu
-                            </label>
-                            <div className="flex items-center gap-3">
-                              <input
-                                type={showPasswords[`latest-${latestPaidOrder.id}`] ? "text" : "password"}
-                                value={latestPaidOrder.accountPassword}
-                                readOnly
-                                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-base bg-gray-50 font-mono"
-                              />
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => togglePasswordVisibility(`latest-${latestPaidOrder.id}`)}
-                                className="h-12 px-4"
-                              >
-                                {showPasswords[`latest-${latestPaidOrder.id}`] ? (
-                                  <EyeOff className="h-4 w-4" />
-                                ) : (
-                                  <Eye className="h-4 w-4" />
-                                )}
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => copyToClipboard(latestPaidOrder.accountPassword, `latest-password`)}
-                                className="h-12 px-4"
-                              >
-                                {copiedField === `latest-password` ? (
-                                  <Check className="h-4 w-4 text-green-600" />
-                                ) : (
-                                  <Copy className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </div>
-                          </div>
-
-                          {/* Account Value */}
-                          <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                            <span className="text-sm text-gray-600">Giá trị tài khoản:</span>
-                            <span className="text-lg font-bold text-green-600">
-                              {latestPaidOrder.amount?.toLocaleString('vi-VN')} VNĐ
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Security Notice */}
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                          <div className="flex items-start gap-2">
-                            <Shield className="w-4 h-4 text-yellow-600 mt-0.5" />
-                            <div className="text-sm text-yellow-800">
-                              <p className="font-medium">Lưu ý bảo mật:</p>
-                              <p>Vui lòng đổi mật khẩu sau khi đăng nhập lần đầu và không chia sẻ thông tin này với người khác.</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-600 mb-2">Chưa có hoạt động nào</h3>
+                      <p className="text-gray-500">
+                        Bạn chưa có đơn hàng nào. Hãy mua sắm để bắt đầu!
+                      </p>
+                      <Link to="/steam-accounts" className="inline-block mt-4">
+                        <Button>Xem Steam Accounts</Button>
+                      </Link>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-            )}
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Globe className="w-5 h-5" />
-                  Lịch sử đơn hàng
-                </CardTitle>
-                <CardDescription>
-                  Danh sách các đơn hàng Steam Account của bạn
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {ordersLoading ? (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">Đang tải...</p>
-                  </div>
-                ) : userOrders.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">
-                      Bạn chưa có đơn hàng nào
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {userOrders.map((order) => (
-                      <div key={order.id} className="border rounded-lg p-4 space-y-3">
-                        {/* Order Header */}
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="font-semibold">{order.accountName}</h3>
-                            <p className="text-sm text-muted-foreground">
-                              Mã đơn hàng: {order.orderId}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            {getStatusBadge(order.status)}
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {formatDate(order.createdAt)}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Order Details */}
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">Loại tài khoản:</span>
-                            <p>{order.accountType}</p>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Số tiền:</span>
-                            <p>{order.amount?.toLocaleString('vi-VN')} VNĐ</p>
-                          </div>
-                        </div>
-
-                        {/* Account Credentials - Only show for PAID orders */}
-                        {order.status === 'PAID' && order.accountUsername && (
-                          <div className="bg-green-50 border border-green-200 rounded-lg p-3 space-y-3">
-                            <h4 className="font-medium text-green-800 text-sm">
-                              Thông tin tài khoản
-                            </h4>
-                            
-                            {/* Username */}
-                            <div>
-                              <label className="text-xs font-medium text-gray-700 mb-1 block">
-                                Tên đăng nhập
-                              </label>
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type="text"
-                                  value={order.accountUsername}
-                                  readOnly
-                                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs bg-white"
-                                />
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => copyToClipboard(order.accountUsername, `username-${order.id}`)}
-                                  className="h-6 w-6 p-0"
-                                >
-                                  {copiedField === `username-${order.id}` ? (
-                                    <Check className="h-3 w-3 text-green-600" />
-                                  ) : (
-                                    <Copy className="h-3 w-3" />
-                                  )}
-                                </Button>
-                              </div>
-                            </div>
-
-                            {/* Password */}
-                            <div>
-                              <label className="text-xs font-medium text-gray-700 mb-1 block">
-                                Mật khẩu
-                              </label>
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type={showPasswords[order.id] ? "text" : "password"}
-                                  value={order.accountPassword}
-                                  readOnly
-                                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs bg-white"
-                                />
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => togglePasswordVisibility(order.id)}
-                                  className="h-6 w-6 p-0"
-                                >
-                                  {showPasswords[order.id] ? (
-                                    <EyeOff className="h-3 w-3" />
-                                  ) : (
-                                    <Eye className="h-3 w-3" />
-                                  )}
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => copyToClipboard(order.accountPassword, `password-${order.id}`)}
-                                  className="h-6 w-6 p-0"
-                                >
-                                  {copiedField === `password-${order.id}` ? (
-                                    <Check className="h-3 w-3 text-green-600" />
-                                  ) : (
-                                    <Copy className="h-3 w-3" />
-                                  )}
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Payment Date for PAID orders */}
-                        {order.status === 'PAID' && order.paidAt && (
-                          <div className="text-xs text-muted-foreground">
-                            Thanh toán lúc: {formatDate(order.paidAt)}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </div>
   );

@@ -9,9 +9,13 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: "0.75rem",
       screens: {
-        "2xl": "1400px",
+        "sm": "540px",
+        "md": "640px",
+        "lg": "768px",
+        "xl": "960px",
+        "2xl": "1024px",
       },
     },
     extend: {

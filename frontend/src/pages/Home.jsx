@@ -6,45 +6,28 @@ import { Star, TrendingUp, Gamepad2, User, Package } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import { getFeaturedGames, listGamesPage, transformGames } from '../lib/api.js';
 import { BACKEND_CONFIG } from '../lib/config';
+import GameSlideshow from '../components/GameSlideshow';
 
 const Home = () => {
   const [featuredGames, setFeaturedGames] = useState([]);
-  const [comingSoon, setComingSoon] = useState([]);
-  const [newUpdated, setNewUpdated] = useState([]);
-  const [freeGames, setFreeGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     const loadFeaturedGames = async () => {
       try {
-        let games = await getFeaturedGames(6);
+        let games = await getFeaturedGames(10);
         let list = games || [];
         // Fallback: if no featured found, pull from active games grid endpoint
         if (list.length === 0) {
-          const pageJson = await listGamesPage(0, 6);
+          const pageJson = await listGamesPage(0, 10);
           list = pageJson?.content ?? [];
         }
         const transformedGames = transformGames(list);
         setFeaturedGames(transformedGames);
-
-        // Coming soon: recent games (page 0)
-        const recent = await listGamesPage(0, 6);
-        setComingSoon(transformGames(recent?.content ?? []));
-
-        // New update: next page (page 1)
-        const next = await listGamesPage(1, 6);
-        setNewUpdated(transformGames(next?.content ?? []));
-
-        // Free games: fetch more and filter price = 0
-        const freePage = await listGamesPage(0, 24);
-        const all = transformGames(freePage?.content ?? []);
-        setFreeGames(all.filter(p => Number(p.price) === 0).slice(0, 6));
       } catch (error) {
         console.error('Error loading featured games:', error);
         setFeaturedGames([]);
-        setComingSoon([]);
-        setNewUpdated([]);
       } finally {
         setLoading(false);
       }
@@ -65,208 +48,99 @@ const Home = () => {
   
   if (loading) {
     return (
-      <div className="space-y-8 md:space-y-12">
-        <section className="relative bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-12 md:py-16 lg:py-20 rounded-lg">
-          <div className="container mx-auto px-4">
-            <div className="text-center">
-              <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
-                Welcome to Gurro Shop
-              </h1>
-              <p className="text-sm md:text-lg mb-6 md:mb-8 max-w-2xl mx-auto">
-                Discover premium game accounts, Steam keys, and software licenses at competitive prices
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
-                <Link to="/games">
-                  <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-                    Browse Games
-                  </Button>
-                </Link>
-                <Link to="/steam-accounts">
-                  <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-                    Browse Steam Accounts
-                  </Button>
-                </Link>
+      <div>
+        <div className="py-6 bg-gray-50">
+          <div className="w-full max-w-6xl mx-auto px-4">
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))}
               </div>
             </div>
           </div>
-        </section>
-
-        {/* Featured Games Section */}
-        <section>
-          <div className="container mx-auto px-4">
-            <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Featured Games</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <SkeletonCard key={i} />
-              ))}
-            </div>
-          </div>
-        </section>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 md:space-y-12">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-12 md:py-16 lg:py-20 rounded-lg">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
-              Welcome to Gurro Shop
-            </h1>
-            <p className="text-sm md:text-lg mb-6 md:mb-8 max-w-2xl mx-auto">
-              Discover premium game accounts, Steam keys, and software licenses at competitive prices
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
-              <Link to="/games">
-                <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-                  Browse Games
-                </Button>
-              </Link>
-              <Link to="/steam-accounts">
-                <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-                  Browse Steam Accounts
-                </Button>
-              </Link>
-            </div>
+    <div>
+      {/* Game Slideshow Section */}
+      <div className="py-6 bg-gray-50">
+        <GameSlideshow />
+      </div>
+      
+      {/* Main Content Area - matching slideshow width */}
+      <div className="w-full max-w-6xl mx-auto px-4 py-8">
+        {/* Discounted Game Accounts Section */}
+        <div>
+          <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
+            TÀI KHOẢN GAME ƯU ĐÃI
+            <span className="ml-2 text-red-600">🔥</span>
+          </h2>
+          
+          {/* Grid of discounted games */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {featuredGames.slice(0, 10).map((game) => (
+              <Card key={game.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <CardHeader className="p-0 relative">
+                  <Link to={`/games/${game.id}`}>
+                    <img 
+                      src={BACKEND_CONFIG.getImageUrl(game.imageUrl)}
+                      alt={game.name}
+                      className="w-full h-32 sm:h-36 object-cover hover:opacity-90 transition-opacity"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  </Link>
+                  <div className="w-full h-32 sm:h-36 bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center hidden">
+                    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  {game.discountPercentage > 0 && (
+                    <div className="absolute top-1 right-1 bg-red-600 text-white px-1.5 py-0.5 rounded text-xs font-bold">
+                      -{game.discountPercentage}%
+                    </div>
+                  )}
+                </CardHeader>
+                <CardContent className="p-2 sm:p-3">
+                  <Link to={`/games/${game.id}`} className="hover:underline">
+                    <CardTitle className="line-clamp-2 text-xs sm:text-sm">{game.name}</CardTitle>
+                  </Link>
+                  <CardDescription className="line-clamp-2 mt-1 text-xs hidden sm:block">
+                    {game.description.replace(/<[^>]*>/g, '').substring(0, 40)}...
+                  </CardDescription>
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex flex-col space-y-0.5">
+                      {game.originalPrice && game.originalPrice > game.price && (
+                        <span className="text-xs text-gray-500 line-through hidden sm:inline">
+                          {game.originalPrice} VND
+                        </span>
+                      )}
+                      <span className="text-xs sm:text-sm font-bold text-red-600">
+                        {game.price} VND
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-yellow-500">
+                      <Star className="h-3 w-3 fill-current" />
+                      <span className="text-xs">{game.rating?.toFixed(1) || '4.5'}</span>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="p-2 sm:p-3 pt-0">
+                  <Link to={`/games/${game.id}`} className="w-full">
+                    <Button className="w-full text-xs sm:text-sm py-1.5">View</Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+            ))}
           </div>
         </div>
-      </section>
-
-      {/* Featured Games Section */}
-      {featuredGames.length > 0 && (
-        <section>
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-4 md:mb-6">
-              <h2 className="text-xl md:text-2xl font-bold">Featured Games</h2>
-              <Link to="/games">
-                <Button variant="outline" size="sm" className="text-sm md:text-base">
-                  View All
-                </Button>
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {featuredGames.map((game) => (
-                <Card key={game.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                  <CardHeader className="p-0">
-                    <Link to={`/games/${game.id}`}>
-                      <img 
-                        src={BACKEND_CONFIG.getImageUrl(game.imageUrl)}
-                        alt={game.name}
-                        className="w-full h-32 md:h-40 object-cover hover:opacity-90 transition-opacity"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
-                      />
-                    </Link>
-                    <div className="w-full h-32 md:h-40 bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center hidden">
-                      <Gamepad2 className="h-12 w-12 md:h-16 md:w-16 text-white" />
-                    </div>
-                    {game.discountPercentage > 0 && (
-                      <div className="absolute top-2 right-2 bg-destructive text-destructive-foreground px-2 py-0.5 rounded text-xs font-bold">
-                        -{game.discountPercentage}%
-                      </div>
-                    )}
-                  </CardHeader>
-                  <CardContent className="p-4 md:p-6">
-                    <Link to={`/games/${game.id}`} className="hover:underline">
-                      <CardTitle className="line-clamp-2 text-sm md:text-base">{game.name}</CardTitle>
-                    </Link>
-                    <CardDescription className="line-clamp-2 md:line-clamp-3 mt-2 text-xs md:text-sm">
-                      {game.description.replace(/<[^>]*>/g, '').substring(0, 60)}...
-                    </CardDescription>
-                    <div className="flex items-center justify-between mt-3 md:mt-4">
-                      <div className="flex flex-col space-y-1">
-                        {game.originalPrice && game.originalPrice > game.price && (
-                          <span className="text-xs md:text-sm text-muted-foreground line-through">
-                            {game.originalPrice} VND
-                          </span>
-                        )}
-                        <span className="text-sm md:text-lg font-bold text-primary">
-                          {game.price} VND
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-1 text-yellow-500">
-                        <Star className="h-3 w-3 md:h-4 md:w-4 fill-current" />
-                        <span className="text-xs md:text-sm">{game.rating?.toFixed(1) || '4.5'}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="p-4 md:p-6 pt-0">
-                    <Link to={`/games/${game.id}`} className="w-full">
-                      <Button className="w-full text-sm md:text-base">View Details</Button>
-                    </Link>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Free Games Section */}
-      {freeGames.length > 0 && (
-        <section>
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-4 md:mb-6">
-              <h2 className="text-xl md:text-2xl font-bold">Free Games</h2>
-              <Link to="/games?free=1">
-                <Button variant="outline" size="sm" className="text-sm md:text-base">
-                  View All
-                </Button>
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {freeGames.map((game) => (
-                <Card key={game.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                  <CardHeader className="p-0">
-                    <Link to={`/games/${game.id}`}>
-                      <img 
-                        src={BACKEND_CONFIG.getImageUrl(game.imageUrl)}
-                        alt={game.name}
-                        className="w-full h-32 md:h-40 object-cover hover:opacity-90 transition-opacity"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
-                      />
-                    </Link>
-                    <div className="w-full h-32 md:h-40 bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center hidden">
-                      <Gamepad2 className="h-12 w-12 md:h-16 md:w-16 text-white" />
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 md:p-6">
-                    <Link to={`/games/${game.id}`} className="hover:underline">
-                      <CardTitle className="line-clamp-2 text-sm md:text-base">{game.name}</CardTitle>
-                    </Link>
-                    <CardDescription className="line-clamp-2 md:line-clamp-3 mt-2 text-xs md:text-sm">
-                      {game.description.replace(/<[^>]*>/g, '').substring(0, 60)}...
-                    </CardDescription>
-                    <div className="flex items-center justify-between mt-3 md:mt-4">
-                      <div className="flex flex-col space-y-1">
-                        <span className="text-sm md:text-lg font-bold text-green-600">
-                          FREE
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-1 text-yellow-500">
-                        <Star className="h-3 w-3 md:h-4 md:w-4 fill-current" />
-                        <span className="text-xs md:text-sm">{game.rating?.toFixed(1) || '4.5'}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="p-4 md:p-6 pt-0">
-                    <Link to={`/games/${game.id}`} className="w-full">
-                      <Button className="w-full text-sm md:text-base">Get Free</Button>
-                    </Link>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      </div>
     </div>
   );
 };

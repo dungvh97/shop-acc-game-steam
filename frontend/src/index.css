@@ -57,3 +57,47 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Ensure content doesn't overflow container - more compact */
+  .container {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  
+  /* Compact mobile spacing */
+  @media (max-width: 640px) {
+    .container {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+  }
+  
+  /* Fix for slideshow layout issues - more compact */
+  .slideshow-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+    width: 100%;
+  }
+  
+  /* Ensure proper responsive behavior - mobile-first */
+  @media (max-width: 640px) {
+    .slideshow-container {
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.5rem;
+    }
+  }
+  
+  /* Compact card spacing for mobile */
+  @media (max-width: 768px) {
+    .card-compact {
+      padding: 0.5rem;
+    }
+    
+    .text-compact {
+      font-size: 0.75rem;
+      line-height: 1rem;
+    }
+  }
+}

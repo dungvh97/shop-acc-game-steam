@@ -47,10 +47,6 @@ const Admin = () => {
     return true;
   };
 
-
-
-
-
   const handleGameFileSelect = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -103,195 +99,250 @@ const Admin = () => {
     }
   };
 
-  return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Bảng điều khiển Admin</h1>
+  const handleCreateGame = async (event) => {
+    event.preventDefault();
+    
+    if (!guard()) return;
 
-      {!isAdmin && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Truy cập bị hạn chế</CardTitle>
-            <CardDescription>Đăng nhập với tư cách admin để sử dụng các công cụ này.</CardDescription>
-          </CardHeader>
-        </Card>
+    if (!newProduct.name || !newProduct.description) {
+      toast({
+        title: 'Missing information',
+        description: 'Please fill in all required fields',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    try {
+      let imageUrl = newProduct.imageUrl;
+      
+      // Upload image if file is selected
+      if (selectedGameFile) {
+        imageUrl = await handleGameImageUpload();
+        if (!imageUrl) return;
+      }
+
+      const gameData = {
+        ...newProduct,
+        imageUrl: imageUrl || ''
+      };
+
+      await createGame(gameData);
+      
+      toast({
+        title: 'Game created successfully',
+        description: 'New game has been added to the system',
+      });
+
+      // Reset form
+      setNewProduct({
+        name: '',
+        description: '',
+        category: 'GAME_KEY',
+        type: 'STEAM_KEY',
+        imageUrl: '',
+        featured: false,
+        active: true
+      });
+      setSelectedGameFile(null);
+      
+    } catch (error) {
+      toast({
+        title: 'Failed to create game',
+        description: error.message || 'An error occurred while creating the game',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  if (!isAdmin) {
+    return (
+      <div className="w-full max-w-6xl mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+          <p className="text-gray-600">You need admin privileges to access this page.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-6xl mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+        <p className="text-gray-600">Manage games, steam accounts, and system settings</p>
+      </div>
+
+      {/* Navigation Tabs */}
+      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-8">
+        <button
+          onClick={() => setActiveTab('steam-accounts')}
+          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+            activeTab === 'steam-accounts'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          Steam Accounts
+        </button>
+        <button
+          onClick={() => setActiveTab('games')}
+          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+            activeTab === 'games'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          Games
+        </button>
+      </div>
+
+      {/* Content based on active tab */}
+      {activeTab === 'steam-accounts' && (
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Steam Account Management</h2>
+          <SteamAccountManager />
+        </div>
       )}
 
-      {isAdmin && (
-        <>
-          {/* Tab Navigation */}
-          <div className="flex space-x-1 border-b">
-            <button
-              className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
-                activeTab === 'steam-accounts' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-muted hover:bg-muted/80'
-              }`}
-              onClick={() => setActiveTab('steam-accounts')}
-            >
-              Steam Accounts
-            </button>
-            <button
-              className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
-                activeTab === 'dashboard' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-muted hover:bg-muted/80'
-              }`}
-              onClick={() => setActiveTab('dashboard')}
-            >
-              Import Game
-            </button>
-          </div>
+      {activeTab === 'games' && (
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Create New Game</h2>
+          
+          <Card className="max-w-2xl">
+            <CardHeader>
+              <CardTitle>Game Information</CardTitle>
+              <CardDescription>Add a new game to the system</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleCreateGame} className="space-y-4">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                    Game Name *
+                  </label>
+                  <Input
+                    id="name"
+                    type="text"
+                    value={newProduct.name}
+                    onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+                    placeholder="Enter game name"
+                    required
+                  />
+                </div>
 
-          {/* Tab Content */}
-          {activeTab === 'steam-accounts' && (
-            <SteamAccountManager />
-          )}
+                <div>
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                    Description *
+                  </label>
+                  <textarea
+                    id="description"
+                    value={newProduct.description}
+                    onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
+                    placeholder="Enter game description"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    rows={4}
+                    required
+                  />
+                </div>
 
-          {activeTab === 'dashboard' && (
-            <>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Thêm Game</CardTitle>
-                  <CardDescription>Tạo game thủ công</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-sm">Tên Game</label>
-                        <Input value={newProduct.name} onChange={e => setNewProduct(p => ({...p, name: e.target.value}))} />
-                      </div>
-                      <div>
-                        <label className="text-sm">Mô tả</label>
-                        <Input value={newProduct.description} onChange={e => setNewProduct(p => ({...p, description: e.target.value}))} />
-                      </div>
-                      <div className="text-sm text-muted-foreground mb-4">
-                        <p>Note: Price and stock quantity are now managed through Steam Account relationships.</p>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-sm">Danh mục</label>
-                          <select className="w-full border rounded h-10 px-3" value={newProduct.category} onChange={e => setNewProduct(p => ({...p, category: e.target.value}))}>
-                            {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="text-sm">Loại</label>
-                          <select className="w-full border rounded h-10 px-3" value={newProduct.type} onChange={e => setNewProduct(p => ({...p, type: e.target.value}))}>
-                            {types.map(t => <option key={t} value={t}>{t}</option>)}
-                          </select>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="text-sm">Game Image</label>
-                        <div className="space-y-2">
-                          {/* File Input */}
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleGameFileSelect}
-                              className="hidden"
-                              id="game-image-upload"
-                            />
-                            <label
-                              htmlFor="game-image-upload"
-                              className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm transition-colors"
-                            >
-                              {uploadingGameImage ? 'Uploading...' : 'Choose Image'}
-                            </label>
-                            {selectedGameFile && (
-                              <span className="text-sm text-gray-600">
-                                {selectedGameFile.name}
-                              </span>
-                            )}
-                          </div>
-                          
-                          {/* Manual URL input as fallback */}
-                          <div>
-                            <label className="text-sm text-gray-600">Or enter image URL:</label>
-                            <Input 
-                              placeholder="https://..." 
-                              value={newProduct.imageUrl} 
-                              onChange={e => setNewProduct(p => ({...p, imageUrl: e.target.value}))} 
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        onClick={async () => {
-                          if (!guard()) return;
-                          try {
-                            // Upload image if a file is selected
-                            let imageUrl = newProduct.imageUrl;
-                            if (selectedGameFile) {
-                              imageUrl = await handleGameImageUpload();
-                              if (!imageUrl) {
-                                // Upload failed, don't proceed with game creation
-                                return;
-                              }
-                            }
-
-                            const payload = {
-                              ...newProduct,
-                              imageUrl: imageUrl
-                            };
-                            const created = await createGame(payload);
-                            toast({ title: 'Đã tạo game', description: created?.name || 'Thành công' });
-                            
-                            // Reset form after successful creation
-                            setNewProduct({
-                              name: '',
-                              description: '',
-                              category: 'GAME_KEY',
-                              type: 'STEAM_KEY',
-                              imageUrl: '',
-                              featured: false,
-                              active: true
-                            });
-                            setSelectedGameFile(null);
-                          } catch (e) {
-                            toast({ title: 'Không thể tạo game', description: e.message, variant: 'destructive' });
-                          }
-                        }}
-                        disabled={!isAdmin || uploadingGameImage}
-                      >
-                        {uploadingGameImage ? 'Uploading...' : 'Lưu'}
-                      </Button>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm">Xem trước</label>
-                      <div className="border rounded p-4 h-[220px] flex items-center justify-center text-muted-foreground">
-                        {selectedGameFile ? (
-                          // Show selected file preview
-                          <img 
-                            src={URL.createObjectURL(selectedGameFile)} 
-                            alt="preview" 
-                            className="max-h-[200px] object-contain" 
-                          />
-                        ) : newProduct.imageUrl ? (
-                          // Show URL image
-                          <img 
-                            src={newProduct.imageUrl} 
-                            alt="preview" 
-                            className="max-h-[200px] object-contain" 
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                              e.target.nextSibling.style.display = 'block';
-                            }}
-                          />
-                        ) : null}
-                        {(!selectedGameFile && !newProduct.imageUrl) && (
-                          <span>Chọn hình ảnh hoặc nhập URL</span>
-                        )}
-                      </div>
-                    </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                      Category
+                    </label>
+                    <select
+                      id="category"
+                      value={newProduct.category}
+                      onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    >
+                      {categories.map((cat) => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
                   </div>
-                </CardContent>
-              </Card>
-            </>
-          )}
-        </>
+
+                  <div>
+                    <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+                      Type
+                    </label>
+                    <select
+                      id="type"
+                      value={newProduct.type}
+                      onChange={(e) => setNewProduct({...newProduct, type: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    >
+                      {types.map((type) => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-1">
+                    Image URL
+                  </label>
+                  <Input
+                    id="imageUrl"
+                    type="url"
+                    value={newProduct.imageUrl}
+                    onChange={(e) => setNewProduct({...newProduct, imageUrl: e.target.value})}
+                    placeholder="Enter image URL (optional)"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="imageFile" className="block text-sm font-medium text-gray-700 mb-1">
+                    Or Upload Image File
+                  </label>
+                  <Input
+                    id="imageFile"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleGameFileSelect}
+                    className="w-full"
+                  />
+                  {selectedGameFile && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      Selected: {selectedGameFile.name}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex space-x-4">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newProduct.featured}
+                      onChange={(e) => setNewProduct({...newProduct, featured: e.target.checked})}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-gray-700">Featured Game</span>
+                  </label>
+                  
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newProduct.active}
+                      onChange={(e) => setNewProduct({...newProduct, active: e.target.checked})}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-gray-700">Active</span>
+                  </label>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full bg-red-600 hover:bg-red-700"
+                  disabled={uploadingGameImage}
+                >
+                  {uploadingGameImage ? 'Creating...' : 'Create Game'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );
