@@ -6,7 +6,7 @@ import { SiTiktok } from "react-icons/si";
 const Footer = () => {
   return (
     <footer className="bg-white border-t border-gray-200 mt-auto">
-      <div className="w-full max-w-6xl mx-auto px-4 py-8">
+      <div className="w-full max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           
           {/* Column 1: Introduction */}

@@ -157,7 +157,7 @@ const Admin = () => {
 
   if (!isAdmin) {
     return (
-      <div className="w-full max-w-6xl mx-auto px-4 py-8">
+      <div className="w-full max-w-7xl mx-auto px-4 py-8">
         <div className="text-center py-12">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
           <p className="text-gray-600">You need admin privileges to access this page.</p>
@@ -167,7 +167,7 @@ const Admin = () => {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 py-8">
+    <div className="w-full max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
         <p className="text-gray-600">Manage games, steam accounts, and system settings</p>

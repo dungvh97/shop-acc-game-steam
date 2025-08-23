@@ -51,7 +51,7 @@ const GameDetail = () => {
 
   if (loading) {
     return (
-      <div className="w-full max-w-6xl mx-auto px-4 py-8">
+      <div className="w-full max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-600"></div>
         </div>
@@ -61,7 +61,7 @@ const GameDetail = () => {
 
   if (!game) {
     return (
-      <div className="w-full max-w-6xl mx-auto px-4 py-8">
+      <div className="w-full max-w-7xl mx-auto px-4 py-8">
         <p className="text-gray-500">Không tìm thấy game.</p>
         <Link to="/games" className="underline">Quay lại danh sách games</Link>
       </div>
@@ -93,7 +93,7 @@ const GameDetail = () => {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 py-8">
+    <div className="w-full max-w-7xl mx-auto px-4 py-8">
       {/* Game Header */}
       <div className="mb-8">
         <Link to="/games" className="text-blue-600 hover:underline mb-4 inline-block">

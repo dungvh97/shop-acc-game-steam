@@ -70,7 +70,7 @@ const Navbar = () => {
   return (
     <>
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="w-full max-w-6xl mx-auto px-4">
+        <div className="w-full max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-14">
             {/* Logo */}
             <Link to="/" className="flex items-center">
@@ -159,7 +159,7 @@ const Navbar = () => {
 
       {/* Category Dropdown Bar - Fixed below navbar */}
       <div className="relative bg-red-800 text-white sticky top-14 z-40" ref={menuRef}>
-        <div className="w-full max-w-6xl mx-auto px-4">
+        <div className="w-full max-w-7xl mx-auto px-4">
           <div className="relative">
             <button
               onClick={toggleMenu}

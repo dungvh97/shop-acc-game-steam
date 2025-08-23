@@ -67,7 +67,7 @@ const Home = () => {
     return (
       <div>
         <div className="py-6 bg-gray-50">
-          <div className="w-full max-w-6xl mx-auto px-4">
+          <div className="w-full max-w-7xl mx-auto px-4">
             <div className="space-y-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
@@ -89,7 +89,7 @@ const Home = () => {
       </div>
       
       {/* Main Content Area - matching slideshow width */}
-      <div className="w-full max-w-6xl mx-auto px-4 py-8">
+      <div className="w-full max-w-7xl mx-auto px-4 py-8">
         {/* Steam Accounts Section */}
         <div>
           <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
