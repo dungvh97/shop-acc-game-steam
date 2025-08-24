@@ -3,6 +3,7 @@ import { useParams, Link, useSearchParams } from 'react-router-dom';
 
 import { transformGame, getGameById, getSteamAccountById } from '../lib/api';
 import { BACKEND_CONFIG } from '../lib/config';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 const GameDetail = () => {
   const { id } = useParams();
@@ -75,34 +76,12 @@ const GameDetail = () => {
       {fromSteamAccount && steamAccountId && (
         <div className="bg-gray-50 py-3 mb-6 rounded-lg">
           <div className="w-full max-w-8xl mx-auto px-4">
-            <nav className="flex text-sm text-gray-600">
-              <Link to="/" className="hover:text-red-600">Home</Link>
-              <span className="mx-2">{'>>'}</span>
-              <Link to="/steam-accounts" className="hover:text-red-600">Tài khoản Steam Online</Link>
-              <span className="mx-2">{'>>'}</span>
-              <Link 
-                to={
-                  steamAccount?.accountType === 'ONE_GAME' ? '/steam-accounts/single-game' :
-                  steamAccount?.accountType === 'MULTI_GAMES' ? '/steam-accounts/multi-game' :
-                  steamAccount?.accountType === 'DISCOUNTED' ? '/discounted' :
-                  steamAccount?.accountType === 'OTHER_ACCOUNT' ? '/other-products' :
-                  '/steam-accounts'
-                } 
-                className="hover:text-red-600"
-              >
-                {steamAccount?.accountType === 'ONE_GAME' && 'Tài Khoản Steam 1 Game'}
-                {steamAccount?.accountType === 'MULTI_GAMES' && 'Tài Khoản Steam Nhiều Game'}
-                {steamAccount?.accountType === 'DISCOUNTED' && 'Sản Phẩm Ưu Đãi'}
-                {steamAccount?.accountType === 'OTHER_ACCOUNT' && 'Sản Phẩm Khác'}
-                {!steamAccount?.accountType && 'Tài Khoản Steam Online'}
-              </Link>
-              <span className="mx-2">{'>>'}</span>
-              <Link to={`/steam-accounts/${steamAccountId}`} className="hover:text-red-600">
-                {steamAccount?.name || 'Steam Account Detail'}
-              </Link>
-              <span className="mx-2">{'>>'}</span>
-              <span className="text-gray-800">{game?.name}</span>
-            </nav>
+            <Breadcrumbs 
+              accountType={steamAccount?.accountType} 
+              accountId={steamAccountId}
+              isGameDetail={true}
+              accountName={`${steamAccount?.name || 'Steam Account'} >> ${game?.name || 'Game'}`}
+            />
           </div>
         </div>
       )}

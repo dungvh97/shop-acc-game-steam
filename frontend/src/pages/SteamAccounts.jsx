@@ -23,7 +23,7 @@ const SteamAccounts = () => {
   const [allAccounts, setAllAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState('ALL');
+  const [selectedType, setSelectedType] = useState(null); // Changed from 'ALL' to null
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(12);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
@@ -52,17 +52,20 @@ const SteamAccounts = () => {
       accountType = 'OTHER_ACCOUNT';
     }
     
+    console.log('URL changed to:', path, 'Setting accountType to:', accountType);
     setSelectedType(accountType);
   }, [location.pathname]);
 
   // Load accounts only after selectedType is set
   useEffect(() => {
+    console.log('selectedType changed to:', selectedType);
     if (selectedType) {
       loadAccounts();
     }
   }, [selectedType]);
 
   const loadAccounts = async () => {
+    console.log('Loading accounts for type:', selectedType);
     setLoading(true);
     try {
       let response;
@@ -73,6 +76,7 @@ const SteamAccounts = () => {
         response = await getAvailableSteamAccountsByType(selectedType);
       }
       
+      console.log('API response:', response);
       setAllAccounts(response || []);
     } catch (error) {
       console.error('Error loading steam accounts:', error);
@@ -88,6 +92,8 @@ const SteamAccounts = () => {
 
   // Get title and description based on selected type
   const getPageTitle = () => {
+    if (!selectedType) return 'Loading...';
+    
     switch (selectedType) {
       case 'ONE_GAME':
         return 'Tài Khoản Steam 1 Game';
@@ -103,6 +109,8 @@ const SteamAccounts = () => {
   };
 
   const getPageDescription = () => {
+    if (!selectedType) return 'Loading...';
+    
     switch (selectedType) {
       case 'ONE_GAME':
         return 'Tài khoản Steam chỉ chứa một game duy nhất';
@@ -257,9 +265,14 @@ const SteamAccounts = () => {
             </div>
             <div className="w-full md:w-48">
               <select
-                value={selectedType}
+                value={selectedType || 'ALL'}
                 onChange={handleTypeChange}
-                className="w-full border rounded-md px-3 py-2"
+                disabled={selectedType && selectedType !== 'ALL'}
+                className={`w-full border rounded-md px-3 py-2 ${
+                  selectedType && selectedType !== 'ALL' 
+                    ? 'bg-gray-100 cursor-not-allowed' 
+                    : ''
+                }`}
               >
                 {accountTypes.map(type => (
                   <option key={type.value} value={type.value}>
@@ -445,4 +458,5 @@ const SteamAccounts = () => {
 };
 
 export default SteamAccounts;
+
 

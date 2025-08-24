@@ -8,6 +8,7 @@ import { useToast } from '../hooks/use-toast';
 import { getSteamAccountById } from '../lib/api';
 import PaymentDialog from '../components/PaymentDialog';
 import { BACKEND_CONFIG } from '../lib/config';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 const SteamAccountDetail = () => {
   const { id } = useParams();
@@ -136,30 +137,12 @@ const SteamAccountDetail = () => {
       {/* Area 1: Breadcrumbs */}
       <div className="bg-gray-50 py-3">
         <div className="w-full max-w-8xl mx-auto px-4">
-          <nav className="flex text-sm text-gray-600">
-            <Link to="/" className="hover:text-red-600">Home</Link>
-            <span className="mx-2">{'>>'}</span>
-            <Link to="/steam-accounts" className="hover:text-red-600">Tài khoản Steam Online</Link>
-            <span className="mx-2">{'>>'}</span>
-            <Link 
-              to={
-                account.accountType === 'ONE_GAME' ? '/steam-accounts/single-game' :
-                account.accountType === 'MULTI_GAMES' ? '/steam-accounts/multi-game' :
-                account.accountType === 'DISCOUNTED' ? '/discounted' :
-                account.accountType === 'OTHER_ACCOUNT' ? '/other-products' :
-                '/steam-accounts'
-              } 
-              className="hover:text-red-600"
-            >
-              {account.accountType === 'ONE_GAME' && 'Tài Khoản Steam 1 Game'}
-              {account.accountType === 'MULTI_GAMES' && 'Tài Khoản Steam Nhiều Game'}
-              {account.accountType === 'DISCOUNTED' && 'Sản Phẩm Ưu Đãi'}
-              {account.accountType === 'OTHER_ACCOUNT' && 'Sản Phẩm Khác'}
-              {!account.accountType && 'Tài Khoản Steam Online'}
-            </Link>
-            <span className="mx-2">{'>>'}</span>
-            <span className="text-gray-800">{account.name}</span>
-          </nav>
+          <Breadcrumbs 
+            accountType={account.accountType} 
+            accountId={account.id}
+            isGameDetail={false}
+            accountName={account.name}
+          />
         </div>
       </div>
 
