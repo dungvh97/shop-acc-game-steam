@@ -9,6 +9,7 @@ import com.shopaccgame.entity.enums.AccountType;
 import com.shopaccgame.entity.enums.AccountStatus;
 import com.shopaccgame.repository.GameRepository;
 import com.shopaccgame.repository.SteamAccountRepository;
+import com.shopaccgame.service.EncryptionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,9 @@ public class SteamAccountService {
     
     @Autowired
     private GameRepository gameRepository;
+    
+    @Autowired
+    private EncryptionService encryptionService;
     
     public List<SteamAccountDto> getAllSteamAccounts() {
         List<SteamAccount> accounts = steamAccountRepository.findAll();
@@ -66,18 +70,18 @@ public class SteamAccountService {
     public List<SteamAccountAdminDto> getAllSteamAccountsForAdmin() {
         List<SteamAccount> accounts = steamAccountRepository.findAll();
         return accounts.stream()
-            .map(SteamAccountAdminDto::new)
+            .map(this::createAdminDtoWithDecryptedPassword)
             .collect(Collectors.toList());
     }
     
     public Page<SteamAccountAdminDto> getSteamAccountsForAdmin(Pageable pageable) {
         Page<SteamAccount> accounts = steamAccountRepository.findAll(pageable);
-        return accounts.map(SteamAccountAdminDto::new);
+        return accounts.map(this::createAdminDtoWithDecryptedPassword);
     }
     
     public Optional<SteamAccountAdminDto> getSteamAccountByIdForAdmin(Long id) {
         return steamAccountRepository.findById(id)
-            .map(SteamAccountAdminDto::new);
+            .map(this::createAdminDtoWithDecryptedPassword);
     }
     
     public List<SteamAccountDto> getAvailableAccounts() {
@@ -94,19 +98,25 @@ public class SteamAccountService {
             .collect(Collectors.toList());
     }
     
+    private SteamAccountAdminDto createAdminDtoWithDecryptedPassword(SteamAccount steamAccount) {
+        SteamAccountAdminDto dto = new SteamAccountAdminDto(steamAccount);
+        try {
+            dto.setPassword(encryptionService.decryptPassword(steamAccount.getPassword()));
+        } catch (Exception e) {
+            logger.warn("Could not decrypt password for account {}: {}", steamAccount.getId(), e.getMessage());
+            dto.setPassword("[ENCRYPTED]");
+        }
+        return dto;
+    }
+    
     public SteamAccountDto createSteamAccount(SteamAccountRequestDto requestDto) {
         logger.info("Creating new Steam account: {}", requestDto.getUsername());
-        
-        // Check if username already exists
-        if (steamAccountRepository.existsByUsername(requestDto.getUsername())) {
-            throw new RuntimeException("Username already exists: " + requestDto.getUsername());
-        }
-        
         // Create new Steam account
         SteamAccount steamAccount = new SteamAccount();
         steamAccount.setUsername(requestDto.getUsername());
         steamAccount.setName(requestDto.getName());
-        steamAccount.setPassword(requestDto.getPassword());
+        // Encrypt password before saving
+        steamAccount.setPassword(encryptionService.encryptPassword(requestDto.getPassword()));
         steamAccount.setActiveKey(requestDto.getActiveKey());
         steamAccount.setAccountType(requestDto.getAccountType());
         steamAccount.setStatus(requestDto.getStatus() != null ? requestDto.getStatus() : AccountStatus.AVAILABLE);
@@ -147,17 +157,11 @@ public class SteamAccountService {
         
         SteamAccount existingAccount = existingAccountOpt.get();
         
-        // Check if username is being changed and if it already exists
-        if (!existingAccount.getUsername().equals(requestDto.getUsername()) && 
-            steamAccountRepository.existsByUsername(requestDto.getUsername())) {
-            throw new RuntimeException("Username already exists: " + requestDto.getUsername());
-        }
-        
         // Update fields
         existingAccount.setUsername(requestDto.getUsername());
         existingAccount.setName(requestDto.getName());
         if (requestDto.getPassword() != null && !requestDto.getPassword().isEmpty()) {
-            existingAccount.setPassword(requestDto.getPassword());
+            existingAccount.setPassword(encryptionService.encryptPassword(requestDto.getPassword()));
         }
         existingAccount.setActiveKey(requestDto.getActiveKey());
         existingAccount.setAccountType(requestDto.getAccountType());

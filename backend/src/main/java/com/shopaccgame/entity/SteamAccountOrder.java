@@ -4,11 +4,7 @@ import com.shopaccgame.entity.enums.AccountStatus;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
-import java.util.Base64;
-import java.nio.charset.StandardCharsets;
-import org.springframework.beans.factory.annotation.Value;
+
 
 @Entity
 @Table(name = "steam_account_orders")
@@ -57,11 +53,7 @@ public class SteamAccountOrder {
     @Column(name = "account_password")
     private String accountPassword;
     
-    // Encryption key from environment variables
-    @Value("${app.encryption.key}")
-    private String encryptionKey;
-    
-    private static final String ALGORITHM = "AES";
+
     
     public enum OrderStatus {
         PENDING,
@@ -92,10 +84,10 @@ public class SteamAccountOrder {
         this.status = OrderStatus.PAID;
         this.paidAt = LocalDateTime.now();
         
-        // Decrypt and store account credentials
+        // Store account credentials (encryption handled by service layer)
         if (this.account != null) {
             this.accountUsername = this.account.getUsername();
-            this.accountPassword = encryptPassword(this.account.decryptPassword());
+            this.accountPassword = this.account.getPassword(); // Store encrypted password
             
             // Mark account as sold
             this.account.setStatus(AccountStatus.SOLD);
@@ -123,30 +115,7 @@ public class SteamAccountOrder {
         return this.status == OrderStatus.PENDING && !isExpired();
     }
     
-    // Encryption methods
-    private String encryptPassword(String password) {
-        try {
-            SecretKeySpec secretKey = new SecretKeySpec(encryptionKey.getBytes(StandardCharsets.UTF_8), ALGORITHM);
-            Cipher cipher = Cipher.getInstance(ALGORITHM);
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-            byte[] encryptedBytes = cipher.doFinal(password.getBytes());
-            return Base64.getEncoder().encodeToString(encryptedBytes);
-        } catch (Exception e) {
-            throw new RuntimeException("Error encrypting password", e);
-        }
-    }
-    
-    public String decryptPassword() {
-        try {
-            SecretKeySpec secretKey = new SecretKeySpec(encryptionKey.getBytes(StandardCharsets.UTF_8), ALGORITHM);
-            Cipher cipher = Cipher.getInstance(ALGORITHM);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey);
-            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(this.accountPassword));
-            return new String(decryptedBytes);
-        } catch (Exception e) {
-            throw new RuntimeException("Error decrypting password", e);
-        }
-    }
+
     
     // Getters and Setters
     public Long getId() {

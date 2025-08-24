@@ -38,7 +38,8 @@ public class SteamAccountAdminDto {
         this.id = steamAccount.getId();
         this.username = steamAccount.getUsername();
         this.name = steamAccount.getName();
-        this.password = steamAccount.decryptPassword(); // Decrypt password for admin
+        // Note: Password decryption should be handled by service layer
+        this.password = null; // Will be set separately if needed
         this.activeKey = steamAccount.getActiveKey();
         this.accountType = steamAccount.getAccountType();
         this.status = steamAccount.getStatus();

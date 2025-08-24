@@ -7,11 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
-import java.util.Base64;
-import java.nio.charset.StandardCharsets;
-import org.springframework.beans.factory.annotation.Value;
+
 
 @Entity
 @Table(name = "steam_accounts")
@@ -21,7 +17,7 @@ public class SteamAccount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String username;
     
     @Column(nullable = false)
@@ -74,48 +70,17 @@ public class SteamAccount {
     )
     private Set<Game> games = new HashSet<>();
     
-    // Encryption key from environment variables
-    @Value("${app.encryption.key}")
-    private String encryptionKey;
-    
-    private static final String ALGORITHM = "AES";
-    
     // Constructors
     public SteamAccount() {}
     
     public SteamAccount(String username, String name, String password, AccountType accountType, BigDecimal price) {
         this.username = username;
         this.name = name;
-        this.password = encryptPassword(password);
+        this.password = password; // Will be encrypted by service
         this.accountType = accountType;
         this.price = price;
         this.status = AccountStatus.AVAILABLE;
         this.stockQuantity = 0;
-    }
-    
-    // Encryption methods
-    private String encryptPassword(String password) {
-        try {
-            SecretKeySpec secretKey = new SecretKeySpec(encryptionKey.getBytes(StandardCharsets.UTF_8), ALGORITHM);
-            Cipher cipher = Cipher.getInstance(ALGORITHM);
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-            byte[] encryptedBytes = cipher.doFinal(password.getBytes());
-            return Base64.getEncoder().encodeToString(encryptedBytes);
-        } catch (Exception e) {
-            throw new RuntimeException("Error encrypting password", e);
-        }
-    }
-    
-    public String decryptPassword() {
-        try {
-            SecretKeySpec secretKey = new SecretKeySpec(encryptionKey.getBytes(StandardCharsets.UTF_8), ALGORITHM);
-            Cipher cipher = Cipher.getInstance(ALGORITHM);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey);
-            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(this.password));
-            return new String(decryptedBytes);
-        } catch (Exception e) {
-            throw new RuntimeException("Error decrypting password", e);
-        }
     }
     
     // Getters and Setters
@@ -148,8 +113,8 @@ public class SteamAccount {
     }
     
     public void setPassword(String password) {
-        // Encrypt password before saving
-        this.password = encryptPassword(password);
+        // Store password as-is, encryption will be handled by service
+        this.password = password;
     }
     
     public void setEncryptedPassword(String encryptedPassword) {

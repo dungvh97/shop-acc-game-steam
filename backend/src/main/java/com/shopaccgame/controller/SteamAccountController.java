@@ -140,7 +140,7 @@ public class SteamAccountController {
             logger.info("Steam account created successfully: {}", createdAccount.getName());
             return ResponseEntity.ok(createdAccount);
         } catch (Exception e) {
-            logger.error("Error creating Steam account: {}", e.getMessage());
+            logger.error("Error creating Steam account: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().build();
         }
     }

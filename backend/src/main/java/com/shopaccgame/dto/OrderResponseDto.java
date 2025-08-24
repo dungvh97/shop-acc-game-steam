@@ -37,9 +37,9 @@ public class OrderResponseDto {
         this.expiresAt = order.getExpiresAt();
         this.paidAt = order.getPaidAt();
         this.accountUsername = order.getAccountUsername();
-        // Return decrypted password for paid orders
+        // Return encrypted password for paid orders (decryption should be handled by service layer)
         this.accountPassword = order.getStatus() == SteamAccountOrder.OrderStatus.PAID ? 
-            order.decryptPassword() : null;
+            order.getAccountPassword() : null;
     }
     
     // Getters and Setters
