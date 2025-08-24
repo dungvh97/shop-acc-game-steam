@@ -18,7 +18,7 @@ const Cart = () => {
             <ShoppingCart className="h-24 w-24 text-gray-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-600 mb-2">Giỏ hàng trống</h2>
             <p className="text-gray-500 mb-6">Bạn chưa có sản phẩm nào trong giỏ hàng</p>
-            <Link to="/games">
+            <Link to="/steam-accounts">
               <Button>Tiếp tục mua sắm</Button>
             </Link>
           </div>

@@ -141,11 +141,11 @@ const SteamAccountDetail = () => {
         <div className="w-full max-w-8xl mx-auto px-4">
           <nav className="flex text-sm text-gray-600">
             <Link to="/" className="hover:text-red-600">Home</Link>
-            <span className="mx-2">{'>'}</span>
+            <span className="mx-2">{'>>'}</span>
             <Link to="/steam-accounts" className="hover:text-red-600">Tài khoản Steam Online</Link>
-            <span className="mx-2">{'>'}</span>
+            <span className="mx-2">{'>>'}</span>
             <Link to="/steam-accounts" className="hover:text-red-600">Tài Khoản Steam 1 Game</Link>
-            <span className="mx-2">{'>'}</span>
+            <span className="mx-2">{'>>'}</span>
             <span className="text-gray-800">{account.name}</span>
           </nav>
         </div>
@@ -153,10 +153,11 @@ const SteamAccountDetail = () => {
 
       {/* Main Content Area */}
       <div className="w-full max-w-8xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-8"> */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Left Column - Game Image */}
-          <div className="space-y-4">
+          <div className="lg:col-span-7 space-y-4">
             {account.games && account.games.length > 0 && (
               <div className="relative">
                 <img 
@@ -183,7 +184,7 @@ const SteamAccountDetail = () => {
           </div>
 
           {/* Right Column - Product Details */}
-          <div className="space-y-6">
+          <div className="lg:col-span-5 space-y-6">
             
             {/* Area 2: Account Name */}
             <div>
@@ -265,7 +266,6 @@ const SteamAccountDetail = () => {
               >
                 <div className="text-center">
                   <div className="font-bold">MUA NGAY</div>
-                  <div className="text-sm font-normal opacity-90">Siêu Tốc Qua Mobile Banking</div>
                 </div>
               </Button>
 

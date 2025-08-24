@@ -13,12 +13,6 @@ const MobileNav = () => {
       active: location.pathname === '/'
     },
     {
-      path: '/games',
-      icon: Gamepad2,
-      label: 'Games',
-      active: location.pathname.startsWith('/games')
-    },
-    {
       path: '/steam-accounts',
       icon: User,
       label: 'Steam Accounts',
