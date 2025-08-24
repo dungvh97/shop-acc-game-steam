@@ -80,7 +80,22 @@ const GameDetail = () => {
               <span className="mx-2">{'>>'}</span>
               <Link to="/steam-accounts" className="hover:text-red-600">Tài khoản Steam Online</Link>
               <span className="mx-2">{'>>'}</span>
-              <Link to="/steam-accounts" className="hover:text-red-600">Tài Khoản Steam 1 Game</Link>
+              <Link 
+                to={
+                  steamAccount?.accountType === 'ONE_GAME' ? '/steam-accounts/single-game' :
+                  steamAccount?.accountType === 'MULTI_GAMES' ? '/steam-accounts/multi-game' :
+                  steamAccount?.accountType === 'DISCOUNTED' ? '/discounted' :
+                  steamAccount?.accountType === 'OTHER_ACCOUNT' ? '/other-products' :
+                  '/steam-accounts'
+                } 
+                className="hover:text-red-600"
+              >
+                {steamAccount?.accountType === 'ONE_GAME' && 'Tài Khoản Steam 1 Game'}
+                {steamAccount?.accountType === 'MULTI_GAMES' && 'Tài Khoản Steam Nhiều Game'}
+                {steamAccount?.accountType === 'DISCOUNTED' && 'Sản Phẩm Ưu Đãi'}
+                {steamAccount?.accountType === 'OTHER_ACCOUNT' && 'Sản Phẩm Khác'}
+                {!steamAccount?.accountType && 'Tài Khoản Steam Online'}
+              </Link>
               <span className="mx-2">{'>>'}</span>
               <Link to={`/steam-accounts/${steamAccountId}`} className="hover:text-red-600">
                 {steamAccount?.name || 'Steam Account Detail'}

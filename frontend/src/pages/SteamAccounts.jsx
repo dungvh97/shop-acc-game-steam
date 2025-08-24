@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useToast } from '../hooks/use-toast';
@@ -15,6 +15,7 @@ import { BACKEND_CONFIG } from '../lib/config';
 
 const SteamAccounts = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
   const { addToCart } = useCart();
@@ -36,8 +37,29 @@ const SteamAccounts = () => {
     { value: 'OTHER_ACCOUNT', label: 'Other Account' }
   ];
 
+  // Determine account type from URL path
   useEffect(() => {
-    loadAccounts();
+    const path = location.pathname;
+    let accountType = 'ALL';
+    
+    if (path.includes('/single-game')) {
+      accountType = 'ONE_GAME';
+    } else if (path.includes('/multi-game')) {
+      accountType = 'MULTI_GAMES';
+    } else if (path.includes('/discounted')) {
+      accountType = 'DISCOUNTED';
+    } else if (path.includes('/other-products')) {
+      accountType = 'OTHER_ACCOUNT';
+    }
+    
+    setSelectedType(accountType);
+  }, [location.pathname]);
+
+  // Load accounts only after selectedType is set
+  useEffect(() => {
+    if (selectedType) {
+      loadAccounts();
+    }
   }, [selectedType]);
 
   const loadAccounts = async () => {
@@ -61,6 +83,37 @@ const SteamAccounts = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Get title and description based on selected type
+  const getPageTitle = () => {
+    switch (selectedType) {
+      case 'ONE_GAME':
+        return 'Tài Khoản Steam 1 Game';
+      case 'MULTI_GAMES':
+        return 'Tài Khoản Steam Nhiều Game';
+      case 'DISCOUNTED':
+        return 'Sản Phẩm Ưu Đãi';
+      case 'OTHER_ACCOUNT':
+        return 'Sản Phẩm Khác';
+      default:
+        return 'Steam Accounts';
+    }
+  };
+
+  const getPageDescription = () => {
+    switch (selectedType) {
+      case 'ONE_GAME':
+        return 'Tài khoản Steam chỉ chứa một game duy nhất';
+      case 'MULTI_GAMES':
+        return 'Tài khoản Steam chứa nhiều game khác nhau';
+      case 'DISCOUNTED':
+        return 'Tài khoản Steam với giá ưu đãi đặc biệt';
+      case 'OTHER_ACCOUNT':
+        return 'Các loại tài khoản Steam khác';
+      default:
+        return 'Browse and purchase gaming accounts';
     }
   };
 
@@ -185,9 +238,9 @@ const SteamAccounts = () => {
         <div className="space-y-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">Steam Accounts</h1>
+              <h1 className="text-3xl font-bold text-gray-800">{getPageTitle()}</h1>
               <p className="text-gray-600">
-                Browse and purchase gaming accounts
+                {getPageDescription()}
               </p>
             </div>
           </div>
@@ -215,6 +268,7 @@ const SteamAccounts = () => {
                 ))}
               </select>
             </div>
+
           </div>
 
           {/* Accounts Grid */}
@@ -391,3 +445,4 @@ const SteamAccounts = () => {
 };
 
 export default SteamAccounts;
+

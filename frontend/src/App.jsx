@@ -33,6 +33,10 @@ function App() {
                   <Route path="/games/:id" element={<GameDetail />} />
                   <Route path="/steam-accounts" element={<SteamAccounts />} />
                   <Route path="/steam-accounts/:id" element={<SteamAccountDetail />} />
+                  <Route path="/steam-accounts/single-game" element={<SteamAccounts />} />
+                  <Route path="/steam-accounts/multi-game" element={<SteamAccounts />} />
+                  <Route path="/discounted" element={<SteamAccounts />} />
+                  <Route path="/other-products" element={<SteamAccounts />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/cart" element={<Cart />} />

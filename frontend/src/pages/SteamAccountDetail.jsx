@@ -141,7 +141,22 @@ const SteamAccountDetail = () => {
             <span className="mx-2">{'>>'}</span>
             <Link to="/steam-accounts" className="hover:text-red-600">Tài khoản Steam Online</Link>
             <span className="mx-2">{'>>'}</span>
-            <Link to="/steam-accounts" className="hover:text-red-600">Tài Khoản Steam 1 Game</Link>
+            <Link 
+              to={
+                account.accountType === 'ONE_GAME' ? '/steam-accounts/single-game' :
+                account.accountType === 'MULTI_GAMES' ? '/steam-accounts/multi-game' :
+                account.accountType === 'DISCOUNTED' ? '/discounted' :
+                account.accountType === 'OTHER_ACCOUNT' ? '/other-products' :
+                '/steam-accounts'
+              } 
+              className="hover:text-red-600"
+            >
+              {account.accountType === 'ONE_GAME' && 'Tài Khoản Steam 1 Game'}
+              {account.accountType === 'MULTI_GAMES' && 'Tài Khoản Steam Nhiều Game'}
+              {account.accountType === 'DISCOUNTED' && 'Sản Phẩm Ưu Đãi'}
+              {account.accountType === 'OTHER_ACCOUNT' && 'Sản Phẩm Khác'}
+              {!account.accountType && 'Tài Khoản Steam Online'}
+            </Link>
             <span className="mx-2">{'>>'}</span>
             <span className="text-gray-800">{account.name}</span>
           </nav>
