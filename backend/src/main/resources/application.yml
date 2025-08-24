@@ -102,6 +102,8 @@ app:
   db:
     readiness:
       enabled: ${DB_READINESS_ENABLED:true}
+  encryption:
+    key: ${ENCRYPTION_KEY:ShopAccGame2024!}
 
 
 # Logging - Reduced for better performance

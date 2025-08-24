@@ -1,6 +1,8 @@
 package com.shopaccgame.dto;
 
 import com.shopaccgame.entity.SteamAccount;
+import com.shopaccgame.entity.enums.AccountType;
+import com.shopaccgame.entity.enums.AccountStatus;
 import com.shopaccgame.entity.Game;
 import com.shopaccgame.dto.GameDto;
 
@@ -13,9 +15,9 @@ public class SteamAccountDto {
     
     private Long id;
     private String name; // Display name instead of username
-    private String email;
-    private SteamAccount.AccountType accountType;
-    private SteamAccount.AccountStatus status;
+    private String activeKey;
+    private AccountType accountType;
+    private AccountStatus status;
     private BigDecimal price;
     private BigDecimal originalPrice;
     private Integer discountPercentage;
@@ -33,7 +35,7 @@ public class SteamAccountDto {
     public SteamAccountDto(SteamAccount steamAccount) {
         this.id = steamAccount.getId();
         this.name = steamAccount.getName(); // Use name instead of username
-        this.email = steamAccount.getEmail();
+        this.activeKey = steamAccount.getActiveKey();
         this.accountType = steamAccount.getAccountType();
         this.status = steamAccount.getStatus();
         this.price = steamAccount.getPrice();
@@ -73,27 +75,27 @@ public class SteamAccountDto {
         this.name = name;
     }
     
-    public String getEmail() {
-        return email;
+    public String getActiveKey() {
+        return activeKey;
     }
     
-    public void setEmail(String email) {
-        this.email = email;
+    public void setActiveKey(String activeKey) {
+        this.activeKey = activeKey;
     }
     
-    public SteamAccount.AccountType getAccountType() {
+    public AccountType getAccountType() {
         return accountType;
     }
     
-    public void setAccountType(SteamAccount.AccountType accountType) {
+    public void setAccountType(AccountType accountType) {
         this.accountType = accountType;
     }
     
-    public SteamAccount.AccountStatus getStatus() {
+    public AccountStatus getStatus() {
         return status;
     }
     
-    public void setStatus(SteamAccount.AccountStatus status) {
+    public void setStatus(AccountStatus status) {
         this.status = status;
     }
     

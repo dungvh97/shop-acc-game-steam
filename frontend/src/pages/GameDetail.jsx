@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
-import { useToast } from '../hooks/use-toast';
-import { transformGame, getSteamAccountsByGameId, getGameById } from '../lib/api';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
+
+import { transformGame, getGameById, getSteamAccountById } from '../lib/api';
 import { BACKEND_CONFIG } from '../lib/config';
 
 const GameDetail = () => {
   const { id } = useParams();
-  const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+
   const [game, setGame] = useState(null);
-  const [relatedAccounts, setRelatedAccounts] = useState([]);
+  const [steamAccount, setSteamAccount] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [loadingAccounts, setLoadingAccounts] = useState(false);
+
+  // Check if user came from Steam Account Detail page
+  const fromSteamAccount = searchParams.get('fromSteamAccount');
+  const steamAccountId = searchParams.get('steamAccountId');
 
   useEffect(() => {
     const load = async () => {
@@ -27,27 +29,18 @@ const GameDetail = () => {
   }, [id]);
 
   useEffect(() => {
-    const loadRelatedAccounts = async () => {
-      if (!game) return;
-      
-      setLoadingAccounts(true);
-      try {
-        const accounts = await getSteamAccountsByGameId(game.id);
-        setRelatedAccounts(accounts || []);
-      } catch (error) {
-        console.error('Error loading related accounts:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load related accounts',
-          variant: 'destructive'
-        });
-      } finally {
-        setLoadingAccounts(false);
+    const loadSteamAccount = async () => {
+      if (fromSteamAccount && steamAccountId) {
+        try {
+          const accountData = await getSteamAccountById(steamAccountId);
+          setSteamAccount(accountData);
+        } catch (error) {
+          console.error('Error loading steam account:', error);
+        }
       }
     };
-    
-    loadRelatedAccounts();
-  }, [game, toast]);
+    loadSteamAccount();
+  }, [fromSteamAccount, steamAccountId]);
 
   if (loading) {
     return (
@@ -63,61 +56,60 @@ const GameDetail = () => {
     return (
       <div className="w-full max-w-8xl mx-auto px-4 py-8">
         <p className="text-gray-500">Không tìm thấy game.</p>
-        <Link to="/games" className="underline">Quay lại danh sách games</Link>
+        {fromSteamAccount && steamAccountId && (
+          <Link to={`/steam-accounts/${steamAccountId}`} className="underline">
+            Quay lại Steam Account Detail
+          </Link>
+        )}
       </div>
     );
   }
 
   const imageSrc = BACKEND_CONFIG.getImageUrl(game.imageUrl);
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(price);
-  };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'AVAILABLE':
-        return 'bg-green-100 text-green-800';
-      case 'SOLD':
-        return 'bg-red-100 text-red-800';
-      case 'RESERVED':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'MAINTENANCE':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   return (
     <div className="w-full max-w-8xl mx-auto px-4 py-8">
+      {/* Breadcrumbs */}
+      {fromSteamAccount && steamAccountId && (
+        <div className="bg-gray-50 py-3 mb-6 rounded-lg">
+          <div className="w-full max-w-8xl mx-auto px-4">
+            <nav className="flex text-sm text-gray-600">
+              <Link to="/" className="hover:text-red-600">Home</Link>
+              <span className="mx-2">{'>>'}</span>
+              <Link to="/steam-accounts" className="hover:text-red-600">Tài khoản Steam Online</Link>
+              <span className="mx-2">{'>>'}</span>
+              <Link to="/steam-accounts" className="hover:text-red-600">Tài Khoản Steam 1 Game</Link>
+              <span className="mx-2">{'>>'}</span>
+              <Link to={`/steam-accounts/${steamAccountId}`} className="hover:text-red-600">
+                {steamAccount?.name || 'Steam Account Detail'}
+              </Link>
+              <span className="mx-2">{'>>'}</span>
+              <span className="text-gray-800">{game?.name}</span>
+            </nav>
+          </div>
+        </div>
+      )}
+
       {/* Game Header */}
       <div className="mb-8">
-        <Link to="/games" className="text-blue-600 hover:underline mb-4 inline-block">
-          ← Quay lại danh sách games
-        </Link>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">{game.name}</h1>
-        {game.description && (
-          <p className="text-gray-600 text-lg">{game.description.replace(/<[^>]*>/g, '')}</p>
-        )}
       </div>
 
       {/* Game Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-4xl mx-auto">
         {/* Game Image */}
-        <div className="lg:col-span-2">
+        <div className="mb-8">
           <img 
-            src={imageSrc} 
-            alt={game.name} 
-            className="w-full h-96 object-cover rounded-lg shadow-lg"
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'flex';
-            }}
-          />
+             src={imageSrc} 
+             alt={game.name} 
+             className="w-full h-96 object-contain rounded-lg shadow-lg bg-gray-100"
+             onError={(e) => {
+               e.target.style.display = 'none';
+               e.target.nextSibling.style.display = 'flex';
+             }}
+           />
           <div className="w-full h-96 bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center rounded-lg shadow-lg hidden">
             <div className="text-white text-center">
               <div className="text-6xl mb-4">🎮</div>
@@ -126,69 +118,17 @@ const GameDetail = () => {
           </div>
         </div>
 
-        {/* Game Info */}
-        <div className="space-y-6">
-          {/* Price */}
+        {/* Game Description */}
+        {game.description && (
           <div className="bg-white p-6 rounded-lg shadow-lg border">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Thông tin giá</h3>
-            <div className="space-y-3">
-              {game.originalPrice && game.originalPrice > game.price && (
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Giá gốc:</span>
-                  <span className="text-gray-500 line-through">{formatPrice(game.originalPrice)}</span>
-                </div>
-              )}
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Giá hiện tại:</span>
-                <span className="text-2xl font-bold text-red-600">{formatPrice(game.price)}</span>
-              </div>
-              {game.discountPercentage > 0 && (
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Giảm giá:</span>
-                  <span className="text-green-600 font-semibold">-{game.discountPercentage}%</span>
-                </div>
-              )}
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Mô tả game</h3>
+            <div className="prose max-w-none">
+              <p className="text-gray-700 leading-relaxed">
+                {game.description.replace(/<[^>]*>/g, '')}
+              </p>
             </div>
           </div>
-
-          {/* Game Details */}
-          <div className="bg-white p-6 rounded-lg shadow-lg border">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Chi tiết game</h3>
-            <div className="space-y-3">
-              {game.releaseDate && (
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Năm phát hành:</span>
-                  <span className="text-gray-900">{new Date(game.releaseDate).getFullYear()}</span>
-                </div>
-              )}
-              {game.rating && (
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Đánh giá:</span>
-                  <span className="text-yellow-600 font-semibold">★ {game.rating.toFixed(1)}</span>
-                </div>
-              )}
-              {game.genres && game.genres.length > 0 && (
-                <div className="flex justify-between items-start">
-                  <span className="text-gray-600">Thể loại:</span>
-                  <div className="flex flex-wrap gap-2">
-                    {game.genres.map((genre, index) => (
-                      <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                        {genre}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Action Button */}
-          <div className="bg-white p-6 rounded-lg shadow-lg border">
-            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-3">
-              Lựa chọn các account bên dưới để mua tài khoản chơi game này
-            </Button>
-          </div>
-        </div>
+        )}
       </div>
 
     </div>

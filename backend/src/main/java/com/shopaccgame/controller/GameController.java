@@ -37,7 +37,7 @@ public class GameController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<GameWithPriceDto> games = gameService.getAllActiveGames(pageable);
+        Page<GameWithPriceDto> games = gameService.getAllGames(pageable);
         return ResponseEntity.ok(GamePageResponseDto.from(games));
     }
     
@@ -49,14 +49,14 @@ public class GameController {
     }
     
     @GetMapping("/all")
-    public ResponseEntity<List<GameWithPriceDto>> getAllActiveGames() {
-        List<GameWithPriceDto> games = gameService.getAllActiveGames();
+    public ResponseEntity<List<GameWithPriceDto>> getAllGames() {
+        List<GameWithPriceDto> games = gameService.getAllGames();
         return ResponseEntity.ok(games);
     }
     
     @GetMapping("/names")
     public ResponseEntity<List<Map<String, Object>>> getAllGameNames() {
-        List<GameWithPriceDto> games = gameService.getAllActiveGames();
+        List<GameWithPriceDto> games = gameService.getAllGames();
         List<Map<String, Object>> gameNames = games.stream()
                 .map(game -> {
                     Map<String, Object> gameMap = new HashMap<>();
@@ -72,38 +72,6 @@ public class GameController {
     public ResponseEntity<GameWithPriceDto> getGameById(@PathVariable Long id) {
         GameWithPriceDto game = gameService.getGameWithPriceById(id);
         return ResponseEntity.ok(game);
-    }
-    
-    @GetMapping("/featured")
-    public ResponseEntity<GamePageResponseDto> getFeaturedGames(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<GameWithPriceDto> games = gameService.getFeaturedGames(pageable);
-        return ResponseEntity.ok(GamePageResponseDto.from(games));
-    }
-    
-    @GetMapping("/featured/all")
-    public ResponseEntity<List<GameWithPriceDto>> getAllFeaturedGames() {
-        List<GameWithPriceDto> games = gameService.getFeaturedGames();
-        return ResponseEntity.ok(games);
-    }
-    
-    @GetMapping("/category/{category}")
-    public ResponseEntity<GamePageResponseDto> getGamesByCategory(
-            @PathVariable Game.Category category,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<GameWithPriceDto> games = gameService.getGamesByCategory(category, pageable);
-        return ResponseEntity.ok(GamePageResponseDto.from(games));
-    }
-    
-    @GetMapping("/category/{category}/all")
-    public ResponseEntity<List<GameWithPriceDto>> getAllGamesByCategory(
-            @PathVariable Game.Category category) {
-        List<GameWithPriceDto> games = gameService.getGamesByCategory(category);
-        return ResponseEntity.ok(games);
     }
     
     @GetMapping("/search")
@@ -123,62 +91,10 @@ public class GameController {
         return ResponseEntity.ok(games);
     }
     
-    // Price-related endpoints removed - prices are now calculated from SteamAccount relationships
-    
-    @GetMapping("/rating")
-    public ResponseEntity<List<GameDto>> getGamesByRating(
-            @RequestParam(defaultValue = "4.0") Double minRating) {
-        List<Game> games = gameService.getGamesByRating(minRating);
-        List<GameDto> gameDtos = games.stream()
-                .map(GameDto::new)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(gameDtos);
-    }
-    
-    @GetMapping("/genre/{genre}")
-    public ResponseEntity<GamePageResponseDto> getGamesByGenre(
-            @PathVariable String genre,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<GameWithPriceDto> games = gameService.getGamesByGenrePage(genre, pageable);
-        return ResponseEntity.ok(GamePageResponseDto.from(games));
-    }
-    
-    @GetMapping("/genre/{genre}/all")
-    public ResponseEntity<List<GameWithPriceDto>> getAllGamesByGenre(
-            @PathVariable String genre) {
-        List<Game> games = gameService.getGamesByGenre(genre);
-        List<GameWithPriceDto> gameDtos = games.stream()
-                .map(GameWithPriceDto::new)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(gameDtos);
-    }
-    
-    @GetMapping("/platform/{platform}")
-    public ResponseEntity<List<GameDto>> getGamesByPlatform(
-            @PathVariable String platform) {
-        List<Game> games = gameService.getGamesByPlatform(platform);
-        List<GameDto> gameDtos = games.stream()
-                .map(GameDto::new)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(gameDtos);
-    }
-    
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Object>> getGameStats() {
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalGames", gameService.getGameCount());
-        stats.put("activeGames", gameService.getActiveGameCount());
-        stats.put("featuredGames", gameService.getFeaturedGameCount());
-        
-        // Category stats
-        Map<String, Long> categoryStats = new HashMap<>();
-        for (Game.Category category : Game.Category.values()) {
-            categoryStats.put(category.name(), gameService.getCategoryGameCount(category));
-        }
-        stats.put("categoryStats", categoryStats);
-        
         return ResponseEntity.ok(stats);
     }
     
@@ -202,37 +118,6 @@ public class GameController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteGame(@PathVariable Long id) {
         gameService.deleteGame(id);
-        return ResponseEntity.ok().build();
-    }
-    
-    // Debug endpoints to help identify data discrepancy issues
-    @GetMapping("/debug/all")
-    public ResponseEntity<List<GameDto>> getAllGamesForDebug() {
-        List<Game> games = gameService.getAllGamesForDebug();
-        List<GameDto> gameDtos = games.stream()
-                .map(GameDto::new)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(gameDtos);
-    }
-    
-    @GetMapping("/debug/all-with-steam-accounts")
-    public ResponseEntity<List<GameWithPriceDto>> getAllGamesWithSteamAccountsForDebug() {
-        List<GameWithPriceDto> games = gameService.getAllGamesWithSteamAccountsForDebug();
-        return ResponseEntity.ok(games);
-    }
-    
-    @GetMapping("/debug/refresh/{id}")
-    public ResponseEntity<GameDto> refreshGameFromDatabase(@PathVariable Long id) {
-        Game game = gameService.refreshGameFromDatabase(id);
-        return ResponseEntity.ok(new GameDto(game));
-    }
-    
-    @GetMapping("/debug/active-count")
-    public ResponseEntity<Map<String, Object>> getActiveGameCount() {
-        Map<String, Object> response = new HashMap<>();
-        response.put("activeGamesCount", gameService.getActiveGameCount());
-        response.put("totalGamesCount", gameService.getGameCount());
-        response.put("featuredGamesCount", gameService.getFeaturedGameCount());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.noContent().build();
     }
 }

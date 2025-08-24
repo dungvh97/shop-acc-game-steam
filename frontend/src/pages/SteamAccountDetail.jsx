@@ -49,7 +49,7 @@ const SteamAccountDetail = () => {
         return 'bg-green-100 text-green-800';
       case 'SOLD':
         return 'bg-red-100 text-red-800';
-      case 'RESERVED':
+      case 'PRE_ORDER':
         return 'bg-yellow-100 text-yellow-800';
       case 'MAINTENANCE':
         return 'bg-blue-100 text-blue-800';
@@ -60,12 +60,9 @@ const SteamAccountDetail = () => {
 
   const getTypeLabel = (type) => {
     const typeLabels = {
-      'STEAM_ACCOUNT_ONLINE': 'Steam Online',
-      'STEAM_ACCOUNT_OFFLINE': 'Steam Offline',
-      'EPIC_ACCOUNT': 'Epic Account',
-      'ORIGIN_ACCOUNT': 'Origin Account',
-      'UPLAY_ACCOUNT': 'Uplay Account',
-      'GOG_ACCOUNT': 'GOG Account',
+      'MULTI_GAMES': 'Multi Games',
+      'ONE_GAME': 'One Game',
+      'DISCOUNTED': 'Discounted',
       'OTHER_ACCOUNT': 'Other Account'
     };
     return typeLabels[type] || type;
@@ -231,7 +228,7 @@ const SteamAccountDetail = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-red-500 mt-1">•</span>
-                  <span>Đây là tài khoản Steam {account.accountType === 'STEAM_ACCOUNT_OFFLINE' ? 'Offline' : 'Online'} (ngoại tuyến)</span>
+                  <span>Đây là tài khoản {getTypeLabel(account.accountType)}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-red-500 mt-1">•</span>
@@ -289,7 +286,7 @@ const SteamAccountDetail = () => {
               {account.games.map((game) => (
                 <Card key={game.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   <CardContent className="p-0">
-                    <Link to={`/games/${game.id}`}>
+                    <Link to={`/games/${game.id}?fromSteamAccount=true&steamAccountId=${account.id}`}>
                       <img 
                         src={BACKEND_CONFIG.getImageUrl(game.imageUrl)}
                         alt={game.name}
@@ -306,9 +303,11 @@ const SteamAccountDetail = () => {
                       </svg>
                     </div>
                     <div className="p-3">
-                      <h3 className="font-semibold text-sm mb-1 truncate" title={game.name}>
-                        {game.name}
-                      </h3>
+                      <Link to={`/games/${game.id}?fromSteamAccount=true&steamAccountId=${account.id}`}>
+                        <h3 className="font-semibold text-sm mb-1 truncate hover:text-blue-600 transition-colors" title={game.name}>
+                          {game.name}
+                        </h3>
+                      </Link>
                       <p className="text-xs text-muted-foreground">
                         {formatPrice(game.price)}
                       </p>

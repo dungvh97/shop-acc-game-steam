@@ -138,13 +138,13 @@ public class GameImportService {
     }
 
     /**
-     * Delete all products that came from RAWG (identified by non-null rawgId)
+     * Clear all imported games
      * @return number of rows deleted
      */
     public int clearImportedGames() {
-        long before = gameRepository.countByRawgIdIsNotNull();
-        gameRepository.deleteByRawgIdIsNotNull();
-        long after = gameRepository.countByRawgIdIsNotNull();
+        long before = gameRepository.count();
+        gameRepository.deleteAll();
+        long after = gameRepository.count();
         return Math.toIntExact(before - after);
     }
 
@@ -153,18 +153,14 @@ public class GameImportService {
         
         for (RawgGame rawgGame : games) {
             try {
-                if (gameRepository.existsByRawgId(rawgGame.id)) {
+                // Check if game with same name already exists
+                List<Game> existingGames = gameRepository.findByNameContainingIgnoreCase(rawgGame.name);
+                if (!existingGames.isEmpty()) {
                     logger.debug("Game {} already exists, skipping", rawgGame.name);
                     continue;
                 }
                 
                 Game game = convertRawgGameToGame(rawgGame);
-                
-                // Download and save image
-                String localImagePath = downloadAndSaveImage(rawgGame.background_image, rawgGame.id);
-                if (localImagePath != null) {
-                    game.setImageUrl(localImagePath);
-                }
                 
                 gameRepository.save(game);
                 imported++;
@@ -182,87 +178,23 @@ public class GameImportService {
     private Game convertRawgGameToGame(RawgGame rawgGame) {
         Game game = new Game();
         
-        game.setRawgId(rawgGame.id);
         game.setName(rawgGame.name);
-        // Title field removed - using name field for display
         game.setDescription(rawgGame.description != null ? 
             rawgGame.description.replaceAll("<[^>]*>", "") : "No description available");
         
-        // Price-related fields removed - prices are now calculated from SteamAccount relationships
-        
-        game.setCategory(Game.Category.GAME_KEY);
-        game.setType(Game.Type.STEAM_KEY);
-        game.setFeatured(new Random().nextBoolean());
-        game.setActive(true);
-        
-        // Set rating if available
-        if (rawgGame.rating != null) {
-            game.setRating(BigDecimal.valueOf(rawgGame.rating));
+        // Download and save image if available
+        if (rawgGame.background_image != null && !rawgGame.background_image.isEmpty()) {
+            try {
+                String imageUrl = downloadAndSaveImage(rawgGame.background_image, rawgGame.id);
+                if (imageUrl != null) {
+                    game.setImageUrl(imageUrl);
+                }
+            } catch (Exception e) {
+                logger.warn("Failed to download image for game {}: {}", rawgGame.name, e.getMessage());
+            }
         }
-        
-        // Set release date
-        if (rawgGame.released != null) {
-            game.setReleaseDate(rawgGame.released);
-        }
-        
-        // Store additional metadata as JSON
-        game.setMetadata(createMetadataJson(rawgGame));
         
         return game;
-    }
-
-    private String createMetadataJson(RawgGame rawgGame) {
-        // Create JSON metadata with additional game info
-        StringBuilder metadata = new StringBuilder();
-        metadata.append("{");
-        metadata.append("\"rawg_id\":").append(rawgGame.id).append(",");
-        metadata.append("\"metacritic\":").append(rawgGame.metacritic != null ? rawgGame.metacritic : "null").append(",");
-        metadata.append("\"playtime\":").append(rawgGame.playtime != null ? rawgGame.playtime : "null").append(",");
-        metadata.append("\"esrb_rating\":\"").append(rawgGame.esrb_rating != null ? rawgGame.esrb_rating.name : "").append("\",");
-        metadata.append("\"website\":\"").append(rawgGame.website != null ? rawgGame.website : "").append("\",");
-        metadata.append("\"platforms\":[");
-        if (rawgGame.platforms != null) {
-            for (int i = 0; i < rawgGame.platforms.size(); i++) {
-                if (i > 0) metadata.append(",");
-                metadata.append("\"").append(rawgGame.platforms.get(i).platform.name).append("\"");
-            }
-        }
-        metadata.append("],");
-        metadata.append("\"genres\":[");
-        if (rawgGame.genres != null) {
-            for (int i = 0; i < rawgGame.genres.size(); i++) {
-                if (i > 0) metadata.append(",");
-                metadata.append("\"").append(rawgGame.genres.get(i).name).append("\"");
-            }
-        }
-        metadata.append("],");
-        metadata.append("\"tags\":[");
-        if (rawgGame.tags != null) {
-            for (int i = 0; i < rawgGame.tags.size(); i++) {
-                if (i > 0) metadata.append(",");
-                metadata.append("\"").append(rawgGame.tags.get(i).name).append("\"");
-            }
-        }
-        metadata.append("],");
-        metadata.append("\"developers\":[");
-        if (rawgGame.developers != null) {
-            for (int i = 0; i < rawgGame.developers.size(); i++) {
-                if (i > 0) metadata.append(",");
-                metadata.append("\"").append(rawgGame.developers.get(i).name).append("\"");
-            }
-        }
-        metadata.append("],");
-        metadata.append("\"publishers\":[");
-        if (rawgGame.publishers != null) {
-            for (int i = 0; i < rawgGame.publishers.size(); i++) {
-                if (i > 0) metadata.append(",");
-                metadata.append("\"").append(rawgGame.publishers.get(i).name).append("\"");
-            }
-        }
-        metadata.append("]");
-        metadata.append("}");
-        
-        return metadata.toString();
     }
 
     private String downloadAndSaveImage(String imageUrl, Long gameId) {

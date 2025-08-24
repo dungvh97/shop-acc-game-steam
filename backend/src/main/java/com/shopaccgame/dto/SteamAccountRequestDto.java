@@ -1,9 +1,11 @@
 package com.shopaccgame.dto;
 
 import com.shopaccgame.entity.SteamAccount;
+import com.shopaccgame.entity.enums.AccountType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
@@ -23,10 +25,10 @@ public class SteamAccountRequestDto {
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
     
-    private String email;
+    private String activeKey;
     
     @NotNull(message = "Account type is required")
-    private SteamAccount.AccountType accountType;
+    private AccountType accountType;
     
     @NotNull(message = "Price is required")
     @Positive(message = "Price must be positive")
@@ -39,8 +41,8 @@ public class SteamAccountRequestDto {
     private String imageUrl;
     
     @NotNull(message = "Stock quantity is required")
-    @Positive(message = "Stock quantity must be positive")
-    private Integer stockQuantity = 1;
+    @PositiveOrZero(message = "Stock quantity must be zero or positive")
+    private Integer stockQuantity = 0;
     
     private String description;
     
@@ -74,19 +76,19 @@ public class SteamAccountRequestDto {
         this.password = password;
     }
     
-    public String getEmail() {
-        return email;
+    public String getActiveKey() {
+        return activeKey;
     }
     
-    public void setEmail(String email) {
-        this.email = email;
+    public void setActiveKey(String activeKey) {
+        this.activeKey = activeKey;
     }
     
-    public SteamAccount.AccountType getAccountType() {
+    public AccountType getAccountType() {
         return accountType;
     }
     
-    public void setAccountType(SteamAccount.AccountType accountType) {
+    public void setAccountType(AccountType accountType) {
         this.accountType = accountType;
     }
     

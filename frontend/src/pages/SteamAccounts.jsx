@@ -28,12 +28,9 @@ const SteamAccounts = () => {
 
   const accountTypes = [
     { value: 'ALL', label: 'All Types' },
-    { value: 'STEAM_ACCOUNT_ONLINE', label: 'Steam Online' },
-    { value: 'STEAM_ACCOUNT_OFFLINE', label: 'Steam Offline' },
-    { value: 'EPIC_ACCOUNT', label: 'Epic Account' },
-    { value: 'ORIGIN_ACCOUNT', label: 'Origin Account' },
-    { value: 'UPLAY_ACCOUNT', label: 'Uplay Account' },
-    { value: 'GOG_ACCOUNT', label: 'GOG Account' },
+    { value: 'MULTI_GAMES', label: 'Multi Games' },
+    { value: 'ONE_GAME', label: 'One Game' },
+    { value: 'DISCOUNTED', label: 'Discounted' },
     { value: 'OTHER_ACCOUNT', label: 'Other Account' }
   ];
 
@@ -115,7 +112,7 @@ const SteamAccounts = () => {
         return 'bg-green-100 text-green-800';
       case 'SOLD':
         return 'bg-red-100 text-red-800';
-      case 'RESERVED':
+      case 'PRE_ORDER':
         return 'bg-yellow-100 text-yellow-800';
       case 'MAINTENANCE':
         return 'bg-blue-100 text-blue-800';
@@ -252,7 +249,8 @@ const SteamAccounts = () => {
                       {/* Status Badge */}
                       <div className="absolute top-2 right-2">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(account.status)}`}>
-                          {account.status === 'AVAILABLE' ? 'Available' : account.status}
+                          {account.status === 'AVAILABLE' ? 'Available' : 
+                           account.status === 'PRE_ORDER' ? 'Pre-Order' : account.status}
                         </span>
                       </div>
                     </div>

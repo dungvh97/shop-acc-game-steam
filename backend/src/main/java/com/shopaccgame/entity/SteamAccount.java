@@ -1,5 +1,7 @@
 package com.shopaccgame.entity;
 
+import com.shopaccgame.entity.enums.AccountType;
+import com.shopaccgame.entity.enums.AccountStatus;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -9,6 +11,7 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 import java.nio.charset.StandardCharsets;
+import org.springframework.beans.factory.annotation.Value;
 
 @Entity
 @Table(name = "steam_accounts")
@@ -27,8 +30,8 @@ public class SteamAccount {
     @Column(nullable = false)
     private String password;
     
-    @Column
-    private String email;
+    @Column(name = "active_key")
+    private String activeKey;
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -51,7 +54,7 @@ public class SteamAccount {
     private String imageUrl;
     
     @Column(name = "stock_quantity", nullable = false)
-    private Integer stockQuantity = 1; // Default 1 account available
+    private Integer stockQuantity = 0; // Default 0 accounts available
     
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -71,26 +74,11 @@ public class SteamAccount {
     )
     private Set<Game> games = new HashSet<>();
     
-    // Encryption key - in production, this should be stored in environment variables
-    private static final String ENCRYPTION_KEY = "ShopAccGame2024!";
+    // Encryption key from environment variables
+    @Value("${app.encryption.key}")
+    private String encryptionKey;
+    
     private static final String ALGORITHM = "AES";
-    
-    public enum AccountType {
-        STEAM_ACCOUNT_ONLINE,
-        STEAM_ACCOUNT_OFFLINE,
-        EPIC_ACCOUNT,
-        ORIGIN_ACCOUNT,
-        UPLAY_ACCOUNT,
-        GOG_ACCOUNT,
-        OTHER_ACCOUNT
-    }
-    
-    public enum AccountStatus {
-        AVAILABLE,
-        SOLD,
-        RESERVED,
-        MAINTENANCE
-    }
     
     // Constructors
     public SteamAccount() {}
@@ -102,13 +90,13 @@ public class SteamAccount {
         this.accountType = accountType;
         this.price = price;
         this.status = AccountStatus.AVAILABLE;
-        this.stockQuantity = 1;
+        this.stockQuantity = 0;
     }
     
     // Encryption methods
     private String encryptPassword(String password) {
         try {
-            SecretKeySpec secretKey = new SecretKeySpec(ENCRYPTION_KEY.getBytes(StandardCharsets.UTF_8), ALGORITHM);
+            SecretKeySpec secretKey = new SecretKeySpec(encryptionKey.getBytes(StandardCharsets.UTF_8), ALGORITHM);
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             byte[] encryptedBytes = cipher.doFinal(password.getBytes());
@@ -120,7 +108,7 @@ public class SteamAccount {
     
     public String decryptPassword() {
         try {
-            SecretKeySpec secretKey = new SecretKeySpec(ENCRYPTION_KEY.getBytes(StandardCharsets.UTF_8), ALGORITHM);
+            SecretKeySpec secretKey = new SecretKeySpec(encryptionKey.getBytes(StandardCharsets.UTF_8), ALGORITHM);
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
             byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(this.password));
@@ -169,12 +157,12 @@ public class SteamAccount {
         this.password = encryptedPassword;
     }
     
-    public String getEmail() {
-        return email;
+    public String getActiveKey() {
+        return activeKey;
     }
     
-    public void setEmail(String email) {
-        this.email = email;
+    public void setActiveKey(String activeKey) {
+        this.activeKey = activeKey;
     }
     
     public AccountType getAccountType() {

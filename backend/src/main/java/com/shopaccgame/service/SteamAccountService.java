@@ -5,6 +5,8 @@ import com.shopaccgame.dto.SteamAccountAdminDto;
 import com.shopaccgame.dto.SteamAccountRequestDto;
 import com.shopaccgame.entity.Game;
 import com.shopaccgame.entity.SteamAccount;
+import com.shopaccgame.entity.enums.AccountType;
+import com.shopaccgame.entity.enums.AccountStatus;
 import com.shopaccgame.repository.GameRepository;
 import com.shopaccgame.repository.SteamAccountRepository;
 import org.slf4j.Logger;
@@ -45,7 +47,7 @@ public class SteamAccountService {
         return accounts.map(SteamAccountDto::new);
     }
     
-    public Page<SteamAccountDto> getSteamAccountsByType(SteamAccount.AccountType accountType, Pageable pageable) {
+    public Page<SteamAccountDto> getSteamAccountsByType(AccountType accountType, Pageable pageable) {
         Page<SteamAccount> accounts = steamAccountRepository.findByAccountType(accountType, pageable);
         return accounts.map(SteamAccountDto::new);
     }
@@ -85,7 +87,7 @@ public class SteamAccountService {
             .collect(Collectors.toList());
     }
     
-    public List<SteamAccountDto> getAvailableAccountsByType(SteamAccount.AccountType accountType) {
+    public List<SteamAccountDto> getAvailableAccountsByType(AccountType accountType) {
         List<SteamAccount> accounts = steamAccountRepository.findAvailableAccountsByType(accountType);
         return accounts.stream()
             .map(SteamAccountDto::new)
@@ -105,9 +107,9 @@ public class SteamAccountService {
         steamAccount.setUsername(requestDto.getUsername());
         steamAccount.setName(requestDto.getName());
         steamAccount.setPassword(requestDto.getPassword());
-        steamAccount.setEmail(requestDto.getEmail());
+        steamAccount.setActiveKey(requestDto.getActiveKey());
         steamAccount.setAccountType(requestDto.getAccountType());
-        steamAccount.setStatus(SteamAccount.AccountStatus.AVAILABLE);
+        steamAccount.setStatus(AccountStatus.AVAILABLE);
         steamAccount.setPrice(requestDto.getPrice());
         steamAccount.setOriginalPrice(requestDto.getOriginalPrice());
         steamAccount.setDiscountPercentage(requestDto.getDiscountPercentage());
@@ -157,7 +159,7 @@ public class SteamAccountService {
         if (requestDto.getPassword() != null && !requestDto.getPassword().isEmpty()) {
             existingAccount.setPassword(requestDto.getPassword());
         }
-        existingAccount.setEmail(requestDto.getEmail());
+        existingAccount.setActiveKey(requestDto.getActiveKey());
         existingAccount.setAccountType(requestDto.getAccountType());
         existingAccount.setPrice(requestDto.getPrice());
         existingAccount.setOriginalPrice(requestDto.getOriginalPrice());
@@ -197,7 +199,7 @@ public class SteamAccountService {
         logger.info("Steam account deleted successfully with ID: {}", id);
     }
     
-    public SteamAccountDto updateAccountStatus(Long id, SteamAccount.AccountStatus status) {
+    public SteamAccountDto updateAccountStatus(Long id, AccountStatus status) {
         logger.info("Updating status for Steam account with ID: {} to {}", id, status);
         
         Optional<SteamAccount> accountOpt = steamAccountRepository.findById(id);
@@ -214,11 +216,11 @@ public class SteamAccountService {
         return new SteamAccountDto(updatedAccount);
     }
     
-    public long getAvailableCountByType(SteamAccount.AccountType accountType) {
+    public long getAvailableCountByType(AccountType accountType) {
         return steamAccountRepository.countAvailableByType(accountType);
     }
     
-    public List<SteamAccountDto> getAccountsByStatus(SteamAccount.AccountStatus status) {
+    public List<SteamAccountDto> getAccountsByStatus(AccountStatus status) {
         List<SteamAccount> accounts = steamAccountRepository.findByStatus(status);
         return accounts.stream()
             .map(SteamAccountDto::new)

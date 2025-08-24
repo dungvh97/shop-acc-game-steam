@@ -1,5 +1,6 @@
 package com.shopaccgame.entity;
 
+import com.shopaccgame.entity.enums.AccountStatus;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -7,6 +8,7 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 import java.nio.charset.StandardCharsets;
+import org.springframework.beans.factory.annotation.Value;
 
 @Entity
 @Table(name = "steam_account_orders")
@@ -55,8 +57,10 @@ public class SteamAccountOrder {
     @Column(name = "account_password")
     private String accountPassword;
     
-    // Encryption key - in production, this should be stored in environment variables
-    private static final String ENCRYPTION_KEY = "ShopAccGame2024!";
+    // Encryption key from environment variables
+    @Value("${app.encryption.key}")
+    private String encryptionKey;
+    
     private static final String ALGORITHM = "AES";
     
     public enum OrderStatus {
@@ -94,7 +98,7 @@ public class SteamAccountOrder {
             this.accountPassword = encryptPassword(this.account.decryptPassword());
             
             // Mark account as sold
-            this.account.setStatus(SteamAccount.AccountStatus.SOLD);
+            this.account.setStatus(AccountStatus.SOLD);
             this.account.decrementStock();
         }
     }
@@ -122,7 +126,7 @@ public class SteamAccountOrder {
     // Encryption methods
     private String encryptPassword(String password) {
         try {
-            SecretKeySpec secretKey = new SecretKeySpec(ENCRYPTION_KEY.getBytes(StandardCharsets.UTF_8), ALGORITHM);
+            SecretKeySpec secretKey = new SecretKeySpec(encryptionKey.getBytes(StandardCharsets.UTF_8), ALGORITHM);
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             byte[] encryptedBytes = cipher.doFinal(password.getBytes());
@@ -134,7 +138,7 @@ public class SteamAccountOrder {
     
     public String decryptPassword() {
         try {
-            SecretKeySpec secretKey = new SecretKeySpec(ENCRYPTION_KEY.getBytes(StandardCharsets.UTF_8), ALGORITHM);
+            SecretKeySpec secretKey = new SecretKeySpec(encryptionKey.getBytes(StandardCharsets.UTF_8), ALGORITHM);
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
             byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(this.accountPassword));

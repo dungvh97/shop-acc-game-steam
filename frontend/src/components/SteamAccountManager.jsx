@@ -229,13 +229,13 @@ const SteamAccountManager = () => {
     username: '',
     name: '',
     password: '',
-    email: '',
-    accountType: 'STEAM_ACCOUNT_ONLINE',
+    activeKey: '',
+    accountType: 'MULTI_GAMES',
     price: '',
     originalPrice: '',
     discountPercentage: '',
     imageUrl: '',
-    stockQuantity: 1,
+    stockQuantity: 0,
     description: '',
     gameIds: []
   });
@@ -252,19 +252,16 @@ const SteamAccountManager = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
 
   const accountTypes = [
-    'STEAM_ACCOUNT_ONLINE',
-    'STEAM_ACCOUNT_OFFLINE',
-    'EPIC_ACCOUNT',
-    'ORIGIN_ACCOUNT',
-    'UPLAY_ACCOUNT',
-    'GOG_ACCOUNT',
+    'MULTI_GAMES',
+    'ONE_GAME',
+    'DISCOUNTED',
     'OTHER_ACCOUNT'
   ];
 
   const accountStatuses = [
     'AVAILABLE',
     'SOLD',
-    'RESERVED',
+    'PRE_ORDER',
     'MAINTENANCE'
   ];
 
@@ -513,13 +510,13 @@ const SteamAccountManager = () => {
       username: account.username,
       name: account.name || '',
       password: '', // Don't show password
-      email: account.email || '',
+      activeKey: account.activeKey || '',
       accountType: account.accountType,
       price: account.price?.toString() || '',
       originalPrice: account.originalPrice?.toString() || '',
       discountPercentage: account.discountPercentage?.toString() || '',
       imageUrl: account.imageUrl || '',
-      stockQuantity: account.stockQuantity?.toString() || '1',
+      stockQuantity: account.stockQuantity?.toString() || '0',
       description: account.description || '',
       gameIds: account.gameIds || (account.gameId ? [account.gameId] : [])
     });
@@ -532,13 +529,13 @@ const SteamAccountManager = () => {
       username: '',
       name: '',
       password: '',
-      email: '',
-      accountType: 'STEAM_ACCOUNT_ONLINE',
+      activeKey: '',
+      accountType: 'MULTI_GAMES',
       price: '',
       originalPrice: '',
       discountPercentage: '',
       imageUrl: '',
-      stockQuantity: 1,
+      stockQuantity: 0,
       description: '',
       gameIds: []
     });
@@ -569,8 +566,8 @@ const SteamAccountManager = () => {
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-yellow-600">{stats.reservedAccounts || 0}</div>
-            <div className="text-sm text-muted-foreground">Reserved</div>
+            <div className="text-2xl font-bold text-yellow-600">{stats.preOrderAccounts || 0}</div>
+            <div className="text-sm text-muted-foreground">Pre-Order</div>
           </CardContent>
         </Card>
         <Card>
@@ -660,20 +657,20 @@ const SteamAccountManager = () => {
                   )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Email</label>
+                  <label className="text-sm font-medium">Active Key</label>
                   <Input
-                    type="email"
-                    value={formData.email}
+                    type="text"
+                    value={formData.activeKey}
                     onChange={(e) => {
-                      setFormData({...formData, email: e.target.value});
-                      if (validationErrors.email) {
-                        setValidationErrors({...validationErrors, email: null});
+                      setFormData({...formData, activeKey: e.target.value});
+                      if (validationErrors.activeKey) {
+                        setValidationErrors({...validationErrors, activeKey: null});
                       }
                     }}
-                    className={validationErrors.email ? 'border-red-500 focus:border-red-500' : ''}
+                    className={validationErrors.activeKey ? 'border-red-500 focus:border-red-500' : ''}
                   />
-                  {validationErrors.email && (
-                    <div className="text-xs text-red-600 mt-1">{validationErrors.email}</div>
+                  {validationErrors.activeKey && (
+                    <div className="text-xs text-red-600 mt-1">{validationErrors.activeKey}</div>
                   )}
                 </div>
                 <div>
@@ -747,7 +744,7 @@ const SteamAccountManager = () => {
                   <label className="text-sm font-medium">Stock Quantity *</label>
                   <Input
                     type="number"
-                    min="1"
+                    min="0"
                     value={formData.stockQuantity}
                     onChange={(e) => setFormData({...formData, stockQuantity: e.target.value})}
                     required
@@ -900,7 +897,7 @@ const SteamAccountManager = () => {
                              <span className={`px-2 py-1 rounded text-xs ${
                                account.status === 'AVAILABLE' ? 'bg-green-100 text-green-800' :
                                account.status === 'SOLD' ? 'bg-red-100 text-red-800' :
-                               account.status === 'RESERVED' ? 'bg-yellow-100 text-yellow-800' :
+                               account.status === 'PRE_ORDER' ? 'bg-yellow-100 text-yellow-800' :
                                'bg-blue-100 text-blue-800'
                              }`}>
                                {account.status}
@@ -915,7 +912,7 @@ const SteamAccountManager = () => {
                            <div className="flex gap-4 mt-2 text-sm">
                              <span>Price: {account.price} VND</span>
                              <span>Stock: {account.stockQuantity}</span>
-                             {account.email && <span>Email: {account.email}</span>}
+                             {account.activeKey && <span>Active Key: {account.activeKey}</span>}
                            </div>
                            {(account.gameIds && account.gameIds.length > 0) && (
                              <div className="mt-2">

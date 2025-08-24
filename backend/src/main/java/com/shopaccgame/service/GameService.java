@@ -31,37 +31,31 @@ public class GameService {
         entityManager.clear();
     }
     
-    public List<GameWithPriceDto> getAllActiveGames() {
+    public List<GameWithPriceDto> getAllGames() {
         clearSessionCache();
-        List<Game> games = gameRepository.findByActiveTrueWithSteamAccounts();
+        List<Game> games = gameRepository.findAll();
         return games.stream()
                 .map(GameWithPriceDto::new)
                 .collect(Collectors.toList());
     }
     
-    public Page<GameWithPriceDto> getAllActiveGames(Pageable pageable) {
+    public Page<GameWithPriceDto> getAllGames(Pageable pageable) {
         clearSessionCache();
-        // For pagination, we need to fetch IDs first, then fetch full entities with steam accounts
-        Page<Long> gameIds = gameRepository.findActiveGameIds(pageable);
-        List<Game> games = gameIds.getContent().stream()
-                .map(id -> gameRepository.findByIdWithSteamAccounts(id).orElse(null))
-                .filter(game -> game != null)
-                .collect(Collectors.toList());
-        
-        List<GameWithPriceDto> dtoList = games.stream()
+        Page<Game> games = gameRepository.findAll(pageable);
+        List<GameWithPriceDto> dtoList = games.getContent().stream()
                 .map(GameWithPriceDto::new)
                 .collect(Collectors.toList());
         
         return new org.springframework.data.domain.PageImpl<>(
             dtoList, 
             pageable, 
-            gameIds.getTotalElements()
+            games.getTotalElements()
         );
     }
     
     public Game getGameById(Long id) {
         clearSessionCache();
-        return gameRepository.findByIdWithSteamAccounts(id)
+        return gameRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Game not found with id: " + id));
     }
     
@@ -70,108 +64,23 @@ public class GameService {
         return new GameWithPriceDto(game);
     }
     
-    public List<GameWithPriceDto> getFeaturedGames() {
-        List<Game> games = gameRepository.findByFeaturedTrueAndActiveTrueWithSteamAccounts();
-        return games.stream()
-                .map(GameWithPriceDto::new)
-                .collect(Collectors.toList());
-    }
-    
-    public Page<GameWithPriceDto> getFeaturedGames(Pageable pageable) {
-        // For pagination, we need to fetch IDs first, then fetch full entities with steam accounts
-        Page<Long> gameIds = gameRepository.findFeaturedGameIds(pageable);
-        List<Game> games = gameIds.getContent().stream()
-                .map(id -> gameRepository.findByIdWithSteamAccounts(id).orElse(null))
-                .filter(game -> game != null)
-                .collect(Collectors.toList());
-        
-        List<GameWithPriceDto> dtoList = games.stream()
-                .map(GameWithPriceDto::new)
-                .collect(Collectors.toList());
-        
-        return new org.springframework.data.domain.PageImpl<>(
-            dtoList, 
-            pageable, 
-            gameIds.getTotalElements()
-        );
-    }
-    
-    public List<GameWithPriceDto> getGamesByCategory(Game.Category category) {
-        List<Game> games = gameRepository.findByCategoryAndActiveTrueWithSteamAccounts(category);
-        return games.stream()
-                .map(GameWithPriceDto::new)
-                .collect(Collectors.toList());
-    }
-    
-    public Page<GameWithPriceDto> getGamesByCategory(Game.Category category, Pageable pageable) {
-        // For pagination, we need to fetch IDs first, then fetch full entities with steam accounts
-        Page<Long> gameIds = gameRepository.findGameIdsByCategory(category, pageable);
-        List<Game> games = gameIds.getContent().stream()
-                .map(id -> gameRepository.findByIdWithSteamAccounts(id).orElse(null))
-                .filter(game -> game != null)
-                .collect(Collectors.toList());
-        
-        List<GameWithPriceDto> dtoList = games.stream()
-                .map(GameWithPriceDto::new)
-                .collect(Collectors.toList());
-        
-        return new org.springframework.data.domain.PageImpl<>(
-            dtoList, 
-            pageable, 
-            gameIds.getTotalElements()
-        );
-    }
-    
-    public List<GameWithPriceDto> getGamesByType(Game.Type type) {
-        List<Game> games = gameRepository.findByTypeAndActiveTrueWithSteamAccounts(type);
+    public List<GameWithPriceDto> searchGames(String keyword) {
+        List<Game> games = gameRepository.findByNameContainingIgnoreCase(keyword);
         return games.stream()
                 .map(GameWithPriceDto::new)
                 .collect(Collectors.toList());
     }
     
     public Page<GameWithPriceDto> searchGames(String keyword, Pageable pageable) {
-        // For pagination, we need to fetch IDs first, then fetch full entities with steam accounts
-        Page<Long> gameIds = gameRepository.findGameIdsBySearch(keyword, pageable);
-        List<Game> games = gameIds.getContent().stream()
-                .map(id -> gameRepository.findByIdWithSteamAccounts(id).orElse(null))
-                .filter(game -> game != null)
-                .collect(Collectors.toList());
-        
-        List<GameWithPriceDto> dtoList = games.stream()
-                .map(GameWithPriceDto::new)
-                .collect(Collectors.toList());
-        
-        return new org.springframework.data.domain.PageImpl<>(
-            dtoList, 
-            pageable, 
-            gameIds.getTotalElements()
-        );
+        Page<Game> games = gameRepository.findByNameContainingIgnoreCase(keyword, pageable);
+        return games.map(GameWithPriceDto::new);
     }
     
     public List<GameWithPriceDto> searchGamesByName(String searchTerm) {
-        List<Game> games = gameRepository.searchByNameWithSteamAccounts(searchTerm);
+        List<Game> games = gameRepository.findByNameContainingIgnoreCase(searchTerm);
         return games.stream()
                 .map(GameWithPriceDto::new)
                 .collect(Collectors.toList());
-    }
-    
-    // Price-related methods removed - prices are now calculated from SteamAccount relationships
-    
-    public List<Game> getGamesByRating(Double minRating) {
-        return gameRepository.findByRatingGreaterThanEqualAndActiveTrue(minRating);
-    }
-    
-    public List<Game> getGamesByGenre(String genre) {
-        return gameRepository.findByMetadataContainingGenre(genre);
-    }
-    
-    public Page<GameWithPriceDto> getGamesByGenrePage(String genre, Pageable pageable) {
-        Page<Game> gamesPage = gameRepository.findByMetadataContainingGenrePage(genre, pageable);
-        return gamesPage.map(GameWithPriceDto::new);
-    }
-    
-    public List<Game> getGamesByPlatform(String platform) {
-        return gameRepository.findByMetadataContainingPlatform(platform);
     }
     
     public Game createGame(Game game) {
@@ -182,16 +91,7 @@ public class GameService {
         Game existingGame = getGameById(id);
         existingGame.setName(game.getName());
         existingGame.setDescription(game.getDescription());
-        // Price-related fields removed - now managed through SteamAccount relationships
-        existingGame.setCategory(game.getCategory());
-        existingGame.setType(game.getType());
         existingGame.setImageUrl(game.getImageUrl());
-        // Stock quantity removed - now calculated from SteamAccount relationships
-        existingGame.setActive(game.getActive());
-        existingGame.setFeatured(game.getFeatured());
-        existingGame.setRating(game.getRating());
-        existingGame.setReleaseDate(game.getReleaseDate());
-        existingGame.setMetadata(game.getMetadata());
         
         return gameRepository.save(existingGame);
     }
@@ -204,21 +104,9 @@ public class GameService {
         return gameRepository.count();
     }
     
-    public long getActiveGameCount() {
-        return gameRepository.countByActiveTrue();
-    }
-    
-    public long getFeaturedGameCount() {
-        return gameRepository.countByFeaturedTrueAndActiveTrue();
-    }
-    
-    public long getCategoryGameCount(Game.Category category) {
-        return gameRepository.countByCategoryAndActiveTrue(category);
-    }
-    
     /**
      * Debug method to verify database state
-     * @return List of all games with their active status
+     * @return List of all games
      */
     public List<Game> getAllGamesForDebug() {
         clearSessionCache();
@@ -233,13 +121,7 @@ public class GameService {
         clearSessionCache();
         List<Game> games = gameRepository.findAll();
         return games.stream()
-                .map(game -> {
-                    // For debug, we'll fetch each game individually with steam accounts
-                    return gameRepository.findByIdWithSteamAccounts(game.getId())
-                            .map(GameWithPriceDto::new)
-                            .orElse(null);
-                })
-                .filter(dto -> dto != null)
+                .map(GameWithPriceDto::new)
                 .collect(Collectors.toList());
     }
     

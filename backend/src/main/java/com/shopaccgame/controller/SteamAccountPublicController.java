@@ -2,6 +2,8 @@ package com.shopaccgame.controller;
 
 import com.shopaccgame.dto.SteamAccountDto;
 import com.shopaccgame.entity.SteamAccount;
+import com.shopaccgame.entity.enums.AccountType;
+import com.shopaccgame.entity.enums.AccountStatus;
 import com.shopaccgame.service.SteamAccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +70,7 @@ public class SteamAccountPublicController {
         return steamAccountService.getSteamAccountById(id)
             .map(account -> {
                 // Only return if account is available
-                if (account.getStatus() == SteamAccount.AccountStatus.AVAILABLE) {
+                if (account.getStatus() == AccountStatus.AVAILABLE) {
                     return account;
                 } else {
                     return null;
@@ -80,7 +82,7 @@ public class SteamAccountPublicController {
     
     @GetMapping("/type/{accountType}")
     public ResponseEntity<Page<SteamAccountDto>> getAvailableSteamAccountsByType(
-            @PathVariable SteamAccount.AccountType accountType,
+            @PathVariable AccountType accountType,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
         
@@ -116,7 +118,7 @@ public class SteamAccountPublicController {
         
         // Filter to only show available accounts
         List<SteamAccountDto> availableAccounts = accounts.getContent().stream()
-            .filter(account -> account.getStatus() == SteamAccount.AccountStatus.AVAILABLE)
+            .filter(account -> account.getStatus() == AccountStatus.AVAILABLE)
             .toList();
         
         // Convert to page format
@@ -180,7 +182,7 @@ public class SteamAccountPublicController {
     
     @GetMapping("/available/{accountType}")
     public ResponseEntity<List<SteamAccountDto>> getAvailableAccountsByType(
-            @PathVariable SteamAccount.AccountType accountType) {
+            @PathVariable AccountType accountType) {
         List<SteamAccountDto> accounts = steamAccountService.getAvailableAccountsByType(accountType);
         return ResponseEntity.ok(accounts);
     }

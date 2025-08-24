@@ -12,25 +12,11 @@ const Admin = () => {
   const { toast } = useToast();
 
   const isAdmin = isAuthenticated && user?.role === 'ADMIN';
-  const categories = useMemo(() => [
-    'GAME_KEY',
-    'STEAM_ACCOUNT_ONLINE',
-    'STEAM_ACCOUNT_OFFLINE',
-    'ENTERTAINMENT_SOFTWARE',
-    'UTILITY_SOFTWARE'
-  ], []);
-  const types = useMemo(() => [
-    'STEAM_KEY','EPIC_KEY','ORIGIN_KEY','UPLAY_KEY','GOG_KEY','OTHER_KEY'
-  ], []);
 
   const [newProduct, setNewProduct] = useState({
     name: '',
     description: '',
-    category: 'GAME_KEY',
-    type: 'STEAM_KEY',
-    imageUrl: '',
-    featured: false,
-    active: true
+    imageUrl: ''
   });
 
   const [activeTab, setActiveTab] = useState('steam-accounts');
@@ -138,11 +124,7 @@ const Admin = () => {
       setNewProduct({
         name: '',
         description: '',
-        category: 'GAME_KEY',
-        type: 'STEAM_KEY',
-        imageUrl: '',
-        featured: false,
-        active: true
+        imageUrl: ''
       });
       setSelectedGameFile(null);
       
@@ -245,56 +227,9 @@ const Admin = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-                      Category
-                    </label>
-                    <select
-                      id="category"
-                      value={newProduct.category}
-                      onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    >
-                      {categories.map((cat) => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
-                      Type
-                    </label>
-                    <select
-                      id="type"
-                      value={newProduct.type}
-                      onChange={(e) => setNewProduct({...newProduct, type: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    >
-                      {types.map((type) => (
-                        <option key={type} value={type}>{type}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-1">
-                    Image URL
-                  </label>
-                  <Input
-                    id="imageUrl"
-                    type="url"
-                    value={newProduct.imageUrl}
-                    onChange={(e) => setNewProduct({...newProduct, imageUrl: e.target.value})}
-                    placeholder="Enter image URL (optional)"
-                  />
-                </div>
-
                 <div>
                   <label htmlFor="imageFile" className="block text-sm font-medium text-gray-700 mb-1">
-                    Or Upload Image File
+                    Upload Image File *
                   </label>
                   <Input
                     id="imageFile"
@@ -302,34 +237,13 @@ const Admin = () => {
                     accept="image/*"
                     onChange={handleGameFileSelect}
                     className="w-full"
+                    required
                   />
                   {selectedGameFile && (
                     <p className="text-sm text-gray-500 mt-1">
                       Selected: {selectedGameFile.name}
                     </p>
                   )}
-                </div>
-
-                <div className="flex space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={newProduct.featured}
-                      onChange={(e) => setNewProduct({...newProduct, featured: e.target.checked})}
-                      className="mr-2"
-                    />
-                    <span className="text-sm text-gray-700">Featured Game</span>
-                  </label>
-                  
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={newProduct.active}
-                      onChange={(e) => setNewProduct({...newProduct, active: e.target.checked})}
-                      className="mr-2"
-                    />
-                    <span className="text-sm text-gray-700">Active</span>
-                  </label>
                 </div>
 
                 <Button 

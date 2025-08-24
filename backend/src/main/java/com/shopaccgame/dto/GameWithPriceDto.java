@@ -1,26 +1,17 @@
 package com.shopaccgame.dto;
 
 import com.shopaccgame.entity.Game;
+import com.shopaccgame.entity.SteamAccount;
+import com.shopaccgame.entity.enums.AccountStatus;
 import java.math.BigDecimal;
 
 public class GameWithPriceDto {
     private Long id;
     private String name;
-    // Title field removed - using name field for display
     private String description;
-    private BigDecimal price;
-    private BigDecimal originalPrice;
-    private Integer discountPercentage;
-    private String category;
-    private String type;
     private String imageUrl;
+    private BigDecimal price;
     private Integer stockQuantity;
-    private Boolean active;
-    private Boolean featured;
-    private BigDecimal rating;
-    private String releaseDate;
-    private String metadata;
-    private Long rawgId;
     private Boolean inStock;
     
     public GameWithPriceDto() {}
@@ -28,27 +19,36 @@ public class GameWithPriceDto {
     public GameWithPriceDto(Game game) {
         this.id = game.getId();
         this.name = game.getName();
-        // Title field removed - using name field for display
         this.description = game.getDescription();
-        this.category = game.getCategory().name();
-        this.type = game.getType().name();
         this.imageUrl = game.getImageUrl();
-        this.active = game.getActive();
-        this.featured = game.getFeatured();
-        this.rating = game.getRating();
-        this.releaseDate = game.getReleaseDate();
-        this.metadata = game.getMetadata();
-        this.rawgId = game.getRawgId();
         
         // Calculate price and stock from SteamAccount relationships
-        this.price = game.getCalculatedPrice();
-        this.stockQuantity = game.getCalculatedStockQuantity();
-        this.inStock = game.isInStock();
-        
-        // Set original price and discount percentage to null for now
-        // These can be calculated later if needed from SteamAccount data
-        this.originalPrice = null;
-        this.discountPercentage = null;
+        this.price = calculatePrice(game);
+        this.stockQuantity = calculateStockQuantity(game);
+        this.inStock = calculateInStock(game);
+    }
+    
+    // Calculate the minimum price from available SteamAccounts
+    private BigDecimal calculatePrice(Game game) {
+        return game.getSteamAccounts().stream()
+                .filter(account -> account.getStatus() == AccountStatus.AVAILABLE && account.getStockQuantity() > 0)
+                .map(SteamAccount::getPrice)
+                .min(BigDecimal::compareTo)
+                .orElse(null);
+    }
+    
+    // Calculate total stock quantity from all available SteamAccounts
+    private Integer calculateStockQuantity(Game game) {
+        return game.getSteamAccounts().stream()
+                .filter(account -> account.getStatus() == AccountStatus.AVAILABLE)
+                .mapToInt(SteamAccount::getStockQuantity)
+                .sum();
+    }
+    
+    // Check if game is in stock (has available SteamAccounts)
+    private Boolean calculateInStock(Game game) {
+        return game.getSteamAccounts().stream()
+                .anyMatch(account -> account.getStatus() == AccountStatus.AVAILABLE && account.getStockQuantity() > 0);
     }
     
     // Getters and Setters
@@ -68,54 +68,12 @@ public class GameWithPriceDto {
         this.name = name;
     }
     
-        // Title field removed - using name field for display
-    
     public String getDescription() {
         return description;
     }
     
     public void setDescription(String description) {
         this.description = description;
-    }
-    
-    public BigDecimal getPrice() {
-        return price;
-    }
-    
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-    
-    public BigDecimal getOriginalPrice() {
-        return originalPrice;
-    }
-    
-    public void setOriginalPrice(BigDecimal originalPrice) {
-        this.originalPrice = originalPrice;
-    }
-    
-    public Integer getDiscountPercentage() {
-        return discountPercentage;
-    }
-    
-    public void setDiscountPercentage(Integer discountPercentage) {
-        this.discountPercentage = discountPercentage;
-    }
-    
-    public String getCategory() {
-        return category;
-    }
-    
-    public void setCategory(String category) {
-        this.category = category;
-    }
-    
-    public String getType() {
-        return type;
-    }
-    
-    public void setType(String type) {
-        this.type = type;
     }
     
     public String getImageUrl() {
@@ -126,60 +84,20 @@ public class GameWithPriceDto {
         this.imageUrl = imageUrl;
     }
     
+    public BigDecimal getPrice() {
+        return price;
+    }
+    
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+    
     public Integer getStockQuantity() {
         return stockQuantity;
     }
     
     public void setStockQuantity(Integer stockQuantity) {
         this.stockQuantity = stockQuantity;
-    }
-    
-    public Boolean getActive() {
-        return active;
-    }
-    
-    public void setActive(Boolean active) {
-        this.active = active;
-    }
-    
-    public Boolean getFeatured() {
-        return featured;
-    }
-    
-    public void setFeatured(Boolean featured) {
-        this.featured = featured;
-    }
-    
-    public BigDecimal getRating() {
-        return rating;
-    }
-    
-    public void setRating(BigDecimal rating) {
-        this.rating = rating;
-    }
-    
-    public String getReleaseDate() {
-        return releaseDate;
-    }
-    
-    public void setReleaseDate(String releaseDate) {
-        this.releaseDate = releaseDate;
-    }
-    
-    public String getMetadata() {
-        return metadata;
-    }
-    
-    public void setMetadata(String metadata) {
-        this.metadata = metadata;
-    }
-    
-    public Long getRawgId() {
-        return rawgId;
-    }
-    
-    public void setRawgId(Long rawgId) {
-        this.rawgId = rawgId;
     }
     
     public Boolean getInStock() {

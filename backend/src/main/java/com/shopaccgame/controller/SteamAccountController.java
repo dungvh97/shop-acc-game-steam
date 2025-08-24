@@ -4,6 +4,8 @@ import com.shopaccgame.dto.SteamAccountDto;
 import com.shopaccgame.dto.SteamAccountAdminDto;
 import com.shopaccgame.dto.SteamAccountRequestDto;
 import com.shopaccgame.entity.SteamAccount;
+import com.shopaccgame.entity.enums.AccountType;
+import com.shopaccgame.entity.enums.AccountStatus;
 import com.shopaccgame.service.SteamAccountService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -91,7 +93,7 @@ public class SteamAccountController {
     
     @GetMapping("/type/{accountType}")
     public ResponseEntity<Page<SteamAccountDto>> getSteamAccountsByType(
-            @PathVariable SteamAccount.AccountType accountType,
+            @PathVariable AccountType accountType,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         
@@ -119,14 +121,14 @@ public class SteamAccountController {
     
     @GetMapping("/available/{accountType}")
     public ResponseEntity<List<SteamAccountDto>> getAvailableAccountsByType(
-            @PathVariable SteamAccount.AccountType accountType) {
+            @PathVariable AccountType accountType) {
         List<SteamAccountDto> accounts = steamAccountService.getAvailableAccountsByType(accountType);
         return ResponseEntity.ok(accounts);
     }
     
     @GetMapping("/status/{status}")
     public ResponseEntity<List<SteamAccountDto>> getAccountsByStatus(
-            @PathVariable SteamAccount.AccountStatus status) {
+            @PathVariable AccountStatus status) {
         List<SteamAccountDto> accounts = steamAccountService.getAccountsByStatus(status);
         return ResponseEntity.ok(accounts);
     }
@@ -160,7 +162,7 @@ public class SteamAccountController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<SteamAccountDto> updateAccountStatus(
             @PathVariable Long id, 
-            @RequestParam SteamAccount.AccountStatus status) {
+            @RequestParam AccountStatus status) {
         try {
             SteamAccountDto updatedAccount = steamAccountService.updateAccountStatus(id, status);
             logger.info("Steam account status updated successfully: {}", updatedAccount.getName());
@@ -188,19 +190,16 @@ public class SteamAccountController {
         Map<String, Object> stats = new HashMap<>();
         
         // Count available accounts by type
-        stats.put("steamOnlineAvailable", steamAccountService.getAvailableCountByType(SteamAccount.AccountType.STEAM_ACCOUNT_ONLINE));
-        stats.put("steamOfflineAvailable", steamAccountService.getAvailableCountByType(SteamAccount.AccountType.STEAM_ACCOUNT_OFFLINE));
-        stats.put("epicAvailable", steamAccountService.getAvailableCountByType(SteamAccount.AccountType.EPIC_ACCOUNT));
-        stats.put("originAvailable", steamAccountService.getAvailableCountByType(SteamAccount.AccountType.ORIGIN_ACCOUNT));
-        stats.put("uplayAvailable", steamAccountService.getAvailableCountByType(SteamAccount.AccountType.UPLAY_ACCOUNT));
-        stats.put("gogAvailable", steamAccountService.getAvailableCountByType(SteamAccount.AccountType.GOG_ACCOUNT));
-        stats.put("otherAvailable", steamAccountService.getAvailableCountByType(SteamAccount.AccountType.OTHER_ACCOUNT));
+        stats.put("multiGamesAvailable", steamAccountService.getAvailableCountByType(AccountType.MULTI_GAMES));
+        stats.put("oneGameAvailable", steamAccountService.getAvailableCountByType(AccountType.ONE_GAME));
+        stats.put("discountedAvailable", steamAccountService.getAvailableCountByType(AccountType.DISCOUNTED));
+        stats.put("otherAvailable", steamAccountService.getAvailableCountByType(AccountType.OTHER_ACCOUNT));
         
         // Get accounts by status
-        stats.put("availableAccounts", steamAccountService.getAccountsByStatus(SteamAccount.AccountStatus.AVAILABLE).size());
-        stats.put("soldAccounts", steamAccountService.getAccountsByStatus(SteamAccount.AccountStatus.SOLD).size());
-        stats.put("reservedAccounts", steamAccountService.getAccountsByStatus(SteamAccount.AccountStatus.RESERVED).size());
-        stats.put("maintenanceAccounts", steamAccountService.getAccountsByStatus(SteamAccount.AccountStatus.MAINTENANCE).size());
+        stats.put("availableAccounts", steamAccountService.getAccountsByStatus(AccountStatus.AVAILABLE).size());
+        stats.put("soldAccounts", steamAccountService.getAccountsByStatus(AccountStatus.SOLD).size());
+        stats.put("preOrderAccounts", steamAccountService.getAccountsByStatus(AccountStatus.PRE_ORDER).size());
+        stats.put("maintenanceAccounts", steamAccountService.getAccountsByStatus(AccountStatus.MAINTENANCE).size());
         
         return ResponseEntity.ok(stats);
     }
