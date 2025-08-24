@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { useToast } from '../hooks/use-toast';
@@ -13,6 +14,7 @@ const SteamAccountDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
+  const { addToCart } = useCart();
   const [account, setAccount] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
@@ -82,7 +84,7 @@ const SteamAccountDetail = () => {
     setShowPaymentDialog(true);
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!isAuthenticated) {
       toast({
         title: "Yêu cầu đăng nhập",
@@ -93,12 +95,10 @@ const SteamAccountDetail = () => {
       return;
     }
     
-    // TODO: Implement add to cart functionality
-    toast({
-      title: "Thành công",
-      description: "Đã thêm vào giỏ hàng",
-      variant: "default",
-    });
+    const success = await addToCart(account.id, 1);
+    if (success) {
+      // Success toast is handled by the cart context
+    }
   };
 
   const handlePaymentSuccess = (order) => {
@@ -214,7 +214,7 @@ const SteamAccountDetail = () => {
                 )}
               </div>
               <p className="text-sm text-gray-500">
-                Stock: {account.stockQuantity} available
+                {account.status === 'PRE_ORDER' ? 'Pre-order available' : `Stock: ${account.stockQuantity} available`}
               </p>
             </div>
 
@@ -258,21 +258,23 @@ const SteamAccountDetail = () => {
               {/* Area 5: Buy Now Button */}
               <Button 
                 className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 text-lg"
-                disabled={account.status !== 'AVAILABLE' || account.stockQuantity <= 0}
+                disabled={account.status === 'SOLD' || account.status === 'MAINTENANCE'}
                 onClick={handleBuyNow}
               >
-                <div className="text-center">
-                  <div className="font-bold">MUA NGAY</div>
+                <div className="font-bold">
+                  {account.status === 'PRE_ORDER' ? 'ĐẶT HÀNG' : 'MUA NGAY'}
                 </div>
               </Button>
 
               {/* Area 6: Add to Cart Button */}
               <Button 
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 text-lg"
-                disabled={account.status !== 'AVAILABLE' || account.stockQuantity <= 0}
+                disabled={account.status === 'SOLD' || account.status === 'MAINTENANCE' || account.status === 'PRE_ORDER'}
                 onClick={handleAddToCart}
               >
-                THÊM VÀO GIỎ
+                <div className="font-bold">
+                  {account.status === 'PRE_ORDER' ? 'ĐẶT HÀNG' : 'THÊM VÀO GIỎ'}
+                </div>
               </Button>
             </div>
           </div>

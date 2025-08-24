@@ -51,6 +51,7 @@ public class SecurityConfig {
                 .requestMatchers("/sepay/webhook/**").permitAll() // Allow sepay webhook without authentication
                 .requestMatchers("/steam-accounts/**").permitAll() // Allow viewing steam accounts without auth
                 .requestMatchers("/steam-account-orders/**").authenticated() // Require auth for orders
+                .requestMatchers("/cart/**").authenticated() // Require auth for cart operations
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )

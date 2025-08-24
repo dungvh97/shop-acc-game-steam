@@ -2,18 +2,35 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Trash2, ShoppingCart } from 'lucide-react';
+import { Trash2, ShoppingCart, Minus, Plus } from 'lucide-react';
+import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
+import { BACKEND_CONFIG } from '../lib/config';
 
 const Cart = () => {
-  // Mock cart data - in a real app this would come from a cart context/state
-  const cartItems = [];
+  const { cartItems, removeFromCart, updateQuantity, clearCart, getCartTotal, loading } = useCart();
+  const { isAuthenticated } = useAuth();
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-800 mb-8">Giỏ hàng</h1>
         
-        {cartItems.length === 0 ? (
+        {!isAuthenticated ? (
+          <div className="text-center py-12">
+            <ShoppingCart className="h-24 w-24 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-600 mb-2">Vui lòng đăng nhập</h2>
+            <p className="text-gray-500 mb-6">Bạn cần đăng nhập để xem giỏ hàng</p>
+            <Link to="/login">
+              <Button>Đăng nhập</Button>
+            </Link>
+          </div>
+        ) : loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+            <p className="text-gray-500">Đang tải giỏ hàng...</p>
+          </div>
+        ) : cartItems.length === 0 ? (
           <div className="text-center py-12">
             <ShoppingCart className="h-24 w-24 text-gray-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-600 mb-2">Giỏ hàng trống</h2>
@@ -28,8 +45,13 @@ const Cart = () => {
               <Card key={item.id}>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    <span>{item.name}</span>
-                    <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                    <span>{item.steamAccountName}</span>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-red-600 hover:text-red-700"
+                      onClick={() => removeFromCart(item.steamAccountId)}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </CardTitle>
@@ -38,17 +60,49 @@ const Cart = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <img 
-                        src={item.imageUrl} 
-                        alt={item.name} 
+                        src={BACKEND_CONFIG.getImageUrl(item.steamAccountImageUrl)} 
+                        alt={item.steamAccountName} 
                         className="w-16 h-16 object-cover rounded"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
                       />
+                      <div className="w-16 h-16 bg-gray-300 rounded flex items-center justify-center hidden">
+                        <svg className="w-8 h-8 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                        </svg>
+                      </div>
                       <div>
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-sm text-gray-500">{item.description}</p>
+                        <p className="font-medium">{item.steamAccountName}</p>
+                        <p className="text-sm text-gray-500">{item.steamAccountDescription}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-lg">{item.price} VND</p>
+                    <div className="text-right space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => updateQuantity(item.steamAccountId, item.quantity - 1)}
+                          disabled={item.quantity <= 1}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <span className="w-8 text-center">{item.quantity}</span>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => updateQuantity(item.steamAccountId, item.quantity + 1)}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      <p className="font-bold text-lg">
+                        {new Intl.NumberFormat('vi-VN', {
+                          style: 'currency',
+                          currency: 'VND'
+                        }).format(item.unitPrice * item.quantity)}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -56,8 +110,20 @@ const Cart = () => {
             ))}
             
             <div className="flex justify-between items-center pt-6 border-t">
-              <div className="text-xl font-bold">
-                Tổng cộng: {cartItems.reduce((sum, item) => sum + item.price, 0)} VND
+              <div className="space-y-2">
+                <div className="text-xl font-bold">
+                  Tổng cộng: {new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND'
+                  }).format(getCartTotal())}
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={clearCart}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  Xóa tất cả
+                </Button>
               </div>
               <Button size="lg">Thanh toán</Button>
             </div>

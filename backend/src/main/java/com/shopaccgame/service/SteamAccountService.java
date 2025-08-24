@@ -109,7 +109,7 @@ public class SteamAccountService {
         steamAccount.setPassword(requestDto.getPassword());
         steamAccount.setActiveKey(requestDto.getActiveKey());
         steamAccount.setAccountType(requestDto.getAccountType());
-        steamAccount.setStatus(AccountStatus.AVAILABLE);
+        steamAccount.setStatus(requestDto.getStatus() != null ? requestDto.getStatus() : AccountStatus.AVAILABLE);
         steamAccount.setPrice(requestDto.getPrice());
         steamAccount.setOriginalPrice(requestDto.getOriginalPrice());
         steamAccount.setDiscountPercentage(requestDto.getDiscountPercentage());
@@ -161,6 +161,9 @@ public class SteamAccountService {
         }
         existingAccount.setActiveKey(requestDto.getActiveKey());
         existingAccount.setAccountType(requestDto.getAccountType());
+        if (requestDto.getStatus() != null) {
+            existingAccount.setStatus(requestDto.getStatus());
+        }
         existingAccount.setPrice(requestDto.getPrice());
         existingAccount.setOriginalPrice(requestDto.getOriginalPrice());
         existingAccount.setDiscountPercentage(requestDto.getDiscountPercentage());

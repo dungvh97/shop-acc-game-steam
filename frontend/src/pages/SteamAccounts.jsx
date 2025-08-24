@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -16,6 +17,7 @@ const SteamAccounts = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
+  const { addToCart } = useCart();
   
   const [allAccounts, setAllAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -149,6 +151,23 @@ const SteamAccounts = () => {
     
     setSelectedAccount(account);
     setShowPaymentDialog(true);
+  };
+
+  const handleAddToCart = async (account) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Yêu cầu đăng nhập",
+        description: "Bạn phải đăng nhập để có thể thêm vào giỏ hàng",
+        variant: "destructive",
+      });
+      navigate('/login');
+      return;
+    }
+    
+    const success = await addToCart(account.id, 1);
+    if (success) {
+      // Success toast is handled by the cart context
+    }
   };
 
   const handlePaymentSuccess = (order) => {
@@ -285,7 +304,7 @@ const SteamAccounts = () => {
 
                       {/* Stock */}
                       <div className="text-sm text-gray-500 mb-3">
-                        Stock: {account.stockQuantity} available
+                        {account.status === 'PRE_ORDER' ? 'Pre-order available' : `Stock: ${account.stockQuantity} available`}
                       </div>
 
                       {/* Games */}
@@ -310,12 +329,20 @@ const SteamAccounts = () => {
                       {/* Action Buttons */}
                       <div className="flex gap-2">
                         <Button 
-                          className="w-full"
-                          disabled={account.status !== 'AVAILABLE' || account.stockQuantity <= 0}
+                          className="flex-1"
+                          disabled={account.status === 'SOLD' || account.status === 'MAINTENANCE'}
                           onClick={() => handleBuyNow(account)}
                         >
-                          Buy Now
+                          {account.status === 'PRE_ORDER' ? 'ĐẶT HÀNG' : 'MUA NGAY'}
                         </Button>
+                        {account.status === 'AVAILABLE' && (
+                          <Button 
+                            className="flex-1 bg-blue-600 hover:bg-blue-700"
+                            onClick={() => handleAddToCart(account)}
+                          >
+                            THÊM VÀO GIỎ
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

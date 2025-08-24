@@ -3,9 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { User, LogOut, LogIn, UserPlus, Search, ShoppingCart, ChevronDown } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
+  const { cartCount } = useCart();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -148,9 +150,14 @@ const Navbar = () => {
               <div className="w-px h-4 bg-gray-300"></div>
               
               {/* Cart (moved to right) */}
-              <Link to="/cart" className="flex items-center space-x-1 text-gray-700 hover:text-red-600 transition-colors">
+              <Link to="/cart" className="flex items-center space-x-1 text-gray-700 hover:text-red-600 transition-colors relative">
                 <ShoppingCart className="h-4 w-4" />
                 <span className="hidden sm:inline text-sm">Giỏ hàng</span>
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </span>
+                )}
               </Link>
             </div>
           </div>

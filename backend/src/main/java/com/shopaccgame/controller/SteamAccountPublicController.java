@@ -69,8 +69,8 @@ public class SteamAccountPublicController {
     public ResponseEntity<SteamAccountDto> getSteamAccountById(@PathVariable Long id) {
         return steamAccountService.getSteamAccountById(id)
             .map(account -> {
-                // Only return if account is available
-                if (account.getStatus() == AccountStatus.AVAILABLE) {
+                // Return if account is available or pre-order
+                if (account.getStatus() == AccountStatus.AVAILABLE || account.getStatus() == AccountStatus.PRE_ORDER) {
                     return account;
                 } else {
                     return null;
@@ -116,9 +116,9 @@ public class SteamAccountPublicController {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<SteamAccountDto> accounts = steamAccountService.searchSteamAccounts(q, pageable);
         
-        // Filter to only show available accounts
+        // Filter to show available and pre-order accounts
         List<SteamAccountDto> availableAccounts = accounts.getContent().stream()
-            .filter(account -> account.getStatus() == AccountStatus.AVAILABLE)
+            .filter(account -> account.getStatus() == AccountStatus.AVAILABLE || account.getStatus() == AccountStatus.PRE_ORDER)
             .toList();
         
         // Convert to page format

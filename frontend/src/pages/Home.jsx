@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
 import { Star, TrendingUp, Gamepad2, User, Package } from 'lucide-react';
-import { useToast } from '../hooks/use-toast';
 import { getAvailableSteamAccounts } from '../lib/api.js';
 import { BACKEND_CONFIG } from '../lib/config';
 import GameSlideshow from '../components/GameSlideshow';
@@ -11,7 +10,7 @@ import GameSlideshow from '../components/GameSlideshow';
 const Home = () => {
   const [featuredAccounts, setFeaturedAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+
 
   useEffect(() => {
     const loadFeaturedAccounts = async () => {
@@ -125,7 +124,8 @@ const Home = () => {
                   {/* Status Badge */}
                   <div className="absolute top-1 right-1">
                     <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${getStatusColor(account.status)}`}>
-                      {account.status === 'AVAILABLE' ? 'Available' : account.status}
+                      {account.status === 'AVAILABLE' ? 'Available' : 
+                       account.status === 'PRE_ORDER' ? 'Pre-Order' : account.status}
                     </span>
                   </div>
                 </CardHeader>
@@ -148,7 +148,7 @@ const Home = () => {
                       </span>
                     </div>
                     <div className="text-xs text-gray-500">
-                      Stock: {account.stockQuantity}
+                      {account.status === 'PRE_ORDER' ? 'Pre-order' : `Stock: ${account.stockQuantity}`}
                     </div>
                   </div>
                 </CardContent>

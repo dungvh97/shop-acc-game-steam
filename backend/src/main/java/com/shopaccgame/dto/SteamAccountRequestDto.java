@@ -2,6 +2,7 @@ package com.shopaccgame.dto;
 
 import com.shopaccgame.entity.SteamAccount;
 import com.shopaccgame.entity.enums.AccountType;
+import com.shopaccgame.entity.enums.AccountStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -29,6 +30,8 @@ public class SteamAccountRequestDto {
     
     @NotNull(message = "Account type is required")
     private AccountType accountType;
+    
+    private AccountStatus status;
     
     @NotNull(message = "Price is required")
     @Positive(message = "Price must be positive")
@@ -90,6 +93,14 @@ public class SteamAccountRequestDto {
     
     public void setAccountType(AccountType accountType) {
         this.accountType = accountType;
+    }
+    
+    public AccountStatus getStatus() {
+        return status;
+    }
+    
+    public void setStatus(AccountStatus status) {
+        this.status = status;
     }
     
     public BigDecimal getPrice() {

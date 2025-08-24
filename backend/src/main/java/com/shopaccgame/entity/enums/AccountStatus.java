@@ -1,9 +1,9 @@
 package com.shopaccgame.entity.enums;
 
 public enum AccountStatus {
-    PRE_ORDER,
     AVAILABLE,
-    ORDERED,
+    PRE_ORDER,
     SOLD,
+    ORDERED,
     MAINTENANCE
 }

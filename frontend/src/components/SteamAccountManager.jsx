@@ -231,6 +231,7 @@ const SteamAccountManager = () => {
     password: '',
     activeKey: '',
     accountType: 'MULTI_GAMES',
+    status: 'AVAILABLE',
     price: '',
     originalPrice: '',
     discountPercentage: '',
@@ -424,6 +425,7 @@ const SteamAccountManager = () => {
         originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
         discountPercentage: formData.discountPercentage ? Number(formData.discountPercentage) : 0,
         stockQuantity: Number(formData.stockQuantity),
+        status: formData.status,
         imageUrl: imageUrl
       };
 
@@ -512,6 +514,7 @@ const SteamAccountManager = () => {
       password: '', // Don't show password
       activeKey: account.activeKey || '',
       accountType: account.accountType,
+      status: account.status || 'AVAILABLE',
       price: account.price?.toString() || '',
       originalPrice: account.originalPrice?.toString() || '',
       discountPercentage: account.discountPercentage?.toString() || '',
@@ -531,6 +534,7 @@ const SteamAccountManager = () => {
       password: '',
       activeKey: '',
       accountType: 'MULTI_GAMES',
+      status: 'AVAILABLE',
       price: '',
       originalPrice: '',
       discountPercentage: '',
@@ -692,6 +696,27 @@ const SteamAccountManager = () => {
                   </select>
                   {validationErrors.accountType && (
                     <div className="text-xs text-red-600 mt-1">{validationErrors.accountType}</div>
+                  )}
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Account Status *</label>
+                  <select
+                    className={`w-full border rounded h-10 px-3 ${validationErrors.status ? 'border-red-500' : ''}`}
+                    value={formData.status}
+                    onChange={(e) => {
+                      setFormData({...formData, status: e.target.value});
+                      if (validationErrors.status) {
+                        setValidationErrors({...validationErrors, status: null});
+                      }
+                    }}
+                    required
+                  >
+                    {accountStatuses.map(status => (
+                      <option key={status} value={status}>{status}</option>
+                    ))}
+                  </select>
+                  {validationErrors.status && (
+                    <div className="text-xs text-red-600 mt-1">{validationErrors.status}</div>
                   )}
                 </div>
                 <div>
