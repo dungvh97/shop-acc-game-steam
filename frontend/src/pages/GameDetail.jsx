@@ -71,7 +71,7 @@ const GameDetail = () => {
 
 
   return (
-    <div className="w-full max-w-8xl mx-auto px-4 py-8">
+    <div>
       {/* Breadcrumbs */}
       {fromSteamAccount && steamAccountId && (
         <div className="bg-gray-50 py-3 mb-6 rounded-lg">
@@ -80,51 +80,56 @@ const GameDetail = () => {
               accountType={steamAccount?.accountType} 
               accountId={steamAccountId}
               isGameDetail={true}
-              accountName={`${steamAccount?.name || 'Steam Account'} >> ${game?.name || 'Game'}`}
+              accountName={steamAccount?.name}
+              gameName={game?.name || 'Game'}
             />
           </div>
         </div>
       )}
+      
+      <div className="w-full max-w-8xl mx-auto px-4 py-8">
 
-      {/* Game Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">{game.name}</h1>
-      </div>
 
-      {/* Game Content */}
-      <div className="max-w-4xl mx-auto">
-        {/* Game Image */}
+        {/* Game Header */}
         <div className="mb-8">
-          <img 
-             src={imageSrc} 
-             alt={game.name} 
-             className="w-full h-96 object-contain rounded-lg shadow-lg bg-gray-100"
-             onError={(e) => {
-               e.target.style.display = 'none';
-               e.target.nextSibling.style.display = 'flex';
-             }}
-           />
-          <div className="w-full h-96 bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center rounded-lg shadow-lg hidden">
-            <div className="text-white text-center">
-              <div className="text-6xl mb-4">🎮</div>
-              <p>Không có hình ảnh</p>
-            </div>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{game.name}</h1>
         </div>
 
-        {/* Game Description */}
-        {game.description && (
-          <div className="bg-white p-6 rounded-lg shadow-lg border">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Mô tả game</h3>
-            <div className="prose max-w-none">
-              <p className="text-gray-700 leading-relaxed">
-                {game.description.replace(/<[^>]*>/g, '')}
-              </p>
+        {/* Game Content */}
+        <div className="max-w-4xl mx-auto">
+          {/* Game Image */}
+          <div className="mb-8">
+            <img 
+              src={imageSrc} 
+              alt={game.name} 
+              className="w-full h-96 object-contain rounded-lg shadow-lg bg-gray-100"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+            <div className="w-full h-96 bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center rounded-lg shadow-lg hidden">
+              <div className="text-white text-center">
+                <div className="text-6xl mb-4">🎮</div>
+                <p>Không có hình ảnh</p>
+              </div>
             </div>
           </div>
-        )}
-      </div>
 
+          {/* Game Description */}
+          {game.description && (
+            <div className="bg-white p-6 rounded-lg shadow-lg border">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Mô tả game</h3>
+              <div className="prose max-w-none">
+                <p className="text-gray-700 leading-relaxed">
+                  {game.description.replace(/<[^>]*>/g, '')}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+      </div>
     </div>
   );
 };

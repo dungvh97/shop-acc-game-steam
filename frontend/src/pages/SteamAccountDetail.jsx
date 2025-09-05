@@ -156,15 +156,15 @@ const SteamAccountDetail = () => {
             {account.games && account.games.length > 0 && (
               <div className="relative">
                 <img 
-                  src={BACKEND_CONFIG.getImageUrl(account.games[0].imageUrl)} 
-                  alt={account.games[0].name} 
+                  src={BACKEND_CONFIG.getImageUrl(account.imageUrl)} 
+                  alt={account.name} 
                   className="w-full h-96 object-cover rounded-lg shadow-lg"
                   onError={(e) => {
                     e.target.style.display = 'none';
                     e.target.nextSibling.style.display = 'flex';
                   }}
                 />
-                <div className="w-full h-96 bg-gray-300 rounded-lg shadow-lg flex items-center justify-center" style={{ display: account.games[0].imageUrl ? 'none' : 'flex' }}>
+                <div className="w-full h-96 bg-gray-300 rounded-lg shadow-lg flex items-center justify-center" style={{ display: account.imageUrl ? 'none' : 'flex' }}>
                   <svg className="w-24 h-24 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
                   </svg>
@@ -271,7 +271,7 @@ const SteamAccountDetail = () => {
                 onClick={handleAddToCart}
               >
                 <div className="font-bold">
-                  {account.status === 'PRE_ORDER' ? 'ĐẶT HÀNG' : 'THÊM VÀO GIỎ'}
+                  THÊM VÀO GIỎ
                 </div>
               </Button>
             </div>
@@ -308,9 +308,6 @@ const SteamAccountDetail = () => {
                           {game.name}
                         </h3>
                       </Link>
-                      <p className="text-xs text-muted-foreground">
-                        {formatPrice(game.price)}
-                      </p>
                     </div>
                   </CardContent>
                 </Card>

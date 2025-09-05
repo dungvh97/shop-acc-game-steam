@@ -105,6 +105,28 @@ public class GameService {
     }
     
     /**
+     * Get count of active games (games with steam accounts available)
+     * @return Count of games that have at least one available steam account
+     */
+    public long getActiveGameCount() {
+        clearSessionCache();
+        // For now, return all games as "active" since we don't have an active field
+        // In the future, this could be based on games that have available steam accounts
+        return gameRepository.count();
+    }
+    
+    /**
+     * Get count of featured games
+     * @return Count of featured games (currently returns 0 since no featured field exists)
+     */
+    public long getFeaturedGameCount() {
+        clearSessionCache();
+        // For now, return 0 since we don't have a featured field
+        // In the future, this could be based on a featured flag or other criteria
+        return 0L;
+    }
+    
+    /**
      * Debug method to verify database state
      * @return List of all games
      */

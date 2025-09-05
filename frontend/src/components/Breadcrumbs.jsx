@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const Breadcrumbs = ({ accountType, accountId, isGameDetail = false, accountName = '' }) => {
+const Breadcrumbs = ({ accountType, accountId, isGameDetail = false, accountName = '', gameName = '' }) => {
   const getBreadcrumbText = () => {
     switch (accountType) {
       case 'ONE_GAME':
@@ -47,7 +47,17 @@ const Breadcrumbs = ({ accountType, accountId, isGameDetail = false, accountName
       {accountName && (
         <>
           <span className="mx-2 whitespace-nowrap">{'>>'}</span>
-          <span className="text-gray-800 whitespace-nowrap">{accountName}</span>
+          <span className="text-gray-600 whitespace-nowrap">
+          <Link to={`/steam-accounts/${accountId}`} className="hover:text-red-600">
+            {accountName}
+          </Link>
+          </span>
+        </>
+      )}
+      {gameName && (
+        <>
+          <span className="mx-2 whitespace-nowrap">{'>>'}</span>
+          <span className="text-gray-600 whitespace-nowrap">{gameName}</span>
         </>
       )}
     </nav>
