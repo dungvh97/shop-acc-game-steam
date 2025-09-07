@@ -4,24 +4,31 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { useToast } from '../hooks/use-toast';
 import { createSteamAccountOrder, checkOrderStatus } from '../lib/api';
 
-const PaymentDialog = ({ account, isOpen, onClose, onSuccess }) => {
+const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess }) => {
   const { toast } = useToast();
-  const [order, setOrder] = useState(null);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(1800); // 30 minutes in seconds
   const [pollingInterval, setPollingInterval] = useState(null);
 
   useEffect(() => {
-    if (isOpen && account) {
-      createOrder();
+    if (isOpen) {
+      if (cartOrders && cartOrders.length > 0) {
+        // Handle cart orders
+        setOrders(cartOrders);
+        setTimeLeft(1800);
+      } else if (account) {
+        // Handle single account order
+        createOrder();
+      }
     }
-  }, [isOpen, account]);
+  }, [isOpen, account, cartOrders]);
 
   useEffect(() => {
-    if (order && order.status === 'PENDING') {
+    if (orders.length > 0 && orders.some(order => order.status === 'PENDING')) {
       // Start polling for order status
       const interval = setInterval(() => {
-        checkOrder();
+        checkOrders();
       }, 5000); // Check every 5 seconds
       setPollingInterval(interval);
 
@@ -41,13 +48,13 @@ const PaymentDialog = ({ account, isOpen, onClose, onSuccess }) => {
         clearInterval(timer);
       };
     }
-  }, [order]);
+  }, [orders]);
 
   const createOrder = async () => {
     setLoading(true);
     try {
       const orderData = await createSteamAccountOrder(account.id);
-      setOrder(orderData);
+      setOrders([orderData]);
       setTimeLeft(1800); // Reset timer
     } catch (error) {
       console.error('Error creating order:', error);
@@ -62,16 +69,26 @@ const PaymentDialog = ({ account, isOpen, onClose, onSuccess }) => {
     }
   };
 
-  const checkOrder = async () => {
-    if (!order) return;
+  const checkOrders = async () => {
+    if (orders.length === 0) return;
     
     try {
-      const updatedOrder = await checkOrderStatus(order.orderId);
-      setOrder(updatedOrder);
+      const updatedOrders = await Promise.all(
+        orders.map(async (order) => {
+          if (order.status === 'PENDING') {
+            return await checkOrderStatus(order.orderId);
+          }
+          return order;
+        })
+      );
       
-      if (updatedOrder.status === 'PAID') {
+      setOrders(updatedOrders);
+      
+      // Check if all orders are paid
+      const allPaid = updatedOrders.every(order => order.status === 'PAID');
+      if (allPaid) {
         clearInterval(pollingInterval);
-        onSuccess(updatedOrder);
+        onSuccess(updatedOrders[0]); // Pass the first order for navigation
       }
     } catch (error) {
       console.error('Error checking order status:', error);
@@ -95,7 +112,7 @@ const PaymentDialog = ({ account, isOpen, onClose, onSuccess }) => {
     if (pollingInterval) {
       clearInterval(pollingInterval);
     }
-    setOrder(null);
+    setOrders([]);
     setTimeLeft(1800);
     onClose();
   };
@@ -120,43 +137,55 @@ const PaymentDialog = ({ account, isOpen, onClose, onSuccess }) => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
               <p>Creating order...</p>
             </div>
-          ) : order ? (
+          ) : orders.length > 0 ? (
             <>
-              {/* Order Overview */}
+              {/* Orders Overview */}
               <div className="space-y-3">
-                <h3 className="font-semibold text-lg">Order Overview</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Order ID:</span>
-                    <span className="font-mono">{order.orderId}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Account:</span>
-                    <span>{order.accountName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Type:</span>
-                    <span>{order.accountType}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Amount:</span>
-                    <span className="font-bold text-primary">{formatPrice(order.amount)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Status:</span>
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                      order.status === 'PAID' ? 'bg-green-100 text-green-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {order.status}
-                    </span>
-                  </div>
+                <h3 className="font-semibold text-lg">
+                  {orders.length === 1 ? 'Order Overview' : `Orders Overview (${orders.length} items)`}
+                </h3>
+                <div className="space-y-3 max-h-40 overflow-y-auto">
+                  {orders.map((order, index) => (
+                    <div key={order.orderId} className="border rounded p-3 space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Order #{index + 1}:</span>
+                        <span className="font-mono">{order.orderId}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Account:</span>
+                        <span>{order.accountName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Type:</span>
+                        <span>{order.accountType}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Amount:</span>
+                        <span className="font-bold text-primary">{formatPrice(order.amount)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Status:</span>
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                          order.status === 'PAID' ? 'bg-green-100 text-green-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {order.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-between font-bold text-lg border-t pt-2">
+                  <span>Total Amount:</span>
+                  <span className="text-primary">
+                    {formatPrice(orders.reduce((total, order) => total + order.amount, 0))}
+                  </span>
                 </div>
               </div>
 
               {/* Payment Section */}
-              {order.status === 'PENDING' && (
+              {orders.some(order => order.status === 'PENDING') && (
                 <div className="space-y-4">
                   <div className="text-center">
                     <h4 className="font-semibold mb-2">Scan QR Code to Pay</h4>
@@ -167,7 +196,7 @@ const PaymentDialog = ({ account, isOpen, onClose, onSuccess }) => {
                   
                   <div className="flex justify-center">
                     <img 
-                      src={order.qrCodeUrl} 
+                      src={orders.find(order => order.status === 'PENDING')?.qrCodeUrl} 
                       alt="QR Code for Payment"
                       className="w-48 h-48 border rounded-lg"
                     />
@@ -176,14 +205,14 @@ const PaymentDialog = ({ account, isOpen, onClose, onSuccess }) => {
                   <div className="text-center text-sm text-muted-foreground">
                     <p>Bank: TPBank</p>
                     <p>Account: 27727998888</p>
-                    <p>Amount: {formatPrice(order.amount)}</p>
-                    <p>Description: {order.orderId}</p>
+                    <p>Amount: {formatPrice(orders.reduce((total, order) => total + order.amount, 0))}</p>
+                    <p>Description: {orders.map(order => order.orderId).join(', ')}</p>
                   </div>
                   
                   <div className="text-center">
                     <Button 
                       variant="outline" 
-                      onClick={checkOrder}
+                      onClick={checkOrders}
                       className="w-full"
                     >
                       Check Payment Status
@@ -193,7 +222,7 @@ const PaymentDialog = ({ account, isOpen, onClose, onSuccess }) => {
               )}
 
               {/* Success Section */}
-              {order.status === 'PAID' && (
+              {orders.every(order => order.status === 'PAID') && (
                 <div className="space-y-4">
                   <div className="text-center">
                     <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -209,21 +238,26 @@ const PaymentDialog = ({ account, isOpen, onClose, onSuccess }) => {
                   
                   <div className="space-y-3">
                     <h5 className="font-semibold">Account Credentials</h5>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>Username:</span>
-                        <span className="font-mono bg-gray-100 px-2 py-1 rounded">{order.accountUsername}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Password:</span>
-                        <span className="font-mono bg-gray-100 px-2 py-1 rounded">{order.accountPassword}</span>
-                      </div>
+                    <div className="space-y-3 max-h-40 overflow-y-auto">
+                      {orders.map((order, index) => (
+                        <div key={order.orderId} className="border rounded p-3 space-y-2 text-sm">
+                          <div className="font-semibold">Account #{index + 1}: {order.accountName}</div>
+                          <div className="flex justify-between">
+                            <span>Username:</span>
+                            <span className="font-mono bg-gray-100 px-2 py-1 rounded">{order.accountUsername}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Password:</span>
+                            <span className="font-mono bg-gray-100 px-2 py-1 rounded">{order.accountPassword}</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                   
                   <div className="text-center">
                     <Button 
-                      onClick={() => onSuccess(order)}
+                      onClick={() => onSuccess(orders[0])}
                       className="w-full"
                     >
                       View Order Details
@@ -233,7 +267,7 @@ const PaymentDialog = ({ account, isOpen, onClose, onSuccess }) => {
               )}
 
               {/* Expired Section */}
-              {order.status === 'EXPIRED' && (
+              {orders.some(order => order.status === 'EXPIRED') && (
                 <div className="text-center space-y-4">
                   <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
                     <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

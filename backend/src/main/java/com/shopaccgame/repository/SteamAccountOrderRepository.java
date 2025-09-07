@@ -35,5 +35,8 @@ public interface SteamAccountOrderRepository extends JpaRepository<SteamAccountO
     @Query("SELECT o FROM SteamAccountOrder o WHERE o.account.id = :accountId AND o.status IN ('PENDING', 'PAID')")
     List<SteamAccountOrder> findActiveOrdersByAccountId(@Param("accountId") Long accountId);
     
+    @Query("SELECT o FROM SteamAccountOrder o WHERE o.account.id = :accountId")
+    List<SteamAccountOrder> findByAccountId(@Param("accountId") Long accountId);
+    
     boolean existsByAccountIdAndStatusIn(Long accountId, List<SteamAccountOrder.OrderStatus> statuses);
 }

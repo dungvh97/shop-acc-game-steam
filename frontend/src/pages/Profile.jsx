@@ -481,43 +481,134 @@ const Profile = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {ordersLoading ? (
-                    <div className="text-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
-                      <p className="text-gray-500 mt-2">Đang tải...</p>
-                    </div>
-                  ) : userOrders.length > 0 ? (
-                    <div className="space-y-4">
-                      {userOrders.map((order) => (
-                        <div key={order.orderId} className="border rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium">Đơn hàng #{order.orderId}</h4>
-                            <Badge variant={order.status === 'COMPLETED' ? 'default' : 'secondary'}>
-                              {order.status === 'COMPLETED' ? 'Hoàn thành' : order.status}
-                            </Badge>
+                {ordersLoading ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">Đang tải...</p>
+                  </div>
+                ) : userOrders.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">
+                      Bạn chưa có đơn hàng nào
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {userOrders.map((order) => (
+                      <div key={order.id} className="border rounded-lg p-4 space-y-3">
+                        {/* Order Header */}
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-semibold">{order.accountName}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              Mã đơn hàng: {order.orderId}
+                            </p>
                           </div>
-                          <p className="text-sm text-gray-600 mb-2">
-                            {order.accountName} - {order.accountType}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {new Date(order.createdAt).toLocaleDateString('vi-VN')}
-                          </p>
+                          <div className="text-right">
+                            {getStatusBadge(order.status)}
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {formatDate(order.createdAt)}
+                            </p>
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-600 mb-2">Chưa có hoạt động nào</h3>
-                      <p className="text-gray-500">
-                        Bạn chưa có đơn hàng nào. Hãy mua sắm để bắt đầu!
-                      </p>
-                      <Link to="/steam-accounts" className="inline-block mt-4">
-                        <Button>Xem Steam Accounts</Button>
-                      </Link>
-                    </div>
-                  )}
-                </CardContent>
+
+                        {/* Order Details */}
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Loại tài khoản:</span>
+                            <p>{order.accountType}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Số tiền:</span>
+                            <p>{order.amount?.toLocaleString('vi-VN')} VNĐ</p>
+                          </div>
+                        </div>
+
+                        {/* Account Credentials - Only show for PAID orders */}
+                        {order.status === 'PAID' && order.accountUsername && (
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-3 space-y-3">
+                            <h4 className="font-medium text-green-800 text-sm">
+                              Thông tin tài khoản
+                            </h4>
+                            
+                            {/* Username */}
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">
+                                Tên đăng nhập
+                              </label>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  value={order.accountUsername}
+                                  readOnly
+                                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs bg-white"
+                                />
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => copyToClipboard(order.accountUsername, `username-${order.id}`)}
+                                  className="h-6 w-6 p-0"
+                                >
+                                  {copiedField === `username-${order.id}` ? (
+                                    <Check className="h-3 w-3 text-green-600" />
+                                  ) : (
+                                    <Copy className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Password */}
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">
+                                Mật khẩu
+                              </label>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type={showPasswords[order.id] ? "text" : "password"}
+                                  value={order.accountPassword}
+                                  readOnly
+                                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs bg-white"
+                                />
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => togglePasswordVisibility(order.id)}
+                                  className="h-6 w-6 p-0"
+                                >
+                                  {showPasswords[order.id] ? (
+                                    <EyeOff className="h-3 w-3" />
+                                  ) : (
+                                    <Eye className="h-3 w-3" />
+                                  )}
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => copyToClipboard(order.accountPassword, `password-${order.id}`)}
+                                  className="h-6 w-6 p-0"
+                                >
+                                  {copiedField === `password-${order.id}` ? (
+                                    <Check className="h-3 w-3 text-green-600" />
+                                  ) : (
+                                    <Copy className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Payment Date for PAID orders */}
+                        {order.status === 'PAID' && order.paidAt && (
+                          <div className="text-xs text-muted-foreground">
+                            Thanh toán lúc: {formatDate(order.paidAt)}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
               </Card>
             </TabsContent>
           </Tabs>

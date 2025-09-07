@@ -1,15 +1,62 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Trash2, ShoppingCart, Minus, Plus } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../hooks/use-toast';
 import { BACKEND_CONFIG } from '../lib/config';
+import PaymentDialog from '../components/PaymentDialog';
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart, getCartTotal, loading } = useCart();
   const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [cartOrders, setCartOrders] = useState([]);
+
+  const handleCheckout = async () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Yêu cầu đăng nhập",
+        description: "Bạn phải đăng nhập để có thể thanh toán",
+        variant: "destructive",
+      });
+      navigate('/login');
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      toast({
+        title: "Giỏ hàng trống",
+        description: "Vui lòng thêm sản phẩm vào giỏ hàng trước khi thanh toán",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { checkoutCart } = await import('../lib/api');
+      const orders = await checkoutCart();
+      setCartOrders(orders);
+      setShowPaymentDialog(true);
+    } catch (error) {
+      console.error('Error during checkout:', error);
+      toast({
+        title: "Lỗi thanh toán",
+        description: "Không thể tạo đơn hàng. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePaymentSuccess = (order) => {
+    setShowPaymentDialog(false);
+    // Navigate to profile page with activity tab and payment success parameters
+    navigate(`/profile?tab=activity&payment=success&orderId=${order.orderId}`);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -125,11 +172,21 @@ const Cart = () => {
                   Xóa tất cả
                 </Button>
               </div>
-              <Button size="lg">Thanh toán</Button>
+              <Button size="lg" onClick={handleCheckout}>Thanh toán</Button>
             </div>
           </div>
         )}
       </div>
+
+      {/* Payment Dialog */}
+      {showPaymentDialog && cartOrders.length > 0 && (
+        <PaymentDialog
+          cartOrders={cartOrders}
+          isOpen={showPaymentDialog}
+          onClose={() => setShowPaymentDialog(false)}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
     </div>
   );
 };

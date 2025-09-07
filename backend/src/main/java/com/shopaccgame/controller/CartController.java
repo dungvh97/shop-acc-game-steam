@@ -1,6 +1,7 @@
 package com.shopaccgame.controller;
 
 import com.shopaccgame.dto.CartItemDto;
+import com.shopaccgame.dto.OrderResponseDto;
 import com.shopaccgame.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -107,6 +108,19 @@ public class CartController {
             BigDecimal total = cartService.getCartTotal(username);
             return ResponseEntity.ok(Map.of("total", total));
         } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    @PostMapping("/checkout")
+    public ResponseEntity<List<OrderResponseDto>> checkoutCart() {
+        try {
+            String username = getCurrentUsername();
+            List<OrderResponseDto> orders = cartService.checkoutCart(username);
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            System.err.println("Checkout error: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }

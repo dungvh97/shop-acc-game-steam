@@ -402,4 +402,11 @@ export const checkOrderStatus = async (orderId) => {
   return apiRequest(`/steam-account-orders/${orderId}/status`);
 };
 
+// Cart checkout - create orders from cart items
+export const checkoutCart = async () => {
+  return apiRequest('/cart/checkout', {
+    method: 'POST',
+  });
+};
+
 

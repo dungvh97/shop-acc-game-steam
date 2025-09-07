@@ -5,10 +5,12 @@ import com.shopaccgame.dto.SteamAccountAdminDto;
 import com.shopaccgame.dto.SteamAccountRequestDto;
 import com.shopaccgame.entity.Game;
 import com.shopaccgame.entity.SteamAccount;
+import com.shopaccgame.entity.SteamAccountOrder;
 import com.shopaccgame.entity.enums.AccountType;
 import com.shopaccgame.entity.enums.AccountStatus;
 import com.shopaccgame.repository.GameRepository;
 import com.shopaccgame.repository.SteamAccountRepository;
+import com.shopaccgame.repository.SteamAccountOrderRepository;
 import com.shopaccgame.service.EncryptionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +40,9 @@ public class SteamAccountService {
     
     @Autowired
     private EncryptionService encryptionService;
+    
+    @Autowired
+    private SteamAccountOrderRepository steamAccountOrderRepository;
     
     public List<SteamAccountDto> getAllSteamAccounts() {
         List<SteamAccount> accounts = steamAccountRepository.findAll();
@@ -202,6 +207,27 @@ public class SteamAccountService {
             throw new RuntimeException("Steam account not found with ID: " + id);
         }
         
+        // Check if there are any active orders for this account
+        List<SteamAccountOrder> activeOrders = steamAccountOrderRepository.findActiveOrdersByAccountId(id);
+        if (!activeOrders.isEmpty()) {
+            logger.warn("Steam account with ID: {} has {} active orders. Cancelling them before deletion.", id, activeOrders.size());
+            
+            // Cancel all active orders
+            for (SteamAccountOrder order : activeOrders) {
+                order.cancel();
+                logger.info("Cancelled order {} for account {}", order.getOrderId(), id);
+            }
+            steamAccountOrderRepository.saveAll(activeOrders);
+        }
+        
+        // Delete all related orders (this should work with CASCADE, but we'll do it manually for safety)
+        List<SteamAccountOrder> allOrders = steamAccountOrderRepository.findByAccountId(id);
+        if (!allOrders.isEmpty()) {
+            logger.info("Deleting {} related orders for Steam account with ID: {}", allOrders.size(), id);
+            steamAccountOrderRepository.deleteAll(allOrders);
+        }
+        
+        // Now delete the Steam account
         steamAccountRepository.deleteById(id);
         logger.info("Steam account deleted successfully with ID: {}", id);
     }
