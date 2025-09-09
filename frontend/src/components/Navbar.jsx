@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, LogOut, LogIn, UserPlus, Search, ShoppingCart, ChevronDown } from 'lucide-react';
 import { Button } from './ui/button';
+import { safeDisplayName } from '../utils/encoding';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 
@@ -12,6 +13,15 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const [searchValue, setSearchValue] = useState('');
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  const formatPrice = (price) => {
+    try {
+      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(price || 0));
+    } catch {
+      return `${price || 0} VND`;
+    }
+  };
 
   const handleSearch = () => {
     const query = searchValue.trim();
@@ -119,21 +129,42 @@ const Navbar = () => {
               {/* Auth (moved to left) */}
               {isAuthenticated ? (
                 <div className="flex items-center space-x-1">
-                  <Link to="/profile">
-                    <Button variant="ghost" size="sm" className="hidden sm:flex p-1">
-                      <User className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={handleLogout}
-                    title="Đăng xuất"
-                    className="hidden sm:flex p-1"
+                  {/* Desktop: Profile dropdown on hover */}
+                  <div 
+                    className="relative hidden sm:flex items-center"
+                    onMouseEnter={() => setIsProfileOpen(true)}
+                    onMouseLeave={() => setIsProfileOpen(false)}
                   >
-                    <LogOut className="h-4 w-4" />
-                  </Button>
-                  {/* Mobile auth - show text buttons */}
+                    <Link to="/profile">
+                      <Button variant="ghost" size="sm" className="p-1">
+                        <User className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Link to="/profile" className="ml-1">
+                      <span className="text-sm max-w-[160px] truncate inline-block align-middle">
+                        {safeDisplayName(user?.firstName + " " + user?.lastName + " ") || safeDisplayName(user?.username) || 'Tài khoản'}
+                      </span>
+                    </Link>
+
+                    {/* Dropdown menu */}
+                    {isProfileOpen && (
+                      <div className="absolute left-0 top-full mt-0 z-50">
+                        <div className="w-56 bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden">
+                          <div className="px-4 py-3 border-b">
+                            <div className="text-xs text-gray-500">Số dư</div>
+                            <div className="text-sm font-semibold text-gray-800">{formatPrice(user?.balance || 0)}</div>
+                          </div>
+                          <div className="py-1">
+                            <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600">Quản lý tài khoản</Link>
+                            <Link to="/profile?tab=activity" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600">Lịch sử đơn hàng</Link>
+                            <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600">Thoát</button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Mobile auth - icons only */}
                   <div className="flex sm:hidden items-center space-x-1">
                     <Link to="/profile">
                       <Button variant="ghost" size="sm" className="p-1">
