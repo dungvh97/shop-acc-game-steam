@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { createWalletDeposit, getWalletDeposit } from '../lib/api';
+import { useToast } from '../hooks/use-toast';
 
 const formatPrice = (price) => {
   const amount = Number(price || 0);
@@ -15,6 +16,7 @@ const DepositDialog = ({ isOpen, amount, onClose }) => {
   const [deposit, setDeposit] = useState(null);
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(1800);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -29,14 +31,26 @@ const DepositDialog = ({ isOpen, amount, onClose }) => {
           setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
         }, 1000);
         poll = setInterval(async () => {
-          if (!res?.depositId) return;
-          const upd = await getWalletDeposit(res.depositId);
-          setDeposit(upd);
-          if (upd.status === 'PAID') {
+          try {
+            if (!res?.depositId) return;
+            const upd = await getWalletDeposit(res.depositId);
+            setDeposit(upd);
+            if (upd.status === 'PAID') {
+              clearInterval(poll);
+              clearInterval(timer);
+              toast({ title: 'Nạp tiền thành công' });
+              onClose && onClose();
+            }
+          } catch (err) {
             clearInterval(poll);
             clearInterval(timer);
+            toast({ title: 'Có lỗi xảy ra khi kiểm tra giao dịch' });
+            onClose && onClose();
           }
         }, 5000);
+      } catch (err) {
+        toast({ title: 'Không thể tạo yêu cầu nạp tiền' });
+        onClose && onClose();
       } finally {
         setLoading(false);
       }
@@ -96,10 +110,6 @@ const DepositDialog = ({ isOpen, amount, onClose }) => {
                   <p>Nội dung: {deposit.depositId}</p>
                 </div>
               </div>
-
-              {deposit.status === 'PAID' && (
-                <div className="text-center text-green-600 font-medium">Nạp tiền thành công</div>
-              )}
             </>
           )}
 

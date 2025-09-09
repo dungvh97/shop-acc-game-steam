@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/wallet/deposits")
@@ -23,28 +24,28 @@ public class WalletDepositController {
         String username = auth.getName();
         BigDecimal amount = new BigDecimal(String.valueOf(req.get("amount")));
         WalletDeposit deposit = depositService.createDeposit(username, amount);
-        return ResponseEntity.ok(Map.of(
-            "depositId", deposit.getDepositId(),
-            "amount", deposit.getAmount(),
-            "status", deposit.getStatus(),
-            "qrCodeUrl", deposit.getQrCodeUrl(),
-            "createdAt", deposit.getCreatedAt(),
-            "expiresAt", deposit.getExpiresAt()
-        ));
+        Map<String, Object> response = new HashMap<>();
+        response.put("depositId", deposit.getDepositId());
+        response.put("amount", deposit.getAmount());
+        response.put("status", deposit.getStatus());
+        response.put("qrCodeUrl", deposit.getQrCodeUrl());
+        response.put("createdAt", deposit.getCreatedAt());
+        response.put("expiresAt", deposit.getExpiresAt());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{depositId}")
     public ResponseEntity<Map<String, Object>> getDeposit(@PathVariable String depositId, Authentication auth) {
         WalletDeposit deposit = depositService.getByDepositId(depositId);
-        return ResponseEntity.ok(Map.of(
-            "depositId", deposit.getDepositId(),
-            "amount", deposit.getAmount(),
-            "status", deposit.getStatus(),
-            "qrCodeUrl", deposit.getQrCodeUrl(),
-            "createdAt", deposit.getCreatedAt(),
-            "paidAt", deposit.getPaidAt(),
-            "expiresAt", deposit.getExpiresAt()
-        ));
+        Map<String, Object> response = new HashMap<>();
+        response.put("depositId", deposit.getDepositId());
+        response.put("amount", deposit.getAmount());
+        response.put("status", deposit.getStatus());
+        response.put("qrCodeUrl", deposit.getQrCodeUrl());
+        response.put("createdAt", deposit.getCreatedAt());
+        response.put("paidAt", deposit.getPaidAt());
+        response.put("expiresAt", deposit.getExpiresAt());
+        return ResponseEntity.ok(response);
     }
 }
 

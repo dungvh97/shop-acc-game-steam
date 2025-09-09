@@ -58,22 +58,23 @@ public class SepayWebhookController {
                 return ResponseEntity.badRequest().body(response);
             }
             
-            // Extract reference from the code field or content field
-            String reference = webhookData.getCode();
-            if (reference == null || reference.isEmpty()) {
-                // If code is null, try to extract order ID from content field
-                String content = webhookData.getContent();
-                if (content != null && !content.isEmpty()) {
-                    // Look for order ID or deposit ID pattern in the content
-                    reference = extractOrderOrDepositFromContent(content);
-                }
-                
-                if (reference == null || reference.isEmpty()) {
-                    logger.error("Invalid webhook data: could not extract reference from code or content");
-                    response.put("success", false);
-                    response.put("message", "Invalid webhook data: could not extract reference from code or content");
-                    return ResponseEntity.badRequest().body(response);
-                }
+            // Extract reference: try code, then content, then referenceCode, then description
+            String reference = normalizeNullableString(webhookData.getCode());
+            if (reference == null) {
+                reference = extractOrderOrDepositFromContent(normalizeNullableString(webhookData.getContent()));
+            }
+            if (reference == null) {
+                reference = extractOrderOrDepositFromContent(normalizeNullableString(webhookData.getReferenceCode()));
+            }
+            if (reference == null) {
+                reference = extractOrderOrDepositFromContent(normalizeNullableString(webhookData.getDescription()));
+            }
+            
+            if (reference == null) {
+                logger.error("Invalid webhook data: could not extract reference from any field (code/content/referenceCode/description)");
+                response.put("success", false);
+                response.put("message", "Invalid webhook data: could not extract reference from code or content");
+                return ResponseEntity.badRequest().body(response);
             }
             
             // Only process incoming transactions (money coming in)
@@ -93,14 +94,14 @@ public class SepayWebhookController {
             //     return ResponseEntity.badRequest().body(response);
             // }
             
-            // Process payment - support orders (ORD...) and deposits (DEP...)
+            // Process payment - support orders (ORD...) and deposits (DEP... or DNT...)
             if (reference.startsWith("ORD")) {
                 orderService.markOrderAsPaid(reference);
                 logger.info("Payment confirmed for order: {} with transaction ID: {}", reference, webhookData.getId());
                 response.put("order_id", reference);
                 response.put("type", "order");
                 response.put("status", "paid");
-            } else if (reference.startsWith("DEP")) {
+            } else if (reference.startsWith("DEP") || reference.startsWith("DNT")) {
                 walletDepositService.markDepositPaid(reference);
                 logger.info("Payment confirmed for deposit: {} with transaction ID: {}", reference, webhookData.getId());
                 response.put("deposit_id", reference);
@@ -153,8 +154,8 @@ public class SepayWebhookController {
             return null;
         }
         
-        // Pattern to match ORD or DEP followed by digits (timestamp)
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(ORD|DEP)\\d+");
+        // Pattern to match ORD or DEP or DNT followed by digits (timestamp)
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(ORD|DEP|DNT)\\d+");
         java.util.regex.Matcher matcher = pattern.matcher(content);
         
         if (matcher.find()) {
@@ -162,5 +163,13 @@ public class SepayWebhookController {
         }
         
         return null;
+    }
+
+    private String normalizeNullableString(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        if (trimmed.isEmpty()) return null;
+        if ("null".equalsIgnoreCase(trimmed)) return null;
+        return trimmed;
     }
 }
