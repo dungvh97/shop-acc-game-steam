@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { Card, CardContent, CardTitle } from '../components/ui/card';
@@ -7,15 +7,13 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useToast } from '../hooks/use-toast';
 import { 
-  getAvailableSteamAccounts, 
-  getAvailableSteamAccountsByType
+  getAvailableSteamAccounts
 } from '../lib/api';
 import PaymentDialog from '../components/PaymentDialog';
 import { BACKEND_CONFIG } from '../lib/config';
 
 const SteamAccounts = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
   const { addToCart } = useCart();
@@ -23,66 +21,22 @@ const SteamAccounts = () => {
   const [allAccounts, setAllAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState(null); // Changed from 'ALL' to null
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(12);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
 
-  const accountTypes = [
-    { value: 'ALL', label: 'All Types' },
-    { value: 'MULTI_GAMES', label: 'Multi Games' },
-    { value: 'ONE_GAME', label: 'One Game' },
-    { value: 'DISCOUNTED', label: 'Discounted' },
-    { value: 'OTHER_ACCOUNT', label: 'Other Account' }
-  ];
-
-  // Initialize searchTerm from query param `q` and update when it changes
+  // Load all accounts on mount
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const q = params.get('q') || '';
-    setSearchTerm(q);
-    setCurrentPage(0);
-  }, [location.search]);
-
-  // Determine account type from URL path
-  useEffect(() => {
-    const path = location.pathname;
-    let accountType = 'ALL';
-    
-    if (path.includes('/single-game')) {
-      accountType = 'ONE_GAME';
-    } else if (path.includes('/multi-game')) {
-      accountType = 'MULTI_GAMES';
-    } else if (path.includes('/discounted')) {
-      accountType = 'DISCOUNTED';
-    } else if (path.includes('/other-products')) {
-      accountType = 'OTHER_ACCOUNT';
-    }
-    
-    console.log('URL changed to:', path, 'Setting accountType to:', accountType);
-    setSelectedType(accountType);
-  }, [location.pathname]);
-
-  // Load accounts only after selectedType is set
-  useEffect(() => {
-    console.log('selectedType changed to:', selectedType);
-    if (selectedType) {
-      loadAccounts();
-    }
-  }, [selectedType]);
+    loadAccounts();
+  }, []);
 
   const loadAccounts = async () => {
-    console.log('Loading accounts for type:', selectedType);
     setLoading(true);
     try {
-      let response;
-      
-      if (selectedType === 'ALL') {
-        response = await getAvailableSteamAccounts();
-      } else {
-        response = await getAvailableSteamAccountsByType(selectedType);
-      }
+      const response = await getAvailableSteamAccounts();
       
       console.log('API response:', response);
       setAllAccounts(response || []);
@@ -98,40 +52,9 @@ const SteamAccounts = () => {
     }
   };
 
-  // Get title and description based on selected type
-  const getPageTitle = () => {
-    if (!selectedType) return 'Loading...';
-    
-    switch (selectedType) {
-      case 'ONE_GAME':
-        return 'Tài Khoản Steam 1 Game';
-      case 'MULTI_GAMES':
-        return 'Tài Khoản Steam Nhiều Game';
-      case 'DISCOUNTED':
-        return 'Sản Phẩm Ưu Đãi';
-      case 'OTHER_ACCOUNT':
-        return 'Sản Phẩm Khác';
-      default:
-        return 'Steam Accounts';
-    }
-  };
+  const getPageTitle = () => 'Steam Accounts';
 
-  const getPageDescription = () => {
-    if (!selectedType) return 'Loading...';
-    
-    switch (selectedType) {
-      case 'ONE_GAME':
-        return 'Tài khoản Steam chỉ chứa một game duy nhất';
-      case 'MULTI_GAMES':
-        return 'Tài khoản Steam chứa nhiều game khác nhau';
-      case 'DISCOUNTED':
-        return 'Tài khoản Steam với giá ưu đãi đặc biệt';
-      case 'OTHER_ACCOUNT':
-        return 'Các loại tài khoản Steam khác';
-      default:
-        return 'Browse and purchase gaming accounts';
-    }
-  };
+  const getPageDescription = () => 'Browse and purchase gaming accounts';
 
   // Frontend filtering logic
   const filteredAccounts = useMemo(() => {
@@ -158,9 +81,19 @@ const SteamAccounts = () => {
         return false;
       });
     }
+    
+    // Filter by price range
+    const min = minPrice !== '' ? Number(minPrice) : null;
+    const max = maxPrice !== '' ? Number(maxPrice) : null;
+    if (min !== null) {
+      filtered = filtered.filter(account => Number(account.price) >= min);
+    }
+    if (max !== null) {
+      filtered = filtered.filter(account => Number(account.price) <= max);
+    }
 
     return filtered;
-  }, [allAccounts, searchTerm]);
+  }, [allAccounts, searchTerm, minPrice, maxPrice]);
 
   // Pagination logic
   const totalPages = Math.ceil(filteredAccounts.length / pageSize);
@@ -192,20 +125,30 @@ const SteamAccounts = () => {
     }
   };
 
-  const getTypeLabel = (type) => {
-    const typeObj = accountTypes.find(t => t.value === type);
-    return typeObj ? typeObj.label : type;
-  };
+  
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
     setCurrentPage(0); // Reset to first page when searching
   };
 
-  const handleTypeChange = (e) => {
-    setSelectedType(e.target.value);
-    setCurrentPage(0); // Reset to first page when changing type
+  const handleMinPriceChange = (e) => {
+    const value = e.target.value;
+    if (value === '' || /^\d*$/.test(value)) {
+      setMinPrice(value);
+      setCurrentPage(0);
+    }
   };
+
+  const handleMaxPriceChange = (e) => {
+    const value = e.target.value;
+    if (value === '' || /^\d*$/.test(value)) {
+      setMaxPrice(value);
+      setCurrentPage(0);
+    }
+  };
+
+  
 
   const handleBuyNow = (account) => {
     if (!isAuthenticated) {
@@ -271,25 +214,26 @@ const SteamAccounts = () => {
                 className="w-full"
               />
             </div>
-            <div className="w-full md:w-48">
-              <select
-                value={selectedType || 'ALL'}
-                onChange={handleTypeChange}
-                disabled={selectedType && selectedType !== 'ALL'}
-                className={`w-full border rounded-md px-3 py-2 ${
-                  selectedType && selectedType !== 'ALL' 
-                    ? 'bg-gray-100 cursor-not-allowed' 
-                    : ''
-                }`}
-              >
-                {accountTypes.map(type => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
+            <div className="w-full md:w-40">
+              <Input
+                type="text"
+                inputMode="numeric"
+                placeholder="Giá từ (VND)"
+                value={minPrice}
+                onChange={handleMinPriceChange}
+                className="w-full"
+              />
             </div>
-
+            <div className="w-full md:w-40">
+              <Input
+                type="text"
+                inputMode="numeric"
+                placeholder="Giá đến (VND)"
+                value={maxPrice}
+                onChange={handleMaxPriceChange}
+                className="w-full"
+              />
+            </div>
           </div>
 
           {/* Accounts Grid */}
