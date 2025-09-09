@@ -48,7 +48,7 @@ public class WalletDepositService {
     }
 
     private String generateDepositId() {
-        return "DEP" + System.currentTimeMillis();
+        return "DNT" + System.currentTimeMillis();
     }
 
     private String generateQrCodeUrl(String depositId, BigDecimal amount) {
@@ -56,5 +56,3 @@ public class WalletDepositService {
             amount.toString(), depositId);
     }
 }
-
-
