@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -45,6 +46,23 @@ public class WalletDepositController {
         response.put("createdAt", deposit.getCreatedAt());
         response.put("paidAt", deposit.getPaidAt());
         response.put("expiresAt", deposit.getExpiresAt());
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Map<String, Object>>> getMyDeposits(Authentication auth) {
+        String username = auth.getName();
+        List<WalletDeposit> deposits = depositService.getDepositsForUser(username);
+        List<Map<String, Object>> response = deposits.stream().map(d -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("depositId", d.getDepositId());
+            m.put("amount", d.getAmount());
+            m.put("status", d.getStatus());
+            m.put("createdAt", d.getCreatedAt());
+            m.put("paidAt", d.getPaidAt());
+            m.put("expiresAt", d.getExpiresAt());
+            return m;
+        }).toList();
         return ResponseEntity.ok(response);
     }
 }

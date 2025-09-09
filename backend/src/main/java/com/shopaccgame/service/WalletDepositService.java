@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @Transactional
@@ -45,6 +46,10 @@ public class WalletDepositService {
     public WalletDeposit getByDepositId(String depositId) {
         return depositRepository.findByDepositId(depositId)
             .orElseThrow(() -> new RuntimeException("Deposit not found"));
+    }
+
+    public List<WalletDeposit> getDepositsForUser(String username) {
+        return depositRepository.findAllByUser_UsernameOrderByCreatedAtDesc(username);
     }
 
     private String generateDepositId() {

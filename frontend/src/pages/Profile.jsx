@@ -27,7 +27,7 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
-import { getAllUserOrders } from '../lib/api.js';
+import { getAllUserOrders, getMyWalletDeposits } from '../lib/api.js';
 import DepositDialog from '../components/DepositDialog.jsx';
 
 const Profile = () => {
@@ -43,6 +43,8 @@ const Profile = () => {
   const [showPasswords, setShowPasswords] = useState({});
   const [depositAmount, setDepositAmount] = useState('');
   const [depositOpen, setDepositOpen] = useState(false);
+  const [walletDeposits, setWalletDeposits] = useState([]);
+  const [walletLoading, setWalletLoading] = useState(false);
   
   // Decode user names to handle encoding issues
   const decodedUser = decodeUserNames(user);
@@ -200,6 +202,24 @@ const Profile = () => {
 
     fetchUserOrders();
   }, [user, toast]);
+
+  // Fetch wallet deposits
+  useEffect(() => {
+    const fetchWalletDeposits = async () => {
+      if (!user) return;
+      setWalletLoading(true);
+      try {
+        const deposits = await getMyWalletDeposits();
+        setWalletDeposits(Array.isArray(deposits) ? deposits : []);
+      } catch (error) {
+        setWalletDeposits([]);
+      } finally {
+        setWalletLoading(false);
+      }
+    };
+
+    fetchWalletDeposits();
+  }, [user]);
 
   const copyToClipboard = async (text, field) => {
     try {
@@ -645,9 +665,39 @@ const Profile = () => {
 
                   <Separator className="my-4" />
 
-                  <div className="text-center py-8 text-sm text-muted-foreground">
-                    Chức năng hiển thị lịch sử giao dịch sẽ được bổ sung sau.
-                  </div>
+                  {walletLoading ? (
+                    <div className="text-center py-8 text-sm text-muted-foreground">Đang tải...</div>
+                  ) : walletDeposits.length === 0 ? (
+                    <div className="text-center py-8 text-sm text-muted-foreground">Chưa có giao dịch nạp tiền</div>
+                  ) : (
+                    <div className="space-y-3">
+                      {walletDeposits.map((d) => (
+                        <div key={d.depositId} className="border rounded-lg p-4 flex items-center justify-between">
+                          <div>
+                            <div className="text-sm text-muted-foreground">Mã giao dịch</div>
+                            <div className="font-medium">{d.depositId}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-semibold">{Number(d.amount || 0).toLocaleString('vi-VN')} VNĐ</div>
+                            <div className="text-xs text-muted-foreground">
+                              {new Date(d.createdAt).toLocaleString('vi-VN')}
+                            </div>
+                            <div className="text-xs mt-1">
+                              {d.status === 'PAID' ? (
+                                <span className="text-green-600">Đã thanh toán{d.paidAt ? ` (${new Date(d.paidAt).toLocaleString('vi-VN')})` : ''}</span>
+                              ) : d.status === 'PENDING' ? (
+                                <span className="text-yellow-600">Chờ thanh toán</span>
+                              ) : d.status === 'EXPIRED' ? (
+                                <span className="text-gray-500">Hết hạn</span>
+                              ) : (
+                                <span className="text-red-600">Đã hủy</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 

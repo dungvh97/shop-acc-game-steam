@@ -423,3 +423,8 @@ export const getWalletDeposit = async (depositId) => {
 };
 
 
+export const getMyWalletDeposits = async () => {
+  return apiRequest('/wallet/deposits');
+};
+
+
