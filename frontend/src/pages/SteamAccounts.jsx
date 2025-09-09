@@ -37,6 +37,14 @@ const SteamAccounts = () => {
     { value: 'OTHER_ACCOUNT', label: 'Other Account' }
   ];
 
+  // Initialize searchTerm from query param `q` and update when it changes
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('q') || '';
+    setSearchTerm(q);
+    setCurrentPage(0);
+  }, [location.search]);
+
   // Determine account type from URL path
   useEffect(() => {
     const path = location.pathname;
@@ -257,7 +265,7 @@ const SteamAccounts = () => {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <Input
-                placeholder="Search by account name, description, or game name..."
+                placeholder="Tìm kiếm tên game"
                 value={searchTerm}
                 onChange={handleSearchChange}
                 className="w-full"

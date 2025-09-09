@@ -11,6 +11,16 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const [searchValue, setSearchValue] = useState('');
+
+  const handleSearch = () => {
+    const query = searchValue.trim();
+    if (query.length > 0) {
+      navigate(`/steam-accounts?q=${encodeURIComponent(query)}`);
+    } else {
+      navigate('/steam-accounts');
+    }
+  };
 
   const navItems = [
     {
@@ -86,10 +96,18 @@ const Navbar = () => {
                   type="text"
                   placeholder="Tìm kiếm sản phẩm"
                   className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSearch();
+                    }
+                  }}
                 />
                 <Button 
                   className="absolute right-1 top-0.5 bg-red-600 hover:bg-red-700 text-white px-2 py-1 h-7"
                   size="sm"
+                  onClick={handleSearch}
                 >
                   <Search className="h-3 w-3" />
                 </Button>
