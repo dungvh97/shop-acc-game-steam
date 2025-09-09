@@ -2,6 +2,7 @@ package com.shopaccgame.controller;
 
 import com.shopaccgame.dto.SepayWebhookDto;
 import com.shopaccgame.service.SteamAccountOrderService;
+import com.shopaccgame.service.WalletDepositService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,8 @@ public class SepayWebhookController {
     
     @Autowired
     private SteamAccountOrderService orderService;
+    @Autowired
+    private WalletDepositService walletDepositService;
     
     /**
      * Handle payment webhook from sepay.vn
@@ -55,20 +58,20 @@ public class SepayWebhookController {
                 return ResponseEntity.badRequest().body(response);
             }
             
-            // Extract order ID from the code field or content field
-            String orderId = webhookData.getCode();
-            if (orderId == null || orderId.isEmpty()) {
+            // Extract reference from the code field or content field
+            String reference = webhookData.getCode();
+            if (reference == null || reference.isEmpty()) {
                 // If code is null, try to extract order ID from content field
                 String content = webhookData.getContent();
                 if (content != null && !content.isEmpty()) {
-                    // Look for order ID pattern (ORD + timestamp) in the content
-                    orderId = extractOrderIdFromContent(content);
+                    // Look for order ID or deposit ID pattern in the content
+                    reference = extractOrderOrDepositFromContent(content);
                 }
                 
-                if (orderId == null || orderId.isEmpty()) {
-                    logger.error("Invalid webhook data: could not extract order ID from code or content");
+                if (reference == null || reference.isEmpty()) {
+                    logger.error("Invalid webhook data: could not extract reference from code or content");
                     response.put("success", false);
-                    response.put("message", "Invalid webhook data: could not extract order ID from code or content");
+                    response.put("message", "Invalid webhook data: could not extract reference from code or content");
                     return ResponseEntity.badRequest().body(response);
                 }
             }
@@ -90,15 +93,28 @@ public class SepayWebhookController {
             //     return ResponseEntity.badRequest().body(response);
             // }
             
-            // Process payment - mark order as paid
-            orderService.markOrderAsPaid(orderId);
-            logger.info("Payment confirmed for order: {} with transaction ID: {}", 
-                orderId, webhookData.getId());
+            // Process payment - support orders (ORD...) and deposits (DEP...)
+            if (reference.startsWith("ORD")) {
+                orderService.markOrderAsPaid(reference);
+                logger.info("Payment confirmed for order: {} with transaction ID: {}", reference, webhookData.getId());
+                response.put("order_id", reference);
+                response.put("type", "order");
+                response.put("status", "paid");
+            } else if (reference.startsWith("DEP")) {
+                walletDepositService.markDepositPaid(reference);
+                logger.info("Payment confirmed for deposit: {} with transaction ID: {}", reference, webhookData.getId());
+                response.put("deposit_id", reference);
+                response.put("type", "deposit");
+                response.put("status", "paid");
+            } else {
+                logger.warn("Unknown reference prefix for webhook: {}", reference);
+                response.put("success", false);
+                response.put("message", "Unknown reference");
+                return ResponseEntity.badRequest().body(response);
+            }
             
             response.put("success", true);
             response.put("message", "Payment processed successfully");
-            response.put("order_id", orderId);
-            response.put("status", "paid");
             response.put("transaction_id", webhookData.getId());
             response.put("amount", webhookData.getTransferAmount());
             response.put("gateway", webhookData.getGateway());
@@ -132,13 +148,13 @@ public class SepayWebhookController {
      * Extract order ID from content field using regex pattern
      * Looks for pattern: ORD + timestamp (e.g., ORD17551068389536956)
      */
-    private String extractOrderIdFromContent(String content) {
+    private String extractOrderOrDepositFromContent(String content) {
         if (content == null || content.isEmpty()) {
             return null;
         }
         
-        // Pattern to match ORD followed by digits (timestamp)
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("ORD\\d+");
+        // Pattern to match ORD or DEP followed by digits (timestamp)
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(ORD|DEP)\\d+");
         java.util.regex.Matcher matcher = pattern.matcher(content);
         
         if (matcher.find()) {

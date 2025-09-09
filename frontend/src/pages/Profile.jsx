@@ -28,6 +28,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { getAllUserOrders } from '../lib/api.js';
+import DepositDialog from '../components/DepositDialog.jsx';
 
 const Profile = () => {
   const { user, logout, isAuthenticated, loading } = useAuth();
@@ -40,6 +41,8 @@ const Profile = () => {
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
   const [showPasswords, setShowPasswords] = useState({});
+  const [depositAmount, setDepositAmount] = useState('');
+  const [depositOpen, setDepositOpen] = useState(false);
   
   // Decode user names to handle encoding issues
   const decodedUser = decodeUserNames(user);
@@ -289,6 +292,7 @@ const Profile = () => {
               <TabsTrigger value="profile">Thông tin cá nhân</TabsTrigger>
               <TabsTrigger value="security">Bảo mật</TabsTrigger>
               <TabsTrigger value="activity">Hoạt động</TabsTrigger>
+              <TabsTrigger value="transactions">Lịch sử giao dịch</TabsTrigger>
             </TabsList>
 
             <TabsContent value="profile" className="space-y-6">
@@ -610,6 +614,48 @@ const Profile = () => {
                 )}
               </CardContent>
               </Card>
+            </TabsContent>
+            <TabsContent value="transactions" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    Lịch sử giao dịch
+                  </CardTitle>
+                  <CardDescription>
+                    Nạp tiền vào tài khoản và xem lịch sử giao dịch
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
+                    <div className="flex-1 w-full">
+                      <label className="text-sm font-medium">Số tiền muốn nạp (VNĐ)</label>
+                      <Input
+                        type="number"
+                        placeholder="Nhập số tiền"
+                        value={depositAmount}
+                        onChange={(e) => setDepositAmount(e.target.value)}
+                        className="mt-1"
+                        min={1000}
+                      />
+                    </div>
+                    <Button onClick={() => setDepositOpen(true)} className="w-full sm:w-auto">
+                      Nạp tiền
+                    </Button>
+                  </div>
+
+                  <Separator className="my-4" />
+
+                  <div className="text-center py-8 text-sm text-muted-foreground">
+                    Chức năng hiển thị lịch sử giao dịch sẽ được bổ sung sau.
+                  </div>
+                </CardContent>
+              </Card>
+
+              <DepositDialog
+                isOpen={depositOpen}
+                amount={Number(depositAmount || 0)}
+                onClose={() => setDepositOpen(false)}
+              />
             </TabsContent>
           </Tabs>
         </div>

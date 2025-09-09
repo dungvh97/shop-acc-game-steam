@@ -410,3 +410,16 @@ export const checkoutCart = async () => {
 };
 
 
+// Wallet deposit APIs
+export const createWalletDeposit = async (amount) => {
+  return apiRequest('/wallet/deposits', {
+    method: 'POST',
+    body: JSON.stringify({ amount })
+  });
+};
+
+export const getWalletDeposit = async (depositId) => {
+  return apiRequest(`/wallet/deposits/${depositId}`);
+};
+
+
