@@ -26,8 +26,8 @@ public class SteamAccount {
     @Column(nullable = false)
     private String password;
     
-    @Column(name = "active_key")
-    private String activeKey;
+    @Column(name = "steam_guard")
+    private String steamGuard;
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -122,12 +122,12 @@ public class SteamAccount {
         this.password = encryptedPassword;
     }
     
-    public String getActiveKey() {
-        return activeKey;
+    public String getSteamGuard() {
+        return steamGuard;
     }
     
-    public void setActiveKey(String activeKey) {
-        this.activeKey = activeKey;
+    public void setSteamGuard(String steamGuard) {
+        this.steamGuard = steamGuard;
     }
     
     public AccountType getAccountType() {

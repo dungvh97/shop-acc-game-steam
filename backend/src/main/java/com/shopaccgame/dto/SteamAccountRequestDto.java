@@ -1,6 +1,4 @@
 package com.shopaccgame.dto;
-
-import com.shopaccgame.entity.SteamAccount;
 import com.shopaccgame.entity.enums.AccountType;
 import com.shopaccgame.entity.enums.AccountStatus;
 import jakarta.validation.constraints.NotBlank;
@@ -26,7 +24,7 @@ public class SteamAccountRequestDto {
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
     
-    private String activeKey;
+    private String steamGuard;
     
     @NotNull(message = "Account type is required")
     private AccountType accountType;
@@ -79,12 +77,12 @@ public class SteamAccountRequestDto {
         this.password = password;
     }
     
-    public String getActiveKey() {
-        return activeKey;
+    public String getSteamGuard() {
+        return steamGuard;
     }
     
-    public void setActiveKey(String activeKey) {
-        this.activeKey = activeKey;
+    public void setSteamGuard(String steamGuard) {
+        this.steamGuard = steamGuard;
     }
     
     public AccountType getAccountType() {

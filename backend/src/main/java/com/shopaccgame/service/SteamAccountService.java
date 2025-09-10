@@ -122,7 +122,7 @@ public class SteamAccountService {
         steamAccount.setName(requestDto.getName());
         // Encrypt password before saving
         steamAccount.setPassword(encryptionService.encryptPassword(requestDto.getPassword()));
-        steamAccount.setActiveKey(requestDto.getActiveKey());
+        steamAccount.setSteamGuard(requestDto.getSteamGuard());
         steamAccount.setAccountType(requestDto.getAccountType());
         steamAccount.setStatus(requestDto.getStatus() != null ? requestDto.getStatus() : AccountStatus.AVAILABLE);
         steamAccount.setPrice(requestDto.getPrice());
@@ -168,7 +168,7 @@ public class SteamAccountService {
         if (requestDto.getPassword() != null && !requestDto.getPassword().isEmpty()) {
             existingAccount.setPassword(encryptionService.encryptPassword(requestDto.getPassword()));
         }
-        existingAccount.setActiveKey(requestDto.getActiveKey());
+        existingAccount.setSteamGuard(requestDto.getSteamGuard());
         existingAccount.setAccountType(requestDto.getAccountType());
         if (requestDto.getStatus() != null) {
             existingAccount.setStatus(requestDto.getStatus());

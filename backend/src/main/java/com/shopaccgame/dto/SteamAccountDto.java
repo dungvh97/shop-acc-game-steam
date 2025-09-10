@@ -4,7 +4,6 @@ import com.shopaccgame.entity.SteamAccount;
 import com.shopaccgame.entity.enums.AccountType;
 import com.shopaccgame.entity.enums.AccountStatus;
 import com.shopaccgame.entity.Game;
-import com.shopaccgame.dto.GameDto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,7 +14,7 @@ public class SteamAccountDto {
     
     private Long id;
     private String name; // Display name instead of username
-    private String activeKey;
+    private String steamGuard;
     private AccountType accountType;
     private AccountStatus status;
     private BigDecimal price;
@@ -35,7 +34,7 @@ public class SteamAccountDto {
     public SteamAccountDto(SteamAccount steamAccount) {
         this.id = steamAccount.getId();
         this.name = steamAccount.getName(); // Use name instead of username
-        this.activeKey = steamAccount.getActiveKey();
+        this.steamGuard = steamAccount.getSteamGuard();
         this.accountType = steamAccount.getAccountType();
         this.status = steamAccount.getStatus();
         this.price = steamAccount.getPrice();
@@ -75,12 +74,12 @@ public class SteamAccountDto {
         this.name = name;
     }
     
-    public String getActiveKey() {
-        return activeKey;
+    public String getSteamGuard() {
+        return steamGuard;
     }
     
-    public void setActiveKey(String activeKey) {
-        this.activeKey = activeKey;
+    public void setSteamGuard(String steamGuard) {
+        this.steamGuard = steamGuard;
     }
     
     public AccountType getAccountType() {

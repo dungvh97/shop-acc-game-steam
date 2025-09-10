@@ -229,7 +229,7 @@ const SteamAccountManager = () => {
     username: '',
     name: '',
     password: '',
-    activeKey: '',
+    steamGuard: '',
     accountType: 'MULTI_GAMES',
     status: 'AVAILABLE',
     price: '',
@@ -512,7 +512,7 @@ const SteamAccountManager = () => {
       username: account.username,
       name: account.name || '',
       password: '', // Don't show password
-      activeKey: account.activeKey || '',
+      steamGuard: account.steamGuard || '',
       accountType: account.accountType,
       status: account.status || 'AVAILABLE',
       price: account.price?.toString() || '',
@@ -532,7 +532,7 @@ const SteamAccountManager = () => {
       username: '',
       name: '',
       password: '',
-      activeKey: '',
+      steamGuard: '',
       accountType: 'MULTI_GAMES',
       status: 'AVAILABLE',
       price: '',
@@ -550,9 +550,6 @@ const SteamAccountManager = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold">Steam Account Management</h2>
-      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -661,20 +658,20 @@ const SteamAccountManager = () => {
                   )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Active Key</label>
+                  <label className="text-sm font-medium">Steam Guard</label>
                   <Input
                     type="text"
-                    value={formData.activeKey}
+                    value={formData.steamGuard}
                     onChange={(e) => {
-                      setFormData({...formData, activeKey: e.target.value});
-                      if (validationErrors.activeKey) {
-                        setValidationErrors({...validationErrors, activeKey: null});
+                      setFormData({...formData, steamGuard: e.target.value});
+                      if (validationErrors.steamGuard) {
+                        setValidationErrors({...validationErrors, steamGuard: null});
                       }
                     }}
-                    className={validationErrors.activeKey ? 'border-red-500 focus:border-red-500' : ''}
+                    className={validationErrors.steamGuard ? 'border-red-500 focus:border-red-500' : ''}
                   />
-                  {validationErrors.activeKey && (
-                    <div className="text-xs text-red-600 mt-1">{validationErrors.activeKey}</div>
+                  {validationErrors.steamGuard && (
+                    <div className="text-xs text-red-600 mt-1">{validationErrors.steamGuard}</div>
                   )}
                 </div>
                 <div>
@@ -937,7 +934,7 @@ const SteamAccountManager = () => {
                            <div className="flex gap-4 mt-2 text-sm">
                              <span>Price: {account.price} VND</span>
                              <span>Stock: {account.stockQuantity}</span>
-                             {account.activeKey && <span>Active Key: {account.activeKey}</span>}
+                             {account.steamGuard && <span>Steam Guard: {account.steamGuard}</span>}
                            </div>
                            {(account.gameIds && account.gameIds.length > 0) && (
                              <div className="mt-2">

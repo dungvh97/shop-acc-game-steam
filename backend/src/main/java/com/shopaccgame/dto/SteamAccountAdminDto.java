@@ -4,7 +4,6 @@ import com.shopaccgame.entity.SteamAccount;
 import com.shopaccgame.entity.enums.AccountType;
 import com.shopaccgame.entity.enums.AccountStatus;
 import com.shopaccgame.entity.Game;
-import com.shopaccgame.dto.GameDto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -17,7 +16,7 @@ public class SteamAccountAdminDto {
     private String username; // Include username for admin
     private String name;
     private String password; // Decrypted password for admin
-    private String activeKey;
+    private String steamGuard;
     private AccountType accountType;
     private AccountStatus status;
     private BigDecimal price;
@@ -40,7 +39,7 @@ public class SteamAccountAdminDto {
         this.name = steamAccount.getName();
         // Note: Password decryption should be handled by service layer
         this.password = null; // Will be set separately if needed
-        this.activeKey = steamAccount.getActiveKey();
+        this.steamGuard = steamAccount.getSteamGuard();
         this.accountType = steamAccount.getAccountType();
         this.status = steamAccount.getStatus();
         this.price = steamAccount.getPrice();
@@ -96,12 +95,12 @@ public class SteamAccountAdminDto {
         this.password = password;
     }
     
-    public String getActiveKey() {
-        return activeKey;
+    public String getSteamGuard() {
+        return steamGuard;
     }
     
-    public void setActiveKey(String activeKey) {
-        this.activeKey = activeKey;
+    public void setSteamGuard(String steamGuard) {
+        this.steamGuard = steamGuard;
     }
     
     public AccountType getAccountType() {

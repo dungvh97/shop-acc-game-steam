@@ -656,6 +656,35 @@ const Profile = () => {
                                 </Button>
                               </div>
                             </div>
+
+                            {/* Steam Guard */}
+                            {order.steamGuard && (
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">
+                                  Steam Guard
+                                </label>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="text"
+                                    value={order.steamGuard}
+                                    readOnly
+                                    className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs bg-white"
+                                  />
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => copyToClipboard(order.steamGuard, `steamguard-${order.id}`)}
+                                    className="h-6 w-6 p-0"
+                                  >
+                                    {copiedField === `steamguard-${order.id}` ? (
+                                      <Check className="h-3 w-3 text-green-600" />
+                                    ) : (
+                                      <Copy className="h-3 w-3" />
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
 

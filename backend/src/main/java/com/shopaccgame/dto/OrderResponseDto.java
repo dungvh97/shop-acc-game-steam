@@ -20,6 +20,7 @@ public class OrderResponseDto {
     private LocalDateTime paidAt;
     private String accountUsername;
     private String accountPassword;
+    private String steamGuard;
     
     public OrderResponseDto() {}
     
@@ -37,9 +38,14 @@ public class OrderResponseDto {
         this.expiresAt = order.getExpiresAt();
         this.paidAt = order.getPaidAt();
         this.accountUsername = order.getAccountUsername();
-        // Return encrypted password for paid orders (decryption should be handled by service layer)
-        this.accountPassword = order.getStatus() == SteamAccountOrder.OrderStatus.PAID ? 
-            order.getAccountPassword() : null;
+        // Return password and Steam Guard only for paid orders
+        if (order.getStatus() == SteamAccountOrder.OrderStatus.PAID) {
+            this.accountPassword = order.getAccountPassword();
+            this.steamGuard = order.getAccount() != null ? order.getAccount().getSteamGuard() : null;
+        } else {
+            this.accountPassword = null;
+            this.steamGuard = null;
+        }
     }
     
     // Getters and Setters
@@ -153,5 +159,13 @@ public class OrderResponseDto {
     
     public void setAccountPassword(String accountPassword) {
         this.accountPassword = accountPassword;
+    }
+
+    public String getSteamGuard() {
+        return steamGuard;
+    }
+
+    public void setSteamGuard(String steamGuard) {
+        this.steamGuard = steamGuard;
     }
 }
