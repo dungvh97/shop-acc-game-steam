@@ -22,6 +22,9 @@ public class WalletDepositService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserBalanceService userBalanceService;
+
     public WalletDeposit createDeposit(String username, BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be positive");
@@ -40,7 +43,12 @@ public class WalletDepositService {
         WalletDeposit deposit = depositRepository.findByDepositId(depositId)
             .orElseThrow(() -> new RuntimeException("Deposit not found"));
         deposit.markAsPaid();
-        return depositRepository.save(deposit);
+        WalletDeposit savedDeposit = depositRepository.save(deposit);
+        
+        // Update user balance
+        userBalanceService.addToBalance(deposit.getUser().getUsername(), deposit.getAmount());
+        
+        return savedDeposit;
     }
 
     public WalletDeposit getByDepositId(String depositId) {

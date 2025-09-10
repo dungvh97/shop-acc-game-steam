@@ -2,6 +2,7 @@ package com.shopaccgame.dto;
 
 import com.shopaccgame.entity.User;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class UserDto {
@@ -16,6 +17,7 @@ public class UserDto {
     private User.OAuthProvider oauthProvider;
     private String profilePicture;
     private boolean emailVerified;
+    private BigDecimal balance;
     private LocalDateTime createdAt;
     
     public UserDto() {}
@@ -31,6 +33,7 @@ public class UserDto {
         this.oauthProvider = user.getOauthProvider();
         this.profilePicture = user.getProfilePicture();
         this.emailVerified = user.isEmailVerified();
+        this.balance = user.getBalance();
         this.createdAt = user.getCreatedAt();
     }
     
@@ -113,6 +116,14 @@ public class UserDto {
     
     public void setEmailVerified(boolean emailVerified) {
         this.emailVerified = emailVerified;
+    }
+    
+    public BigDecimal getBalance() {
+        return balance;
+    }
+    
+    public void setBalance(BigDecimal balance) {
+        this.balance = balance;
     }
     
     public LocalDateTime getCreatedAt() {

@@ -27,7 +27,7 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
-import { getAllUserOrders, getMyWalletDeposits } from '../lib/api.js';
+import { getAllUserOrders, getMyWalletDeposits, getUserBalance } from '../lib/api.js';
 import DepositDialog from '../components/DepositDialog.jsx';
 
 const Profile = () => {
@@ -45,6 +45,8 @@ const Profile = () => {
   const [depositOpen, setDepositOpen] = useState(false);
   const [walletDeposits, setWalletDeposits] = useState([]);
   const [walletLoading, setWalletLoading] = useState(false);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [balanceLoading, setBalanceLoading] = useState(false);
   
   // Decode user names to handle encoding issues
   const decodedUser = decodeUserNames(user);
@@ -132,6 +134,30 @@ const Profile = () => {
     }
   };
 
+  // Calculate wallet balance from paid deposits (fallback method)
+  const calculateWalletBalance = (deposits) => {
+    return deposits
+      .filter(deposit => deposit.status === 'PAID')
+      .reduce((total, deposit) => total + Number(deposit.amount || 0), 0);
+  };
+
+  // Refresh user balance from backend
+  const refreshUserBalance = async () => {
+    if (!user) return;
+    setBalanceLoading(true);
+    try {
+      const balanceData = await getUserBalance();
+      setWalletBalance(Number(balanceData.balance || 0));
+    } catch (error) {
+      console.error('Error fetching user balance:', error);
+      // Fallback to calculating from deposits
+      const balance = calculateWalletBalance(walletDeposits);
+      setWalletBalance(balance);
+    } finally {
+      setBalanceLoading(false);
+    }
+  };
+
   // Check authentication and redirect if not logged in
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -210,7 +236,8 @@ const Profile = () => {
       setWalletLoading(true);
       try {
         const deposits = await getMyWalletDeposits();
-        setWalletDeposits(Array.isArray(deposits) ? deposits : []);
+        const depositsArray = Array.isArray(deposits) ? deposits : [];
+        setWalletDeposits(depositsArray);
       } catch (error) {
         setWalletDeposits([]);
       } finally {
@@ -219,6 +246,16 @@ const Profile = () => {
     };
 
     fetchWalletDeposits();
+  }, [user]);
+
+  // Set initial balance from user object and refresh when user changes
+  useEffect(() => {
+    if (user && user.balance !== undefined) {
+      setWalletBalance(Number(user.balance || 0));
+    } else if (user) {
+      // If balance is not available in user object, fetch it
+      refreshUserBalance();
+    }
   }, [user]);
 
   const copyToClipboard = async (text, field) => {
@@ -646,6 +683,34 @@ const Profile = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* Wallet Balance Display */}
+                  <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-800">Số dư</h3>
+                        <p className="text-sm text-gray-600">Số dư hiện tại trong tài khoản</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-green-600">
+                          {balanceLoading ? (
+                            <div className="animate-pulse">Đang tải...</div>
+                          ) : (
+                            `${walletBalance.toLocaleString('vi-VN')} VNĐ`
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {walletDeposits.filter(d => d.status === 'PAID').length} giao dịch thành công
+                        </div>
+                        <button
+                          onClick={refreshUserBalance}
+                          disabled={balanceLoading}
+                          className="text-xs text-blue-600 hover:text-blue-800 underline disabled:opacity-50"
+                        >
+                          {balanceLoading ? 'Đang tải...' : 'Làm mới'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                   <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
                     <div className="flex-1 w-full">
                       <label className="text-sm font-medium">Số tiền muốn nạp (VNĐ)</label>

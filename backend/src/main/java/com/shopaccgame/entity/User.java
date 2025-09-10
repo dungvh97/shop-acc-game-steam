@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -68,6 +69,9 @@ public class User implements UserDetails {
     
     @Column(name = "email_verified")
     private boolean emailVerified = false;
+    
+    @Column(name = "balance", precision = 12, scale = 2)
+    private BigDecimal balance = BigDecimal.ZERO;
     
     @PrePersist
     protected void onCreate() {
@@ -230,5 +234,13 @@ public class User implements UserDetails {
     
     public void setEmailVerified(boolean emailVerified) {
         this.emailVerified = emailVerified;
+    }
+    
+    public BigDecimal getBalance() {
+        return balance;
+    }
+    
+    public void setBalance(BigDecimal balance) {
+        this.balance = balance;
     }
 }

@@ -427,4 +427,15 @@ export const getMyWalletDeposits = async () => {
   return apiRequest('/wallet/deposits');
 };
 
+// User balance APIs
+export const getUserBalance = async () => {
+  return apiRequest('/user/balance');
+};
+
+export const recalculateUserBalance = async () => {
+  return apiRequest('/user/balance/recalculate', {
+    method: 'POST'
+  });
+};
+
 
