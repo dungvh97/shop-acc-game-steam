@@ -11,6 +11,7 @@ import {
   validateSteamAccount
 } from '../lib/api';
 import PaymentDialog from '../components/PaymentDialog';
+import PaymentConfirmationDialog from '../components/PaymentConfirmationDialog';
 import { BACKEND_CONFIG } from '../lib/config';
 
 const SteamAccounts = () => {
@@ -27,6 +28,7 @@ const SteamAccounts = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(12);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [showPaymentConfirmation, setShowPaymentConfirmation] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
 
   // Load all accounts on mount
@@ -176,9 +178,9 @@ const SteamAccounts = () => {
       }
       
       if (result === 'VALID' || result === 'VALID_GUARDED') {
-        console.log('Account is valid, proceeding to payment');
+        console.log('Account is valid, proceeding to payment confirmation');
         setSelectedAccount(account);
-        setShowPaymentDialog(true);
+        setShowPaymentConfirmation(true);
         return;
       }
       if (result === 'INVALID_PASSWORD') {
@@ -225,6 +227,10 @@ const SteamAccounts = () => {
     if (success) {
       // Success toast is handled by the cart context
     }
+  };
+
+  const handleProceedWithQR = () => {
+    setShowPaymentDialog(true);
   };
 
   const handlePaymentSuccess = (order) => {
@@ -437,6 +443,18 @@ const SteamAccounts = () => {
                )}
             </>
           )}
+
+          {/* Payment Confirmation Dialog */}
+          <PaymentConfirmationDialog
+            account={selectedAccount}
+            isOpen={showPaymentConfirmation}
+            onClose={() => {
+              setShowPaymentConfirmation(false);
+              setSelectedAccount(null);
+            }}
+            onProceedWithQR={handleProceedWithQR}
+            onPaymentSuccess={handlePaymentSuccess}
+          />
 
           {/* Payment Dialog */}
           <PaymentDialog

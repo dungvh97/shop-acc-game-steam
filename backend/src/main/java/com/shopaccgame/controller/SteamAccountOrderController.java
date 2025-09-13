@@ -47,6 +47,24 @@ public class SteamAccountOrderController {
     }
     
     /**
+     * Create and pay order using user balance
+     */
+    @PostMapping("/pay-with-balance")
+    public ResponseEntity<OrderResponseDto> createAndPayWithBalance(@Valid @RequestBody OrderRequestDto requestDto) {
+        try {
+            String username = getCurrentUsername();
+            OrderResponseDto order = orderService.createAndPayWithBalance(requestDto, username);
+            
+            logger.info("Order created and paid with balance successfully: {} for user: {}", order.getOrderId(), username);
+            
+            return ResponseEntity.ok(order);
+        } catch (Exception e) {
+            logger.error("Error creating and paying order with balance: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    /**
      * Get order by order ID
      */
     @GetMapping("/{orderId}")

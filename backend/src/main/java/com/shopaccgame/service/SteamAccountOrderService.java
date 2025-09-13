@@ -39,6 +39,9 @@ public class SteamAccountOrderService {
     @Autowired
     private UserRepository userRepository;
     
+    @Autowired
+    private UserBalanceService userBalanceService;
+    
     /**
      * Create a new order for a steam account
      */
@@ -191,6 +194,57 @@ public class SteamAccountOrderService {
         SteamAccountOrder savedOrder = orderRepository.save(order);
         
         logger.info("Order {} cancelled by user {}", orderId, username);
+        
+        return new OrderResponseDto(savedOrder);
+    }
+    
+    /**
+     * Create and pay order using user balance
+     */
+    public OrderResponseDto createAndPayWithBalance(OrderRequestDto requestDto, String username) {
+        // Find the user
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        
+        // Find the steam account
+        SteamAccount account = steamAccountRepository.findById(requestDto.getAccountId())
+            .orElseThrow(() -> new RuntimeException("Steam account not found"));
+        
+        // Check if account is available
+        if (account.getStatus() != AccountStatus.AVAILABLE || account.getStockQuantity() <= 0) {
+            throw new RuntimeException("Steam account is not available for purchase");
+        }
+        
+        // Check if there are any active orders for this account
+        List<SteamAccountOrder.OrderStatus> activeStatuses = List.of(
+            SteamAccountOrder.OrderStatus.PENDING, 
+            SteamAccountOrder.OrderStatus.PAID
+        );
+        
+        if (orderRepository.existsByAccountIdAndStatusIn(account.getId(), activeStatuses)) {
+            throw new RuntimeException("Steam account is already being processed in another order");
+        }
+        
+        // Check if user has sufficient balance
+        if (!userBalanceService.deductFromBalance(username, account.getPrice())) {
+            throw new RuntimeException("Insufficient balance");
+        }
+        
+        // Create the order
+        SteamAccountOrder order = new SteamAccountOrder(account, user, account.getPrice());
+        
+        // Mark as paid immediately since we deducted from balance
+        order.markAsPaid();
+        
+        // Generate QR code URL (for reference, though not needed for balance payment)
+        String qrCodeUrl = generateQrCodeUrl(order.getOrderId(), order.getAmount());
+        order.setQrCodeUrl(qrCodeUrl);
+        
+        // Save the order
+        SteamAccountOrder savedOrder = orderRepository.save(order);
+        
+        logger.info("Created and paid order {} for account {} by user {} using balance", 
+            savedOrder.getOrderId(), account.getName(), username);
         
         return new OrderResponseDto(savedOrder);
     }

@@ -392,6 +392,13 @@ export const createSteamAccountOrder = async (accountId) => {
   });
 };
 
+export const createAndPaySteamAccountOrderWithBalance = async (accountId) => {
+  return apiRequest('/steam-account-orders/pay-with-balance', {
+    method: 'POST',
+    body: JSON.stringify({ accountId }),
+  });
+};
+
 export const getOrderByOrderId = async (orderId) => {
   return apiRequest(`/steam-account-orders/${orderId}`);
 };

@@ -47,6 +47,8 @@ const Profile = () => {
   const [walletLoading, setWalletLoading] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
   const [balanceLoading, setBalanceLoading] = useState(false);
+  const [orderPayments, setOrderPayments] = useState([]);
+  const [orderPaymentsLoading, setOrderPaymentsLoading] = useState(false);
   
   // Decode user names to handle encoding issues
   const decodedUser = decodeUserNames(user);
@@ -196,11 +198,16 @@ const Profile = () => {
       try {
         const orders = await getAllUserOrders();
         setUserOrders(orders || []); // Ensure we always have an array
+        
+        // Extract paid orders for transaction history
+        const paidOrders = (orders || []).filter(order => order.status === 'PAID');
+        setOrderPayments(paidOrders);
       } catch (error) {
         console.error('Error fetching user orders:', error);
         // Don't show error toast for users with no orders
         // Just set empty array and let the UI show "no orders" message
         setUserOrders([]);
+        setOrderPayments([]);
         
         // Parse error to get status code
         let errorStatus = null;
@@ -728,7 +735,7 @@ const Profile = () => {
                           )}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {walletDeposits.filter(d => d.status === 'PAID').length} giao dịch thành công
+                          {walletDeposits.filter(d => d.status === 'PAID').length + orderPayments.length} giao dịch thành công
                         </div>
                         <button
                           onClick={refreshUserBalance}
@@ -759,32 +766,39 @@ const Profile = () => {
 
                   <Separator className="my-4" />
 
-                  {walletLoading ? (
+                  {walletLoading || orderPaymentsLoading ? (
                     <div className="text-center py-8 text-sm text-muted-foreground">Đang tải...</div>
-                  ) : walletDeposits.length === 0 ? (
-                    <div className="text-center py-8 text-sm text-muted-foreground">Chưa có giao dịch nạp tiền</div>
+                  ) : walletDeposits.length === 0 && orderPayments.length === 0 ? (
+                    <div className="text-center py-8 text-sm text-muted-foreground">Chưa có giao dịch nào</div>
                   ) : (
                     <div className="space-y-3">
-                      {walletDeposits.map((d) => (
-                        <div key={d.depositId} className="border rounded-lg p-4 flex items-center justify-between">
+                      {/* Combine and sort all transactions by date */}
+                      {[...walletDeposits.map(d => ({ ...d, type: 'deposit' })), ...orderPayments.map(o => ({ ...o, type: 'order' }))]
+                        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                        .map((transaction) => (
+                        <div key={transaction.type === 'deposit' ? transaction.depositId : transaction.orderId} className="border rounded-lg p-4 flex items-center justify-between">
                           <div>
                             <div className="text-sm text-muted-foreground">Mã giao dịch</div>
-                            <div className="font-medium">{d.depositId}</div>
+                            <div className="font-medium">{transaction.type === 'deposit' ? transaction.depositId : transaction.orderId}</div>
                           </div>
                           <div className="text-right">
-                            <div className="font-semibold">{Number(d.amount || 0).toLocaleString('vi-VN')} VNĐ</div>
+                            <div className="font-semibold">{Number(transaction.amount || 0).toLocaleString('vi-VN')} VNĐ</div>
                             <div className="text-xs text-muted-foreground">
-                              {new Date(d.createdAt).toLocaleString('vi-VN')}
+                              {new Date(transaction.createdAt).toLocaleString('vi-VN')}
                             </div>
                             <div className="text-xs mt-1">
-                              {d.status === 'PAID' ? (
-                                <span className="text-green-600">Đã thanh toán{d.paidAt ? ` (${new Date(d.paidAt).toLocaleString('vi-VN')})` : ''}</span>
-                              ) : d.status === 'PENDING' ? (
-                                <span className="text-yellow-600">Chờ thanh toán</span>
-                              ) : d.status === 'EXPIRED' ? (
-                                <span className="text-gray-500">Hết hạn</span>
+                              {transaction.type === 'deposit' ? (
+                                transaction.status === 'PAID' ? (
+                                  <span className="text-green-600">Đã thanh toán{transaction.paidAt ? ` (${new Date(transaction.paidAt).toLocaleString('vi-VN')})` : ''}</span>
+                                ) : transaction.status === 'PENDING' ? (
+                                  <span className="text-yellow-600">Chờ thanh toán</span>
+                                ) : transaction.status === 'EXPIRED' ? (
+                                  <span className="text-gray-500">Hết hạn</span>
+                                ) : (
+                                  <span className="text-red-600">Đã hủy</span>
+                                )
                               ) : (
-                                <span className="text-red-600">Đã hủy</span>
+                                <span className="text-green-600">Đã thanh toán{transaction.paidAt ? ` (${new Date(transaction.paidAt).toLocaleString('vi-VN')})` : ''}</span>
                               )}
                             </div>
                           </div>

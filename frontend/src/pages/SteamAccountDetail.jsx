@@ -7,6 +7,7 @@ import { Card, CardContent } from '../components/ui/card';
 import { useToast } from '../hooks/use-toast';
 import { getSteamAccountById } from '../lib/api';
 import PaymentDialog from '../components/PaymentDialog';
+import PaymentConfirmationDialog from '../components/PaymentConfirmationDialog';
 import { BACKEND_CONFIG } from '../lib/config';
 import Breadcrumbs from '../components/Breadcrumbs';
 
@@ -19,6 +20,7 @@ const SteamAccountDetail = () => {
   const [account, setAccount] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [showPaymentConfirmation, setShowPaymentConfirmation] = useState(false);
 
   useEffect(() => {
     const loadAccount = async () => {
@@ -82,6 +84,10 @@ const SteamAccountDetail = () => {
       return;
     }
     
+    setShowPaymentConfirmation(true);
+  };
+
+  const handleProceedWithQR = () => {
     setShowPaymentDialog(true);
   };
 
@@ -316,6 +322,15 @@ const SteamAccountDetail = () => {
           </div>
           )}
       </div>
+
+      {/* Payment Confirmation Dialog */}
+      <PaymentConfirmationDialog
+        account={account}
+        isOpen={showPaymentConfirmation}
+        onClose={() => setShowPaymentConfirmation(false)}
+        onProceedWithQR={handleProceedWithQR}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
 
       {/* Payment Dialog */}
       <PaymentDialog
