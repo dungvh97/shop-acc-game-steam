@@ -20,6 +20,10 @@ echo Starting Backend (Spring Boot)...
 echo This will open in a new window...
 start "Backend - Spring Boot" cmd /k "cd /d %CD%\backend && echo Starting Spring Boot application... && echo Connecting to Docker PostgreSQL database... && mvn spring-boot:run"
 
+echo Starting Steam Checker (Node.js)...
+echo This will open in a new window...
+start "Steam Checker - Node" cmd /k "cd /d %CD%\steam-checker && echo Installing dependencies if needed... && npm install --no-audit --no-fund && echo Starting Steam Checker service on port 4000... && npm start"
+
 echo Waiting for backend to start...
 timeout /t 10 /nobreak >nul
 
@@ -34,6 +38,7 @@ echo ========================================
 echo.
 echo Backend:  http://localhost:8080/api
 echo Frontend: http://localhost:3000
+echo SteamChecker: http://localhost:4000/check
 echo Swagger:  http://localhost:8080/api/swagger-ui.html
 echo.
 echo Both services are starting in separate windows.

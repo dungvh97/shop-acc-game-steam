@@ -323,6 +323,7 @@ const SteamAccountDetail = () => {
         isOpen={showPaymentDialog}
         onClose={() => setShowPaymentDialog(false)}
         onSuccess={handlePaymentSuccess}
+        shouldAutoCreate={true}
       />
     </div>
   );

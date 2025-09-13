@@ -1,28 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { useToast } from '../hooks/use-toast';
-import { createSteamAccountOrder, checkOrderStatus } from '../lib/api';
+import { createSteamAccountOrder, checkOrderStatus, validateSteamAccount } from '../lib/api';
 
-const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess }) => {
+const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess, shouldAutoCreate = false }) => {
   const { toast } = useToast();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(1800); // 30 minutes in seconds
   const [pollingInterval, setPollingInterval] = useState(null);
+  const hasAutoCreatedRef = useRef(false);
 
   useEffect(() => {
+    console.log('[PaymentDialog] open:', isOpen, 'account:', account?.id, 'shouldAutoCreate:', shouldAutoCreate);
     if (isOpen) {
       if (cartOrders && cartOrders.length > 0) {
         // Handle cart orders
         setOrders(cartOrders);
         setTimeLeft(1800);
-      } else if (account) {
-        // Handle single account order
-        createOrder();
       }
+    } else {
+      hasAutoCreatedRef.current = false;
     }
-  }, [isOpen, account, cartOrders]);
+  }, [isOpen, cartOrders, shouldAutoCreate, account?.id]);
+
+  // Robust auto-create guard: run once when conditions are met
+  useEffect(() => {
+    if (
+      isOpen &&
+      account &&
+      shouldAutoCreate &&
+      !hasAutoCreatedRef.current &&
+      orders.length === 0 &&
+      !loading
+    ) {
+      hasAutoCreatedRef.current = true;
+      console.log('[PaymentDialog] Triggering auto create order for account', account.id);
+      createOrder();
+    }
+  }, [isOpen, account, shouldAutoCreate, orders.length, loading]);
 
   useEffect(() => {
     if (orders.length > 0 && orders.some(order => order.status === 'PENDING')) {
@@ -52,15 +69,62 @@ const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess }) => {
 
   const createOrder = async () => {
     setLoading(true);
+    // Show a quick loading toast while validating and creating the order
+    toast({ title: 'Đang xác thực tài khoản...', description: 'Vui lòng đợi trong giây lát.' });
+    
     try {
-      const orderData = await createSteamAccountOrder(account.id);
-      setOrders([orderData]);
-      setTimeLeft(1800); // Reset timer
+      // First validate the Steam account
+      console.log('[PaymentDialog] Validating account before order creation:', account.id);
+      const validationResult = await validateSteamAccount(account.id);
+      console.log('[PaymentDialog] Validation response:', validationResult);
+      
+      const result = validationResult?.result;
+      console.log('[PaymentDialog] Validation result:', result);
+      
+      // If validation fails or returns unexpected result, don't proceed
+      if (!result) {
+        console.error('[PaymentDialog] No validation result received');
+        toast({ 
+          title: 'Lỗi xác thực', 
+          description: 'Không thể xác thực tài khoản.', 
+          variant: 'destructive' 
+        });
+        onClose();
+        return;
+      }
+      
+      if (result === 'INVALID_PASSWORD') {
+        console.log('[PaymentDialog] Account has invalid password, cannot proceed');
+        toast({
+          title: 'Tài khoản không khả dụng',
+          description: 'Tài khoản có mật khẩu không hợp lệ. Vui lòng chọn tài khoản khác.',
+          variant: 'destructive',
+        });
+        onClose();
+        return;
+      }
+      
+      if (result === 'VALID' || result === 'VALID_GUARDED') {
+        console.log('[PaymentDialog] Account is valid, proceeding to create order');
+        toast({ title: 'Đang tạo đơn hàng...', description: 'Vui lòng đợi trong giây lát.' });
+        
+        const orderData = await createSteamAccountOrder(account.id);
+        setOrders([orderData]);
+        setTimeLeft(1800); // Reset timer
+      } else {
+        console.warn('[PaymentDialog] Unexpected validation result:', result);
+        toast({
+          title: 'Cảnh báo',
+          description: 'Tài khoản có thể không khả dụng. Vui lòng thử lại sau.',
+          variant: 'destructive',
+        });
+        onClose();
+      }
     } catch (error) {
-      console.error('Error creating order:', error);
+      console.error('[PaymentDialog] Error during validation or order creation:', error);
       toast({
         title: 'Error',
-        description: 'Failed to create order. Please try again.',
+        description: 'Failed to validate account or create order. Please try again.',
         variant: 'destructive'
       });
       onClose();
@@ -119,6 +183,16 @@ const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess }) => {
 
   if (!isOpen) return null;
 
+  // If auto-creating and no orders yet (or still loading), only show the toast and hide the dialog
+  if (shouldAutoCreate && (loading || orders.length === 0)) {
+    return null;
+  }
+
+  // Do not render the dialog if there are no orders to show
+  if (!shouldAutoCreate && orders.length === 0) {
+    return null;
+  }
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -132,12 +206,7 @@ const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess }) => {
         </CardHeader>
         
         <CardContent className="space-y-4">
-          {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p>Creating order...</p>
-            </div>
-          ) : orders.length > 0 ? (
+          {orders.length > 0 && (
             <>
               {/* Orders Overview */}
               <div className="space-y-3">
@@ -260,34 +329,12 @@ const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess }) => {
                       onClick={() => onSuccess(orders[0])}
                       className="w-full"
                     >
-                      View Order Details
+                      Continue
                     </Button>
                   </div>
                 </div>
               )}
-
-              {/* Expired Section */}
-              {orders.some(order => order.status === 'EXPIRED') && (
-                <div className="text-center space-y-4">
-                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
-                    <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </div>
-                  <h4 className="font-semibold text-red-600">Order Expired</h4>
-                  <p className="text-sm text-muted-foreground">
-                    The payment time has expired. Please create a new order.
-                  </p>
-                  <Button onClick={handleClose} className="w-full">
-                    Close
-                  </Button>
-                </div>
-              )}
             </>
-          ) : (
-            <div className="text-center py-8">
-              <p>No order data available</p>
-            </div>
           )}
         </CardContent>
       </Card>

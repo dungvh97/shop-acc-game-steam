@@ -9,6 +9,7 @@ This document provides a detailed breakdown of the Shop Account Game platform pr
 shop-acc-game/
 ├── backend/                    # Spring Boot backend application
 ├── frontend/                   # React frontend application
+├── steam-checker/             # Steam account validation microservice
 ├── docs/                       # Project documentation
 ├── backups/                    # Database backup files
 ├── logs/                       # Application logs
@@ -43,6 +44,8 @@ REST API endpoints for handling HTTP requests:
 - **`SteamAccountController.java`** - Steam account management (CRUD operations)
 - **`SteamAccountOrderController.java`** - Order processing for Steam accounts
 - **`SteamAccountPublicController.java`** - Public-facing Steam account endpoints
+- **`UserBalanceController.java`** - User balance and wallet management
+- **`WalletDepositController.java`** - Wallet deposit operations and transactions
 
 ### Entities (`/entity/`)
 JPA entities representing database tables:
@@ -51,17 +54,38 @@ JPA entities representing database tables:
 - **`SteamAccount.java`** - Steam account product details
 - **`Game.java`** - Game information and metadata
 - **`Order.java`** - Order records and status
+- **`OrderItem.java`** - Individual items within orders
 - **`CartItem.java`** - Shopping cart items
-- **`Payment.java`** - Payment transaction records
+- **`SteamAccountOrder.java`** - Steam account order processing
+- **`AccountSale.java`** - Account sale transactions
+- **`EmailVerification.java`** - Email verification tokens
+- **`WalletDeposit.java`** - Wallet deposit transactions
+- **`enums/`** - Enumeration types
+  - **`AccountStatus.java`** - Steam account status enumeration
+  - **`AccountType.java`** - Account type classification
 
 ### DTOs (`/dto/`)
 Data Transfer Objects for API request/response handling:
 
+- **`AuthRequest.java`** - Authentication request data
+- **`AuthResponse.java`** - Authentication response data
 - **`LoginRequest.java`** - Login credentials
 - **`RegisterRequest.java`** - User registration data
+- **`OAuthRequest.java`** - OAuth authentication request
 - **`SteamAccountDto.java`** - Steam account data transfer
-- **`OrderDto.java`** - Order information transfer
-- **`PaymentDto.java`** - Payment data transfer
+- **`SteamAccountRequestDto.java`** - Steam account creation/update request
+- **`SteamAccountAdminDto.java`** - Admin-specific Steam account data
+- **`OrderRequestDto.java`** - Order creation request
+- **`OrderResponseDto.java`** - Order response data
+- **`CartItemDto.java`** - Shopping cart item data
+- **`GameDto.java`** - Game information transfer
+- **`GameRequestDto.java`** - Game creation/update request
+- **`GamePageResponseDto.java`** - Paginated game response
+- **`GameWithPriceDto.java`** - Game with pricing information
+- **`UserDto.java`** - User data transfer
+- **`EmailVerificationRequest.java`** - Email verification request
+- **`SendVerificationRequest.java`** - Send verification email request
+- **`SepayWebhookDto.java`** - SePay webhook data
 
 ### Repositories (`/repository/`)
 Spring Data JPA repositories for database operations:
@@ -71,31 +95,49 @@ Spring Data JPA repositories for database operations:
 - **`GameRepository.java`** - Game data access
 - **`OrderRepository.java`** - Order data access
 - **`CartItemRepository.java`** - Cart item data access
+- **`SteamAccountOrderRepository.java`** - Steam account order data access
+- **`EmailVerificationRepository.java`** - Email verification token data access
+- **`WalletDepositRepository.java`** - Wallet deposit transaction data access
 
 ### Services (`/service/`)
 Business logic layer:
 
+- **`AuthService.java`** - Authentication and authorization logic
 - **`UserService.java`** - User management business logic
 - **`SteamAccountService.java`** - Steam account business logic
+- **`SteamAccountOrderService.java`** - Steam account order processing
+- **`SteamCheckerService.java`** - Steam account validation service
 - **`OrderService.java`** - Order processing logic
 - **`PaymentService.java`** - Payment processing logic
 - **`EmailService.java`** - Email notification service
 - **`FileService.java`** - File upload and management
+- **`GameService.java`** - Game management business logic
+- **`GameImportService.java`** - Bulk game import functionality
+- **`CartService.java`** - Shopping cart business logic
+- **`UserBalanceService.java`** - User balance and wallet management
+- **`WalletDepositService.java`** - Wallet deposit processing
+- **`EncryptionService.java`** - Data encryption and decryption utilities
 
 ### Security (`/security/`)
 Authentication and authorization:
 
 - **`JwtAuthenticationFilter.java`** - JWT token validation
-- **`JwtTokenProvider.java`** - JWT token generation and validation
-- **`SecurityConfig.java`** - Spring Security configuration
-- **`UserDetailsServiceImpl.java`** - Custom user details service
+- **`JwtUtil.java`** - JWT token generation and validation utilities
 
 ### Configuration (`/config/`)
 Application configuration classes:
 
 - **`DatabaseConfig.java`** - Database connection configuration
-- **`WebConfig.java`** - Web application configuration
-- **`CorsConfig.java`** - Cross-origin resource sharing setup
+- **`DatabaseHealthIndicator.java`** - Database health monitoring
+- **`DatabaseReadinessChecker.java`** - Database readiness checks
+- **`EmailConfig.java`** - Email service configuration
+- **`GoogleOAuth2Config.java`** - Google OAuth2 configuration
+- **`JpaConfig.java`** - JPA/Hibernate configuration
+- **`OpenApiConfig.java`** - OpenAPI/Swagger documentation configuration
+- **`RestTemplateConfig.java`** - REST client configuration
+- **`SecurityConfig.java`** - Spring Security configuration
+- **`SimpleEmailConfig.java`** - Simple email configuration
+- **`StaticResourceConfig.java`** - Static resource serving configuration
 
 ### Resources (`/src/main/resources/`)
 - **`application.yml`** - Spring Boot application configuration
@@ -194,6 +236,38 @@ Static files:
 - **`Dockerfile.cloudflare`** - Docker image for Cloudflare deployment
 - **`nginx.cloudflare.conf`** - Nginx configuration for Cloudflare
 
+## Steam Checker Microservice (`/steam-checker`)
+
+### Overview
+A standalone Node.js microservice for validating Steam account credentials using the steam-user library.
+
+### Main Files
+- **`index.js`** - Express.js server with Steam account validation endpoints
+- **`package.json`** - Node.js dependencies and scripts
+- **`package-lock.json`** - Dependency lock file
+
+### Dependencies
+- **`express`** - Web framework for API endpoints
+- **`cors`** - Cross-origin resource sharing middleware
+- **`steam-user`** - Steam client library for account validation
+
+### API Endpoints
+- **`POST /check`** - Validates Steam account credentials
+  - Request: `{ username, password, twoFactorCode? }`
+  - Response: `{ valid: boolean, error?: string }`
+
+### Features
+- Steam account login validation
+- Steam Guard (2FA) detection
+- Error handling for invalid credentials
+- Automatic connection cleanup
+- CORS support for cross-origin requests
+
+### Integration
+- Called by `SteamCheckerService` in the main backend
+- Runs on port 4000 by default
+- Used for validating Steam accounts before sale
+
 ## Infrastructure and Deployment
 
 ### Docker Configuration
@@ -233,8 +307,12 @@ Static files:
 - **`steam_accounts`** - Steam account products
 - **`games`** - Game information and metadata
 - **`orders`** - Order records and status
+- **`order_items`** - Individual items within orders
+- **`steam_account_orders`** - Steam account order processing
 - **`cart_items`** - Shopping cart items
-- **`payments`** - Payment transaction records
+- **`account_sales`** - Account sale transactions
+- **`email_verifications`** - Email verification tokens
+- **`wallet_deposits`** - Wallet deposit transactions
 
 ### Migration Scripts
 Located in `backend/src/main/resources/db/migration/` for database schema versioning
@@ -252,15 +330,23 @@ Located in `backend/src/main/resources/db/migration/` for database schema versio
 - Payment verification and confirmation
 
 ### Product Management
-- Steam account listings
+- Steam account listings with validation
 - Game information integration (RAWG API)
 - Image upload and management
 - Inventory tracking
+- Steam account credential validation via microservice
 
 ### User Management
 - User registration and profiles
 - Order history tracking
 - Admin user management
+- Email verification system
+
+### Wallet and Balance System
+- User wallet management
+- Balance tracking and transactions
+- Deposit processing
+- Payment integration with SePay.vn
 
 ### Monitoring and Observability
 - Prometheus metrics collection

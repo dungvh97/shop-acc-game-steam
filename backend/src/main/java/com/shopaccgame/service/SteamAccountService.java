@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -247,6 +248,16 @@ public class SteamAccountService {
         logger.info("Steam account status updated successfully with ID: {}", updatedAccount.getId());
         
         return new SteamAccountDto(updatedAccount);
+    }
+
+    public void updateVerifyDate(Long id, LocalDateTime verifyDate) {
+        Optional<SteamAccount> accountOpt = steamAccountRepository.findById(id);
+        if (accountOpt.isEmpty()) {
+            throw new RuntimeException("Steam account not found with ID: " + id);
+        }
+        SteamAccount account = accountOpt.get();
+        account.setVerifyDate(verifyDate);
+        steamAccountRepository.save(account);
     }
     
     public long getAvailableCountByType(AccountType accountType) {

@@ -1,13 +1,12 @@
 package com.shopaccgame.controller;
 
 import com.shopaccgame.dto.SteamAccountDto;
-import com.shopaccgame.entity.SteamAccount;
 import com.shopaccgame.entity.enums.AccountType;
 import com.shopaccgame.entity.enums.AccountStatus;
 import com.shopaccgame.service.SteamAccountService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import com.shopaccgame.service.SteamCheckerService;
+import com.shopaccgame.service.SteamCheckerService.ValidationResult;
 
 @RestController
 @RequestMapping("/steam-accounts")
@@ -26,6 +27,9 @@ public class SteamAccountPublicController {
     
     @Autowired
     private SteamAccountService steamAccountService;
+
+    @Autowired
+    private SteamCheckerService steamCheckerService;
     
     @GetMapping
     public ResponseEntity<Page<SteamAccountDto>> getAvailableSteamAccounts(
@@ -63,6 +67,16 @@ public class SteamAccountPublicController {
     public ResponseEntity<List<SteamAccountDto>> getAllAvailableSteamAccounts() {
         List<SteamAccountDto> accounts = steamAccountService.getAvailableAccounts();
         return ResponseEntity.ok(accounts);
+    }
+
+    @PostMapping("/{id}/validate")
+    public ResponseEntity<?> validateSteamAccount(@PathVariable Long id) {
+        long start = System.currentTimeMillis();
+        logger.info("[Validate] Received request to validate steam account id={}", id);
+        ValidationResult result = steamCheckerService.validateAccountAndUpdate(id);
+        long durationMs = System.currentTimeMillis() - start;
+        logger.info("[Validate] Completed validation for id={} -> result={} in {} ms", id, result, durationMs);
+        return ResponseEntity.ok().body(java.util.Map.of("result", result.name(), "durationMs", durationMs));
     }
     
     @GetMapping("/{id}")

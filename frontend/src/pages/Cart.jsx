@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/use-toast';
 import { BACKEND_CONFIG } from '../lib/config';
 import PaymentDialog from '../components/PaymentDialog';
+import { validateSteamAccount } from '../lib/api';
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart, getCartTotal, loading } = useCart();
@@ -38,6 +39,45 @@ const Cart = () => {
     }
 
     try {
+      // Validate each account before checkout
+      for (const item of cartItems) {
+        try {
+          console.log('Validating cart item:', item.steamAccountId);
+          const res = await validateSteamAccount(item.steamAccountId);
+          console.log('Cart validation response:', res);
+          const result = res?.result;
+          console.log('Cart validation result:', result);
+          
+          if (result === 'INVALID_PASSWORD') {
+            console.log('Cart item has invalid password, removing and redirecting');
+            toast({
+              title: 'Tài khoản không khả dụng',
+              description: `${item.steamAccountName} có mật khẩu không hợp lệ. Đã chuyển sang bảo trì và xóa khỏi giỏ hàng.`,
+              variant: 'destructive',
+            });
+            // Backend validation service already updates the status to MAINTENANCE
+            await removeFromCart(item.steamAccountId);
+            navigate('/');
+            return;
+          }
+          if (result === 'ERROR') {
+            console.log('Cart validation service error, removing and redirecting');
+            toast({
+              title: 'Lỗi xác thực',
+              description: `Không thể kiểm tra ${item.steamAccountName}. Vui lòng thử lại sau.`,
+              variant: 'destructive',
+            });
+            await removeFromCart(item.steamAccountId);
+            navigate('/');
+            return;
+          }
+        } catch (e) {
+          console.error('Cart validation error:', e);
+          toast({ title: 'Không thể xác thực tài khoản', description: 'Vui lòng thử lại sau.', variant: 'destructive' });
+          return;
+        }
+      }
+
       const { checkoutCart } = await import('../lib/api');
       const orders = await checkoutCart();
       setCartOrders(orders);

@@ -60,6 +60,9 @@ public class SteamAccount {
     
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "verify_date")
+    private LocalDateTime verifyDate;
     
     // Many-to-Many relationship with Game
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -208,6 +211,14 @@ public class SteamAccount {
     
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public LocalDateTime getVerifyDate() {
+        return verifyDate;
+    }
+
+    public void setVerifyDate(LocalDateTime verifyDate) {
+        this.verifyDate = verifyDate;
     }
     
     public Set<Game> getGames() {

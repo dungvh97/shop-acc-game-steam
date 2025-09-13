@@ -216,6 +216,24 @@ export const getAvailableSteamAccountsByType = async (accountType) => {
   return apiRequest(`/steam-accounts/available/${accountType}`);
 };
 
+// Validate a steam account via backend microservice wrapper
+export const validateSteamAccount = async (id) => {
+  const t0 = performance.now();
+  console.log('[API] validateSteamAccount start id=', id);
+  try {
+    const result = await apiRequest(`/steam-accounts/${id}/validate`, {
+      method: 'POST'
+    });
+    const t1 = performance.now();
+    console.log('[API] validateSteamAccount ok id=', id, 'durationMs=', Math.round(t1 - t0), 'result=', result);
+    return result;
+  } catch (error) {
+    const t1 = performance.now();
+    console.error('[API] validateSteamAccount error id=', id, 'durationMs=', Math.round(t1 - t0), error);
+    throw error;
+  }
+};
+
 // Steam Account Management (Admin only - for admin panel)
 export const getSteamAccountsAdmin = async (page = 0, size = 20, sortBy = 'id', sortDir = 'desc') => {
   return apiRequest(`/admin/steam-accounts?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`);

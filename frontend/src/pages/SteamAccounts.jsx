@@ -7,7 +7,8 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useToast } from '../hooks/use-toast';
 import { 
-  getAvailableSteamAccounts
+  getAvailableSteamAccounts,
+  validateSteamAccount
 } from '../lib/api';
 import PaymentDialog from '../components/PaymentDialog';
 import { BACKEND_CONFIG } from '../lib/config';
@@ -150,7 +151,7 @@ const SteamAccounts = () => {
 
   
 
-  const handleBuyNow = (account) => {
+  const handleBuyNow = async (account) => {
     if (!isAuthenticated) {
       toast({
         title: "Yêu cầu đăng nhập",
@@ -160,9 +161,53 @@ const SteamAccounts = () => {
       navigate('/login');
       return;
     }
-    
-    setSelectedAccount(account);
-    setShowPaymentDialog(true);
+    try {
+      console.log('Validating account:', account.id);
+      const res = await validateSteamAccount(account.id);
+      console.log('Validation response:', res);
+      const result = res?.result;
+      console.log('Validation result:', result);
+      
+      // If validation fails or returns unexpected result, don't proceed
+      if (!result) {
+        console.error('No validation result received');
+        toast({ title: 'Lỗi xác thực', description: 'Không thể xác thực tài khoản.', variant: 'destructive' });
+        return;
+      }
+      
+      if (result === 'VALID' || result === 'VALID_GUARDED') {
+        console.log('Account is valid, proceeding to payment');
+        setSelectedAccount(account);
+        setShowPaymentDialog(true);
+        return;
+      }
+      if (result === 'INVALID_PASSWORD') {
+        console.log('Account has invalid password, redirecting to home');
+        toast({
+          title: 'Tài khoản không khả dụng',
+          description: 'Mật khẩu không hợp lệ. Tài khoản sẽ được bảo trì.',
+          variant: 'destructive'
+        });
+        // Backend validation service already updates the status to MAINTENANCE
+        navigate('/');
+        return;
+      }
+      if (result === 'ERROR') {
+        console.log('Validation service error, redirecting to home');
+        toast({
+          title: 'Lỗi xác thực',
+          description: 'Không thể kiểm tra tài khoản. Vui lòng thử lại sau.',
+          variant: 'destructive'
+        });
+        navigate('/');
+        return;
+      }
+      console.log('Unknown validation result:', result);
+      toast({ title: 'Không thể xác thực', description: 'Vui lòng thử lại sau.' , variant: 'destructive'});
+    } catch (e) {
+      console.error('Validation error:', e);
+      toast({ title: 'Lỗi kết nối', description: 'Không thể kiểm tra tài khoản.' , variant: 'destructive'});
+    }
   };
 
   const handleAddToCart = async (account) => {
@@ -402,6 +447,7 @@ const SteamAccounts = () => {
               setSelectedAccount(null);
             }}
             onSuccess={handlePaymentSuccess}
+            shouldAutoCreate={true}
           />
         </div>
       </div>
