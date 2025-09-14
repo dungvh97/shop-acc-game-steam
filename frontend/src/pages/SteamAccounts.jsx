@@ -24,7 +24,8 @@ const SteamAccounts = () => {
   
   const [allAccounts, setAllAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchInput, setSearchInput] = useState(''); // Input value (not filtered)
+  const [searchTerm, setSearchTerm] = useState(''); // Actual search term used for filtering
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
@@ -54,6 +55,16 @@ const SteamAccounts = () => {
   useEffect(() => {
     loadAccounts();
   }, [location.pathname]);
+
+  // Read search query from URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const query = urlParams.get('q');
+    if (query) {
+      setSearchInput(query);
+      setSearchTerm(query);
+    }
+  }, [location.search]);
 
   const loadAccounts = async () => {
     setLoading(true);
@@ -182,11 +193,31 @@ const SteamAccounts = () => {
     }
   };
 
-  
+  const handleSearchInputChange = (e) => {
+    setSearchInput(e.target.value);
+  };
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
+  const handleSearch = () => {
+    setSearchTerm(searchInput);
     setCurrentPage(0); // Reset to first page when searching
+    
+    // Update URL with search query
+    const urlParams = new URLSearchParams(location.search);
+    if (searchInput.trim()) {
+      urlParams.set('q', searchInput.trim());
+    } else {
+      urlParams.delete('q');
+    }
+    
+    const newSearch = urlParams.toString();
+    const newUrl = location.pathname + (newSearch ? `?${newSearch}` : '');
+    navigate(newUrl, { replace: true });
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
   };
 
   const handleMinPriceChange = (e) => {
@@ -322,13 +353,20 @@ const SteamAccounts = () => {
 
           {/* Filters */}
           <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
+            <div className="flex-1 flex gap-2">
               <Input
                 placeholder="Tìm kiếm tên game"
-                value={searchTerm}
-                onChange={handleSearchChange}
-                className="w-full"
+                value={searchInput}
+                onChange={handleSearchInputChange}
+                onKeyDown={handleSearchKeyDown}
+                className="flex-1"
               />
+              <Button 
+                onClick={handleSearch}
+                className="px-6"
+              >
+                Tìm kiếm
+              </Button>
             </div>
             <div className="w-full md:w-40">
               <Input
