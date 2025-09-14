@@ -421,8 +421,8 @@ const SteamAccountManager = () => {
 
       const payload = {
         ...formData,
-        price: Number(formData.price),
-        originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
+        price: formData.price, // Keep as string to preserve precision
+        originalPrice: formData.originalPrice || null, // Keep as string to preserve precision
         discountPercentage: formData.discountPercentage ? Number(formData.discountPercentage) : 0,
         stockQuantity: Number(formData.stockQuantity),
         status: formData.status,
