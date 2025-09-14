@@ -25,7 +25,9 @@ import {
   Copy,
   Check,
   Eye,
-  EyeOff
+  EyeOff,
+  ExternalLink,
+  FileText
 } from 'lucide-react';
 import { getAllUserOrders, getMyWalletDeposits, getUserBalance } from '../lib/api.js';
 import DepositDialog from '../components/DepositDialog.jsx';
@@ -49,6 +51,8 @@ const Profile = () => {
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [orderPayments, setOrderPayments] = useState([]);
   const [orderPaymentsLoading, setOrderPaymentsLoading] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [orderDetailOpen, setOrderDetailOpen] = useState(false);
   
   // Decode user names to handle encoding issues
   const decodedUser = decodeUserNames(user);
@@ -290,6 +294,13 @@ const Profile = () => {
     }));
   };
 
+  const handleOrderClick = (order) => {
+    if (order.status === 'PAID') {
+      setSelectedOrder(order);
+      setOrderDetailOpen(true);
+    }
+  };
+
   const getStatusBadge = (status) => {
     const statusConfig = {
       'PENDING': { label: 'Chờ thanh toán', variant: 'secondary' },
@@ -351,13 +362,63 @@ const Profile = () => {
             </Button>
           </div>
 
-          <Tabs defaultValue={searchParams.get('tab') || "profile"} className="space-y-6">
-            <TabsList>
-              <TabsTrigger value="profile">Thông tin cá nhân</TabsTrigger>
-              <TabsTrigger value="security">Bảo mật</TabsTrigger>
-              <TabsTrigger value="activity">Hoạt động</TabsTrigger>
-              <TabsTrigger value="transactions">Lịch sử giao dịch</TabsTrigger>
-            </TabsList>
+          <div className="flex gap-6">
+            {/* Left Sidebar */}
+            <div className="w-64 flex-shrink-0">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Quản lý tài khoản</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <nav className="space-y-1">
+                    <button
+                      onClick={() => setSearchParams({ tab: 'profile' })}
+                      className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors ${
+                        (searchParams.get('tab') || 'profile') === 'profile'
+                          ? 'bg-red-50 text-red-700 border-r-2 border-red-600'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                    >
+                      Tài khoản của tôi
+                    </button>
+                    <button
+                      onClick={() => setSearchParams({ tab: 'security' })}
+                      className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors ${
+                        searchParams.get('tab') === 'security'
+                          ? 'bg-red-50 text-red-700 border-r-2 border-red-600'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                    >
+                      Mật khẩu và bảo mật
+                    </button>
+                    <button
+                      onClick={() => setSearchParams({ tab: 'activity' })}
+                      className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors ${
+                        searchParams.get('tab') === 'activity'
+                          ? 'bg-red-50 text-red-700 border-r-2 border-red-600'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                    >
+                      Lịch sử đơn hàng
+                    </button>
+                    <button
+                      onClick={() => setSearchParams({ tab: 'transactions' })}
+                      className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors ${
+                        searchParams.get('tab') === 'transactions'
+                          ? 'bg-red-50 text-red-700 border-r-2 border-red-600'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                    >
+                      Lịch sử giao dịch
+                    </button>
+                  </nav>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Main Content */}
+            <div className="flex-1">
+              <Tabs value={searchParams.get('tab') || "profile"} className="space-y-6">
 
             <TabsContent value="profile" className="space-y-6">
               {/* Profile Overview */}
@@ -537,18 +598,13 @@ const Profile = () => {
             </TabsContent>
 
             <TabsContent value="activity" className="space-y-6">
-              {/* Activity History */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5" />
-                    Lịch sử hoạt động
-                  </CardTitle>
-                  <CardDescription>
-                    Theo dõi các hoạt động và giao dịch của bạn
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
+              {/* Order History */}
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Lịch sử đơn hàng</h2>
+                <p className="text-gray-600 mb-6">
+                  Hiển thị thông tin các sản phẩm bạn đã mua tại Gurro Shop
+                </p>
+                
                 {ordersLoading ? (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground">Đang tải...</p>
@@ -560,44 +616,95 @@ const Profile = () => {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {userOrders.map((order) => (
-                      <div key={order.id} className="border rounded-lg p-4 space-y-3">
-                        {/* Order Header */}
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="font-semibold">{order.accountName}</h3>
-                            <p className="text-sm text-muted-foreground">
-                              Mã đơn hàng: {order.orderId}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            {getStatusBadge(order.status)}
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {formatDate(order.createdAt)}
-                            </p>
-                          </div>
-                        </div>
+                  <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50 border-b border-gray-200">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              MÃ ĐƠN HÀNG
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              TÊN SẢN PHẨM
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              NGÀY MUA
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              GIÁ TÀI KHOẢN
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              GIẢM GIÁ
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              TỔNG TIỀN
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              HOÀN TIỀN
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              TRẠNG THÁI
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {userOrders.map((order) => (
+                            <tr 
+                              key={order.id} 
+                              className={`hover:bg-gray-50 ${order.status === 'PAID' ? 'cursor-pointer' : ''}`}
+                              onClick={() => handleOrderClick(order)}
+                            >
+                              <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {order.orderId}
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {order.accountName}
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {formatDate(order.createdAt)}
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {order.amount?.toLocaleString('vi-VN')} VNĐ
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                -
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {order.amount?.toLocaleString('vi-VN')} VNĐ
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {order.status === 'CANCELLED' ? `${order.amount?.toLocaleString('vi-VN')} VNĐ` : '-'}
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap">
+                                {getStatusBadge(order.status)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
 
-                        {/* Order Details */}
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">Loại tài khoản:</span>
-                            <p>{order.accountType}</p>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Số tiền:</span>
-                            <p>{order.amount?.toLocaleString('vi-VN')} VNĐ</p>
-                          </div>
-                        </div>
-
-                        {/* Account Credentials - Only show for PAID orders */}
-                        {order.status === 'PAID' && order.accountUsername && (
-                          <div className="bg-green-50 border border-green-200 rounded-lg p-3 space-y-3">
-                            <h4 className="font-medium text-green-800 text-sm">
-                              Thông tin tài khoản
+                {/* Account Credentials Section - Only show for PAID orders */}
+                {userOrders.some(order => order.status === 'PAID' && order.accountUsername) && (
+                  <div className="mt-8">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Thông tin tài khoản đã mua</h3>
+                    <div className="space-y-4">
+                      {userOrders
+                        .filter(order => order.status === 'PAID' && order.accountUsername)
+                        .map((order) => (
+                        <div key={order.id} className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium text-green-800">
+                              {order.accountName} - {order.orderId}
                             </h4>
-                            
+                            <span className="text-sm text-green-600">
+                              Đã thanh toán: {formatDate(order.paidAt || order.createdAt)}
+                            </span>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {/* Username */}
                             <div>
                               <label className="text-xs font-medium text-gray-700 mb-1 block">
@@ -665,18 +772,18 @@ const Profile = () => {
                             </div>
 
                             {/* Steam Guard */}
-                            {order.steamGuard && (
-                              <div>
-                                <label className="text-xs font-medium text-gray-700 mb-1 block">
-                                  Steam Guard
-                                </label>
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="text"
-                                    value={order.steamGuard}
-                                    readOnly
-                                    className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs bg-white"
-                                  />
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">
+                                Steam Guard
+                              </label>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  value={order.steamGuard || 'Không có'}
+                                  readOnly
+                                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs bg-white"
+                                />
+                                {order.steamGuard && (
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -689,24 +796,16 @@ const Profile = () => {
                                       <Copy className="h-3 w-3" />
                                     )}
                                   </Button>
-                                </div>
+                                )}
                               </div>
-                            )}
+                            </div>
                           </div>
-                        )}
-
-                        {/* Payment Date for PAID orders */}
-                        {order.status === 'PAID' && order.paidAt && (
-                          <div className="text-xs text-muted-foreground">
-                            Thanh toán lúc: {formatDate(order.paidAt)}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
-              </CardContent>
-              </Card>
+              </div>
             </TabsContent>
             <TabsContent value="transactions" className="space-y-6">
               <Card>
@@ -815,9 +914,168 @@ const Profile = () => {
                 onClose={() => setDepositOpen(false)}
               />
             </TabsContent>
-          </Tabs>
+              </Tabs>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Order Detail Modal */}
+      {orderDetailOpen && selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-800">{selectedOrder.accountName}</h2>
+                  <p className="text-gray-600">
+                    {formatDate(selectedOrder.createdAt)} - {selectedOrder.orderId}
+                  </p>
+                  <p className="text-lg font-semibold text-green-600">
+                    {selectedOrder.amount?.toLocaleString('vi-VN')} VNĐ
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setOrderDetailOpen(false)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Steam Login Details */}
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                    Chi tiết đăng nhập Steam:
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    {/* Username */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tên người dùng:
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={selectedOrder.accountUsername || ''}
+                          readOnly
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyToClipboard(selectedOrder.accountUsername, `modal-username-${selectedOrder.id}`)}
+                        >
+                          {copiedField === `modal-username-${selectedOrder.id}` ? (
+                            <Check className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Password */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Mật khẩu:
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type={showPasswords[`modal-${selectedOrder.id}`] ? "text" : "password"}
+                          value={selectedOrder.accountPassword || ''}
+                          readOnly
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => togglePasswordVisibility(`modal-${selectedOrder.id}`)}
+                        >
+                          {showPasswords[`modal-${selectedOrder.id}`] ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyToClipboard(selectedOrder.accountPassword, `modal-password-${selectedOrder.id}`)}
+                        >
+                          {copiedField === `modal-password-${selectedOrder.id}` ? (
+                            <Check className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Steam Guard */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Steam Guard:
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={selectedOrder.steamGuard || 'Không có'}
+                          readOnly
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm"
+                        />
+                        {selectedOrder.steamGuard && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => copyToClipboard(selectedOrder.steamGuard, `modal-steamguard-${selectedOrder.id}`)}
+                          >
+                            {copiedField === `modal-steamguard-${selectedOrder.id}` ? (
+                              <Check className="h-4 w-4 text-green-600" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button 
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => window.open('https://help.steampowered.com/en/wizard/HelpWithLoginInfo?accountsearch=1', '_blank')}
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Đổi thông tin
+                    </Button>
+                  </div>
+                  
+                  <div className="text-center">
+                    <a
+                      href="/guide_update_steam_account.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
+                    >
+                      <FileText className="w-4 h-4" />
+                      Hướng dẫn đổi thông tin tại đây!
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
