@@ -44,16 +44,23 @@ echo.
 echo Your services are now running behind Cloudflare:
 echo   - Frontend: https://gurroshop.com (via Cloudflare)
 echo   - Backend API: https://api.gurroshop.com (via Cloudflare)
-echo   - Direct access: http://localhost:3000 (frontend), http://localhost:8080 (backend)
+echo   - Steam Checker: https://node.gurroshop.com (via Cloudflare)
+echo   - Direct access: http://localhost:3000 (frontend), http://localhost:8080 (backend), http://localhost:4000 (steam-checker)
 echo.
 echo Management interfaces (localhost only):
 echo   - Prometheus: http://localhost:9090
 echo   - Grafana: http://localhost:3001 (admin/admin)
 echo   - pgAdmin: http://localhost:5050
 echo.
+echo Cloudflare Ingress Configuration:
+echo   - gurroshop.com -> http://localhost:3000 (Frontend)
+echo   - api.gurroshop.com -> http://localhost:8080 (Backend API)
+echo   - node.gurroshop.com -> http://localhost:4000 (Steam Checker)
+echo   - Default: 404 (catch-all)
+echo.
 echo Next steps for Cloudflare integration:
-echo 1. Set up Cloudflare Tunnel (recommended) or
-echo 2. Point your domain A records to your server IP
+echo 1. Set up Cloudflare Tunnel with the above ingress rules or
+echo 2. Point your domain A records to your server IP and configure Cloudflare proxy
 echo.
 echo Monitor logs:
 echo   docker-compose -f docker-compose.cloudflare.yml logs -f [service-name]

@@ -33,6 +33,9 @@ public class CartService {
     @Autowired
     private com.shopaccgame.service.SteamAccountOrderService orderService;
     
+    @Autowired
+    private com.shopaccgame.service.UserBalanceService userBalanceService;
+    
     @Transactional
     public CartItemDto addToCart(String username, Long steamAccountId, Integer quantity) {
         User user = userRepository.findByUsername(username)
