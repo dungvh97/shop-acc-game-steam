@@ -238,24 +238,35 @@ const SteamAccounts = () => {
         return;
       }
       if (result === 'INVALID_PASSWORD') {
-        console.log('Account has invalid password, redirecting to home');
+        console.log('Account has invalid password, reloading accounts and redirecting to home');
         toast({
           title: 'Tài khoản không khả dụng',
           description: 'Mật khẩu không hợp lệ. Tài khoản sẽ được bảo trì.',
           variant: 'destructive'
         });
         // Backend validation service already updates the status to MAINTENANCE
-        navigate('/');
+        // Reload accounts to remove the invalid one from view
+        await loadAccounts();
+        // Small delay to show the toast before redirecting
+        setTimeout(() => {
+          navigate('/');
+        }, 1000);
         return;
       }
       if (result === 'ERROR') {
-        console.log('Validation service error, redirecting to home');
+        console.log('Validation service error, reloading accounts and redirecting to home');
         toast({
-          title: 'Lỗi xác thực',
-          description: 'Không thể kiểm tra tài khoản. Vui lòng thử lại sau.',
+          title: 'Tài khoản không khả dụng',
+          description: 'Không thể kiểm tra tài khoản. Tài khoản sẽ được bảo trì.',
           variant: 'destructive'
         });
-        navigate('/');
+        // Backend validation service already updates the status to MAINTENANCE
+        // Reload accounts to remove the invalid one from view
+        await loadAccounts();
+        // Small delay to show the toast before redirecting
+        setTimeout(() => {
+          navigate('/');
+        }, 1000);
         return;
       }
       console.log('Unknown validation result:', result);

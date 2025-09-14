@@ -167,4 +167,58 @@ public class CartService {
         
         return orders;
     }
+    
+    /**
+     * Create orders from all cart items, pay with balance, and clear the cart
+     */
+    @Transactional
+    public List<OrderResponseDto> checkoutCartWithBalance(String username) {
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        List<CartItem> cartItems = cartItemRepository.findByUserOrderByAddedAtDesc(user);
+        
+        if (cartItems.isEmpty()) {
+            throw new RuntimeException("Cart is empty");
+        }
+        
+        // Validate all items are still available
+        for (CartItem item : cartItems) {
+            SteamAccount account = item.getSteamAccount();
+            if (account.getStatus() != AccountStatus.AVAILABLE || account.getStockQuantity() <= 0) {
+                throw new RuntimeException("Steam account '" + account.getName() + "' is no longer available");
+            }
+        }
+        
+        // Calculate total amount needed
+        BigDecimal totalAmount = getCartTotal(username);
+        
+        // Check if user has enough balance
+        if (userBalanceService.getUserBalance(username).compareTo(totalAmount) < 0) {
+            throw new RuntimeException("Insufficient balance. Required: " + totalAmount + ", Available: " + userBalanceService.getUserBalance(username));
+        }
+        
+        // Create and pay orders for each cart item
+        List<OrderResponseDto> orders = new java.util.ArrayList<>();
+        for (CartItem item : cartItems) {
+            try {
+                // Create order request for this item
+                com.shopaccgame.dto.OrderRequestDto orderRequest = new com.shopaccgame.dto.OrderRequestDto();
+                orderRequest.setAccountId(item.getSteamAccount().getId());
+                
+                // Create and pay the order with balance
+                OrderResponseDto order = orderService.createAndPayWithBalance(orderRequest, username);
+                orders.add(order);
+            } catch (Exception e) {
+                // If any order fails, rollback all orders
+                throw new RuntimeException("Failed to create and pay order for account '" + 
+                    item.getSteamAccount().getName() + "': " + e.getMessage());
+            }
+        }
+        
+        // Clear the cart after successful order creation and payment
+        cartItemRepository.deleteByUser(user);
+        
+        return orders;
+    }
 }

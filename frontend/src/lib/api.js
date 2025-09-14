@@ -434,6 +434,13 @@ export const checkoutCart = async () => {
   });
 };
 
+// Cart checkout with balance payment - create orders and pay with balance
+export const checkoutCartWithBalance = async () => {
+  return apiRequest('/cart/checkout-with-balance', {
+    method: 'POST',
+  });
+};
+
 
 // Wallet deposit APIs
 export const createWalletDeposit = async (amount) => {

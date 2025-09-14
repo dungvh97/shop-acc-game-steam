@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { useToast } from '../hooks/use-toast';
-import { createSteamAccountOrder, checkOrderStatus, validateSteamAccount } from '../lib/api';
+import { createSteamAccountOrder, checkOrderStatus } from '../lib/api';
 
 const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess, shouldAutoCreate = false }) => {
   const { toast } = useToast();
@@ -69,62 +69,19 @@ const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess, should
 
   const createOrder = async () => {
     setLoading(true);
-    // Show a quick loading toast while validating and creating the order
-    toast({ title: 'Đang xác thực tài khoản...', description: 'Vui lòng đợi trong giây lát.' });
+    // Show loading toast while creating the order
+    toast({ title: 'Đang tạo đơn hàng...', description: 'Vui lòng đợi trong giây lát.' });
     
     try {
-      // First validate the Steam account
-      console.log('[PaymentDialog] Validating account before order creation:', account.id);
-      const validationResult = await validateSteamAccount(account.id);
-      console.log('[PaymentDialog] Validation response:', validationResult);
-      
-      const result = validationResult?.result;
-      console.log('[PaymentDialog] Validation result:', result);
-      
-      // If validation fails or returns unexpected result, don't proceed
-      if (!result) {
-        console.error('[PaymentDialog] No validation result received');
-        toast({ 
-          title: 'Lỗi xác thực', 
-          description: 'Không thể xác thực tài khoản.', 
-          variant: 'destructive' 
-        });
-        onClose();
-        return;
-      }
-      
-      if (result === 'INVALID_PASSWORD') {
-        console.log('[PaymentDialog] Account has invalid password, cannot proceed');
-        toast({
-          title: 'Tài khoản không khả dụng',
-          description: 'Tài khoản có mật khẩu không hợp lệ. Vui lòng chọn tài khoản khác.',
-          variant: 'destructive',
-        });
-        onClose();
-        return;
-      }
-      
-      if (result === 'VALID' || result === 'VALID_GUARDED') {
-        console.log('[PaymentDialog] Account is valid, proceeding to create order');
-        toast({ title: 'Đang tạo đơn hàng...', description: 'Vui lòng đợi trong giây lát.' });
-        
-        const orderData = await createSteamAccountOrder(account.id);
-        setOrders([orderData]);
-        setTimeLeft(1800); // Reset timer
-      } else {
-        console.warn('[PaymentDialog] Unexpected validation result:', result);
-        toast({
-          title: 'Cảnh báo',
-          description: 'Tài khoản có thể không khả dụng. Vui lòng thử lại sau.',
-          variant: 'destructive',
-        });
-        onClose();
-      }
+      console.log('[PaymentDialog] Creating order for account:', account.id);
+      const orderData = await createSteamAccountOrder(account.id);
+      setOrders([orderData]);
+      setTimeLeft(1800); // Reset timer
     } catch (error) {
-      console.error('[PaymentDialog] Error during validation or order creation:', error);
+      console.error('[PaymentDialog] Error creating order:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to validate account or create order. Please try again.',
+        title: 'Lỗi tạo đơn hàng',
+        description: 'Không thể tạo đơn hàng. Vui lòng thử lại.',
         variant: 'destructive'
       });
       onClose();

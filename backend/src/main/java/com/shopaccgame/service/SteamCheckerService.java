@@ -81,25 +81,36 @@ public class SteamCheckerService {
                     logger.info("[Checker] Result VALID_GUARDED for accountId={}", accountId);
                     return ValidationResult.VALID_GUARDED;
                 }
-                if (!valid && "InvalidPassword".equals(error)) {
+                if (!valid && (error.contains("InvalidPassword") || error.contains("AccountLogonDenied") || 
+                              error.contains("InvalidLogin") || error.contains("Password") || 
+                              error.contains("LoginFailure"))) {
                     account.setStatus(AccountStatus.MAINTENANCE);
                     account.setVerifyDate(LocalDateTime.now());
                     steamAccountRepository.save(account);
-                    logger.info("[Checker] Result INVALID_PASSWORD for accountId={}, account moved to MAINTENANCE", accountId);
+                    logger.info("[Checker] Result INVALID_PASSWORD for accountId={}, account moved to MAINTENANCE, error: {}", accountId, error);
                     return ValidationResult.INVALID_PASSWORD;
                 }
 
-                // Any other result: treat as unknown failure, do not change status but stamp verify date
+                // Any other result: treat as error and move to maintenance
+                account.setStatus(AccountStatus.MAINTENANCE);
                 account.setVerifyDate(LocalDateTime.now());
                 steamAccountRepository.save(account);
-                logger.warn("[Checker] Result UNKNOWN for accountId={}, response body did not match expected patterns", accountId);
-                return ValidationResult.UNKNOWN;
+                logger.warn("[Checker] Result ERROR for accountId={}, error: {}, account moved to MAINTENANCE", accountId, error);
+                return ValidationResult.ERROR;
             }
 
             logger.error("[Checker] Non-2xx response or empty body from steam-checker for accountId={}", accountId);
+            // Move account to maintenance on service errors
+            account.setStatus(AccountStatus.MAINTENANCE);
+            account.setVerifyDate(LocalDateTime.now());
+            steamAccountRepository.save(account);
             return ValidationResult.ERROR;
         } catch (Exception ex) {
             logger.error("[Checker] Error validating accountId={} message={}", accountId, ex.getMessage(), ex);
+            // Move account to maintenance on exceptions
+            account.setStatus(AccountStatus.MAINTENANCE);
+            account.setVerifyDate(LocalDateTime.now());
+            steamAccountRepository.save(account);
             return ValidationResult.ERROR;
         }
     }

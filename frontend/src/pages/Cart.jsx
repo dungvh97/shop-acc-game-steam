@@ -8,7 +8,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/use-toast';
 import { BACKEND_CONFIG } from '../lib/config';
 import PaymentDialog from '../components/PaymentDialog';
-import { validateSteamAccount } from '../lib/api';
+import PaymentConfirmationDialog from '../components/PaymentConfirmationDialog';
+import { validateSteamAccount, checkoutCartWithBalance } from '../lib/api';
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart, getCartTotal, loading } = useCart();
@@ -16,6 +17,7 @@ const Cart = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [showPaymentConfirmation, setShowPaymentConfirmation] = useState(false);
   const [cartOrders, setCartOrders] = useState([]);
 
   const handleCheckout = async () => {
@@ -39,6 +41,11 @@ const Cart = () => {
     }
 
     try {
+      toast({
+        title: "Đang kiểm tra tài khoản...",
+        description: "Vui lòng đợi trong giây lát.",
+      });
+
       // Validate each account before checkout
       for (const item of cartItems) {
         try {
@@ -49,7 +56,7 @@ const Cart = () => {
           console.log('Cart validation result:', result);
           
           if (result === 'INVALID_PASSWORD') {
-            console.log('Cart item has invalid password, removing and redirecting');
+            console.log('Cart item has invalid password, removing from cart');
             toast({
               title: 'Tài khoản không khả dụng',
               description: `${item.steamAccountName} có mật khẩu không hợp lệ. Đã chuyển sang bảo trì và xóa khỏi giỏ hàng.`,
@@ -57,18 +64,19 @@ const Cart = () => {
             });
             // Backend validation service already updates the status to MAINTENANCE
             await removeFromCart(item.steamAccountId);
-            navigate('/');
-            return;
+            // Stay on cart page, just remove the invalid item
+            return; 
           }
           if (result === 'ERROR') {
-            console.log('Cart validation service error, removing and redirecting');
+            console.log('Cart validation service error, removing from cart');
             toast({
-              title: 'Lỗi xác thực',
-              description: `Không thể kiểm tra ${item.steamAccountName}. Vui lòng thử lại sau.`,
+              title: 'Tài khoản không khả dụng',
+              description: `${item.steamAccountName} không thể kiểm tra. Đã chuyển sang bảo trì và xóa khỏi giỏ hàng.`,
               variant: 'destructive',
             });
+            // Backend validation service already updates the status to MAINTENANCE
             await removeFromCart(item.steamAccountId);
-            navigate('/');
+            // Stay on cart page, just remove the invalid item
             return;
           }
         } catch (e) {
@@ -78,10 +86,8 @@ const Cart = () => {
         }
       }
 
-      const { checkoutCart } = await import('../lib/api');
-      const orders = await checkoutCart();
-      setCartOrders(orders);
-      setShowPaymentDialog(true);
+      // All accounts are valid, show payment confirmation dialog
+      setShowPaymentConfirmation(true);
     } catch (error) {
       console.error('Error during checkout:', error);
       toast({
@@ -96,6 +102,50 @@ const Cart = () => {
     setShowPaymentDialog(false);
     // Navigate to profile page with activity tab and payment success parameters
     navigate(`/profile?tab=activity&payment=success&orderId=${order.orderId}`);
+  };
+
+  const handleProceedWithQR = async () => {
+    try {
+      const { checkoutCart } = await import('../lib/api');
+      const orders = await checkoutCart();
+      setCartOrders(orders);
+      setShowPaymentConfirmation(false);
+      setShowPaymentDialog(true);
+    } catch (error) {
+      console.error('Error creating cart orders:', error);
+      toast({
+        title: "Lỗi tạo đơn hàng",
+        description: "Không thể tạo đơn hàng. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleProceedWithBalance = async () => {
+    try {
+      toast({
+        title: 'Đang xử lý thanh toán...',
+        description: 'Vui lòng đợi trong giây lát.'
+      });
+
+      // Create orders and pay with balance
+      const orders = await checkoutCartWithBalance();
+      
+      toast({
+        title: 'Thanh toán thành công!',
+        description: 'Tất cả tài khoản đã được mua thành công bằng số dư.',
+      });
+
+      setShowPaymentConfirmation(false);
+      handlePaymentSuccess(orders[0]); // Navigate to success page with first order
+    } catch (error) {
+      console.error('Balance payment error:', error);
+      toast({
+        title: 'Lỗi thanh toán',
+        description: error.message || 'Không thể thanh toán bằng số dư. Vui lòng thử lại.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -217,6 +267,22 @@ const Cart = () => {
           </div>
         )}
       </div>
+
+      {/* Payment Confirmation Dialog */}
+      {showPaymentConfirmation && (
+        <PaymentConfirmationDialog
+          account={{
+            accountName: `${cartItems.length} sản phẩm`,
+            accountType: 'Giỏ hàng',
+            price: getCartTotal()
+          }}
+          isOpen={showPaymentConfirmation}
+          onClose={() => setShowPaymentConfirmation(false)}
+          onProceedWithBalance={handleProceedWithBalance}
+          onProceedWithQR={handleProceedWithQR}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
 
       {/* Payment Dialog */}
       {showPaymentDialog && cartOrders.length > 0 && (

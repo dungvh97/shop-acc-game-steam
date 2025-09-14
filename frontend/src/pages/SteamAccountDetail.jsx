@@ -5,7 +5,7 @@ import { useCart } from '../contexts/CartContext';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { useToast } from '../hooks/use-toast';
-import { getSteamAccountById } from '../lib/api';
+import { getSteamAccountById, validateSteamAccount } from '../lib/api';
 import PaymentDialog from '../components/PaymentDialog';
 import PaymentConfirmationDialog from '../components/PaymentConfirmationDialog';
 import { BACKEND_CONFIG } from '../lib/config';
@@ -73,7 +73,7 @@ const SteamAccountDetail = () => {
     return typeLabels[type] || type;
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (!isAuthenticated) {
       toast({
         title: "Yêu cầu đăng nhập",
@@ -84,7 +84,59 @@ const SteamAccountDetail = () => {
       return;
     }
     
-    setShowPaymentConfirmation(true);
+    // Validate Steam account before showing payment dialog
+    try {
+      toast({
+        title: "Đang kiểm tra tài khoản...",
+        description: "Vui lòng đợi trong giây lát.",
+      });
+      
+      const validationResult = await validateSteamAccount(account.id);
+      console.log('Steam account validation result:', validationResult);
+      
+      if (validationResult.result === 'VALID' || validationResult.result === 'VALID_GUARDED') {
+        toast({
+          title: "Tài khoản hợp lệ",
+          description: "Tài khoản Steam đã được xác minh thành công.",
+        });
+        setShowPaymentConfirmation(true);
+      } else if (validationResult.result === 'INVALID_PASSWORD') {
+        toast({
+          title: "Tài khoản không khả dụng",
+          description: "Mật khẩu không hợp lệ. Tài khoản sẽ được bảo trì.",
+          variant: "destructive",
+        });
+        // Backend validation service already updates the status to MAINTENANCE
+        // Small delay to show the toast before redirecting
+        setTimeout(() => {
+          navigate('/');
+        }, 1000);
+      } else if (validationResult.result === 'ERROR') {
+        toast({
+          title: "Tài khoản không khả dụng",
+          description: "Không thể kiểm tra tài khoản. Tài khoản sẽ được bảo trì.",
+          variant: "destructive",
+        });
+        // Backend validation service already updates the status to MAINTENANCE
+        // Small delay to show the toast before redirecting
+        setTimeout(() => {
+          navigate('/');
+        }, 1000);
+      } else {
+        toast({
+          title: "Không thể xác minh tài khoản",
+          description: "Không thể xác minh tài khoản Steam. Vui lòng thử lại sau.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Steam account validation error:', error);
+      toast({
+        title: "Lỗi kiểm tra tài khoản",
+        description: "Không thể kiểm tra tài khoản Steam. Vui lòng thử lại sau.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleProceedWithQR = () => {

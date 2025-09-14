@@ -124,4 +124,17 @@ public class CartController {
             return ResponseEntity.badRequest().build();
         }
     }
+    
+    @PostMapping("/checkout-with-balance")
+    public ResponseEntity<List<OrderResponseDto>> checkoutCartWithBalance() {
+        try {
+            String username = getCurrentUsername();
+            List<OrderResponseDto> orders = cartService.checkoutCartWithBalance(username);
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            System.err.println("Checkout with balance error: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }
