@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { createGame, uploadImage, getAllUserOrders, getSteamAccountsAdmin, getGames, markOrderAsDelivered, cancelOrder, getOrderByOrderId, getAllOrdersAdmin, getOrdersByStatusAdmin, getOrderByIdAdmin, markOrderAsDeliveredAdmin, cancelOrderAdmin, getRevenueStats, getMonthlyRevenue } from '../lib/api';
 import { useToast } from '../hooks/use-toast';
 import SteamAccountManager from '../components/SteamAccountManager';
+import MultiSteamAccountForm from '../components/MultiSteamAccountForm';
 
 const Admin = () => {
   const { user, isAuthenticated } = useAuth();
@@ -971,7 +972,7 @@ const Admin = () => {
       {activeTab === 'steam-accounts' && (
         <div>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Thêm tài khoản Steam</h2>
-          <SteamAccountManager />
+          <MultiSteamAccountForm />
         </div>
       )}
 
