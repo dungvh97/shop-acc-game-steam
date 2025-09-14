@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { Card, CardContent, CardTitle } from '../components/ui/card';
@@ -8,6 +8,7 @@ import { Input } from '../components/ui/input';
 import { useToast } from '../hooks/use-toast';
 import { 
   getAvailableSteamAccounts,
+  getAvailableSteamAccountsByType,
   validateSteamAccount
 } from '../lib/api';
 import PaymentDialog from '../components/PaymentDialog';
@@ -16,6 +17,7 @@ import { BACKEND_CONFIG } from '../lib/config';
 
 const SteamAccounts = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
   const { addToCart } = useCart();
@@ -31,15 +33,39 @@ const SteamAccounts = () => {
   const [showPaymentConfirmation, setShowPaymentConfirmation] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
 
-  // Load all accounts on mount
+  // Determine account type based on current route
+  const getAccountTypeFromRoute = () => {
+    const pathname = location.pathname;
+    switch (pathname) {
+      case '/steam-accounts/single-game':
+        return 'ONE_GAME';
+      case '/steam-accounts/multi-game':
+        return 'MULTI_GAMES';
+      case '/discounted':
+        return 'DISCOUNTED';
+      case '/other-products':
+        return 'OTHER_ACCOUNT';
+      default:
+        return null; // All accounts
+    }
+  };
+
+  // Load accounts based on current route
   useEffect(() => {
     loadAccounts();
-  }, []);
+  }, [location.pathname]);
 
   const loadAccounts = async () => {
     setLoading(true);
     try {
-      const response = await getAvailableSteamAccounts();
+      const accountType = getAccountTypeFromRoute();
+      let response;
+      
+      if (accountType) {
+        response = await getAvailableSteamAccountsByType(accountType);
+      } else {
+        response = await getAvailableSteamAccounts();
+      }
       
       console.log('API response:', response);
       setAllAccounts(response || []);
@@ -55,9 +81,37 @@ const SteamAccounts = () => {
     }
   };
 
-  const getPageTitle = () => 'Steam Accounts';
+  const getPageTitle = () => {
+    const pathname = location.pathname;
+    switch (pathname) {
+      case '/steam-accounts/single-game':
+        return 'Single Game Steam Accounts';
+      case '/steam-accounts/multi-game':
+        return 'Multi Game Steam Accounts';
+      case '/discounted':
+        return 'Discounted Steam Accounts';
+      case '/other-products':
+        return 'Other Products';
+      default:
+        return 'Steam Accounts';
+    }
+  };
 
-  const getPageDescription = () => 'Browse and purchase gaming accounts';
+  const getPageDescription = () => {
+    const pathname = location.pathname;
+    switch (pathname) {
+      case '/steam-accounts/single-game':
+        return 'Browse single game Steam accounts';
+      case '/steam-accounts/multi-game':
+        return 'Browse multi game Steam accounts';
+      case '/discounted':
+        return 'Browse discounted Steam accounts';
+      case '/other-products':
+        return 'Browse other gaming products';
+      default:
+        return 'Browse and purchase gaming accounts';
+    }
+  };
 
   // Frontend filtering logic
   const filteredAccounts = useMemo(() => {
