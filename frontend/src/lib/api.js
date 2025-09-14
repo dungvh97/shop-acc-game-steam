@@ -411,6 +411,49 @@ export const getAllUserOrders = async () => {
   return apiRequest('/steam-account-orders/profile');
 };
 
+// Admin APIs
+export const getAllOrdersAdmin = async () => {
+  return apiRequest('/admin/orders');
+};
+
+export const getOrdersByStatusAdmin = async (status) => {
+  return apiRequest(`/admin/orders/status/${status}`);
+};
+
+export const getOrderByIdAdmin = async (orderId) => {
+  return apiRequest(`/admin/orders/${orderId}`);
+};
+
+export const markOrderAsDeliveredAdmin = async (orderId) => {
+  return apiRequest(`/admin/orders/${orderId}/deliver`, {
+    method: 'POST'
+  });
+};
+
+export const cancelOrderAdmin = async (orderId) => {
+  return apiRequest(`/admin/orders/${orderId}/cancel`, {
+    method: 'POST'
+  });
+};
+
+export const getRevenueStats = async (startDate, endDate) => {
+  const params = new URLSearchParams();
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
+  
+  const queryString = params.toString();
+  return apiRequest(`/admin/revenue/stats${queryString ? `?${queryString}` : ''}`);
+};
+
+export const getMonthlyRevenue = async (startDate, endDate) => {
+  const params = new URLSearchParams();
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
+  
+  const queryString = params.toString();
+  return apiRequest(`/admin/revenue/monthly${queryString ? `?${queryString}` : ''}`);
+};
+
 export const markOrderAsDelivered = async (orderId) => {
   return apiRequest(`/steam-account-orders/${orderId}/deliver`, {
     method: 'POST',

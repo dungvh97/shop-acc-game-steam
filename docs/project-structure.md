@@ -175,7 +175,7 @@ Main application views:
 Reusable UI components:
 
 - **`Navbar.jsx`** - Main navigation bar
-- **`MobileNav.jsx`** - Mobile navigation menu
+- **`MobileNav.jsx`** - Mobile navigation menup
 - **`Footer.jsx`** - Application footer
 - **`Breadcrumbs.jsx`** - Navigation breadcrumbs
 - **`GameSlideshow.jsx`** - Game image slideshow
