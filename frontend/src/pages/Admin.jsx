@@ -39,8 +39,8 @@ const Admin = () => {
       // Validate file type
       if (!file.type.startsWith('image/')) {
         toast({
-          title: 'Invalid file type',
-          description: 'Please select an image file (JPEG, PNG, GIF, etc.)',
+          title: 'Loại file không hợp lệ',
+          description: 'Vui lòng chọn file hình ảnh (JPEG, PNG, GIF, v.v.)',
           variant: 'destructive'
         });
         return;
@@ -49,8 +49,8 @@ const Admin = () => {
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast({
-          title: 'File too large',
-          description: 'Please select an image smaller than 5MB',
+          title: 'File quá lớn',
+          description: 'Vui lòng chọn hình ảnh nhỏ hơn 5MB',
           variant: 'destructive'
         });
         return;
@@ -69,14 +69,14 @@ const Admin = () => {
     try {
       const uploadResponse = await uploadImage(selectedGameFile, 'games');
       toast({
-        title: 'Image uploaded successfully',
-        description: 'Image has been uploaded and saved',
+        title: 'Tải lên hình ảnh thành công',
+        description: 'Hình ảnh đã được tải lên và lưu',
       });
       return uploadResponse.url;
     } catch (error) {
       toast({
-        title: 'Upload failed',
-        description: error.message || 'Failed to upload image',
+        title: 'Tải lên thất bại',
+        description: error.message || 'Không thể tải lên hình ảnh',
         variant: 'destructive'
       });
       return null;
@@ -92,8 +92,8 @@ const Admin = () => {
 
     if (!newProduct.name || !newProduct.description) {
       toast({
-        title: 'Missing information',
-        description: 'Please fill in all required fields',
+        title: 'Thiếu thông tin',
+        description: 'Vui lòng điền đầy đủ các trường bắt buộc',
         variant: 'destructive'
       });
       return;
@@ -116,8 +116,8 @@ const Admin = () => {
       await createGame(gameData);
       
       toast({
-        title: 'Game created successfully',
-        description: 'New game has been added to the system',
+        title: 'Tạo game thành công',
+        description: 'Game mới đã được thêm vào hệ thống',
       });
 
       // Reset form
@@ -130,8 +130,8 @@ const Admin = () => {
       
     } catch (error) {
       toast({
-        title: 'Failed to create game',
-        description: error.message || 'An error occurred while creating the game',
+        title: 'Tạo game thất bại',
+        description: error.message || 'Đã xảy ra lỗi khi tạo game',
         variant: 'destructive'
       });
     }
@@ -141,8 +141,8 @@ const Admin = () => {
     return (
       <div className="w-full max-w-8xl mx-auto px-4 py-8">
         <div className="text-center py-12">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
-          <p className="text-gray-600">You need admin privileges to access this page.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Truy cập bị từ chối</h1>
+          <p className="text-gray-600">Bạn cần quyền admin để truy cập trang này.</p>
         </div>
       </div>
     );
@@ -151,8 +151,8 @@ const Admin = () => {
   return (
     <div className="w-full max-w-8xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-        <p className="text-gray-600">Manage games, steam accounts, and system settings</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Bảng điều khiển Admin</h1>
+        <p className="text-gray-600">Quản lý game, tài khoản Steam và cài đặt hệ thống</p>
       </div>
 
       {/* Navigation Tabs */}
@@ -165,7 +165,7 @@ const Admin = () => {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          Steam Accounts
+          Tài Khoản Steam
         </button>
         <button
           onClick={() => setActiveTab('games')}
@@ -175,52 +175,52 @@ const Admin = () => {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          Games
+          Game
         </button>
       </div>
 
       {/* Content based on active tab */}
       {activeTab === 'steam-accounts' && (
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Steam Account Management</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Quản lý Tài Khoản Steam</h2>
           <SteamAccountManager />
         </div>
       )}
 
       {activeTab === 'games' && (
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Create New Game</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Tạo Game Mới</h2>
           
           <Card className="max-w-2xl">
             <CardHeader>
-              <CardTitle>Game Information</CardTitle>
-              <CardDescription>Add a new game to the system</CardDescription>
+              <CardTitle>Thông tin Game</CardTitle>
+              <CardDescription>Thêm game mới vào hệ thống</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleCreateGame} className="space-y-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Game Name *
+                    Tên Game *
                   </label>
                   <Input
                     id="name"
                     type="text"
                     value={newProduct.name}
                     onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
-                    placeholder="Enter game name"
+                    placeholder="Nhập tên game"
                     required
                   />
                 </div>
 
                 <div>
                   <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                    Description *
+                    Mô tả *
                   </label>
                   <textarea
                     id="description"
                     value={newProduct.description}
                     onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
-                    placeholder="Enter game description"
+                    placeholder="Nhập mô tả game"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                     rows={4}
                     required
@@ -229,7 +229,7 @@ const Admin = () => {
 
                 <div>
                   <label htmlFor="imageFile" className="block text-sm font-medium text-gray-700 mb-1">
-                    Upload Image File *
+                    Tải lên File Hình Ảnh *
                   </label>
                   <Input
                     id="imageFile"
@@ -241,7 +241,7 @@ const Admin = () => {
                   />
                   {selectedGameFile && (
                     <p className="text-sm text-gray-500 mt-1">
-                      Selected: {selectedGameFile.name}
+                      Đã chọn: {selectedGameFile.name}
                     </p>
                   )}
                 </div>
@@ -251,7 +251,7 @@ const Admin = () => {
                   className="w-full bg-red-600 hover:bg-red-700"
                   disabled={uploadingGameImage}
                 >
-                  {uploadingGameImage ? 'Creating...' : 'Create Game'}
+                  {uploadingGameImage ? 'Đang tạo...' : 'Tạo Game'}
                 </Button>
               </form>
             </CardContent>

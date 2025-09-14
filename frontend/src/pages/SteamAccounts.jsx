@@ -72,8 +72,8 @@ const SteamAccounts = () => {
     } catch (error) {
       console.error('Error loading steam accounts:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to load steam accounts',
+        title: 'Lỗi',
+        description: 'Không thể tải danh sách tài khoản Steam',
         variant: 'destructive'
       });
     } finally {
@@ -85,15 +85,15 @@ const SteamAccounts = () => {
     const pathname = location.pathname;
     switch (pathname) {
       case '/steam-accounts/single-game':
-        return 'Single Game Steam Accounts';
+        return 'Tài Khoản Steam 1 Game';
       case '/steam-accounts/multi-game':
-        return 'Multi Game Steam Accounts';
+        return 'Tài Khoản Steam Nhiều Game';
       case '/discounted':
-        return 'Discounted Steam Accounts';
+        return 'Tài Khoản Steam Ưu Đãi';
       case '/other-products':
-        return 'Other Products';
+        return 'Sản Phẩm Khác';
       default:
-        return 'Steam Accounts';
+        return 'Tài Khoản Steam';
     }
   };
 
@@ -101,15 +101,15 @@ const SteamAccounts = () => {
     const pathname = location.pathname;
     switch (pathname) {
       case '/steam-accounts/single-game':
-        return 'Browse single game Steam accounts';
+        return 'Duyệt tài khoản Steam 1 game';
       case '/steam-accounts/multi-game':
-        return 'Browse multi game Steam accounts';
+        return 'Duyệt tài khoản Steam nhiều game';
       case '/discounted':
-        return 'Browse discounted Steam accounts';
+        return 'Duyệt tài khoản Steam ưu đãi';
       case '/other-products':
-        return 'Browse other gaming products';
+        return 'Duyệt các sản phẩm game khác';
       default:
-        return 'Browse and purchase gaming accounts';
+        return 'Duyệt và mua tài khoản game';
     }
   };
 
@@ -369,10 +369,10 @@ const SteamAccounts = () => {
           ) : currentAccounts.length === 0 ? (
             <div className="text-center py-12">
               <h3 className="text-lg font-medium text-gray-500 mb-2">
-                No steam accounts found
+                Không tìm thấy tài khoản Steam
               </h3>
               <p className="text-gray-500">
-                Try adjusting your search or filter criteria
+                Hãy thử điều chỉnh tiêu chí tìm kiếm hoặc lọc
               </p>
             </div>
           ) : (
@@ -403,8 +403,8 @@ const SteamAccounts = () => {
                       {/* Status Badge */}
                       <div className="absolute top-2 right-2">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(account.status)}`}>
-                          {account.status === 'AVAILABLE' ? 'Available' : 
-                           account.status === 'PRE_ORDER' ? 'Pre-Order' : account.status}
+                          {account.status === 'AVAILABLE' ? 'CÓ SẴN' : 
+                           account.status === 'PRE_ORDER' ? 'ĐẶT TRƯỚC' : account.status}
                         </span>
                       </div>
                     </div>
@@ -439,13 +439,13 @@ const SteamAccounts = () => {
 
                       {/* Stock */}
                       <div className="text-sm text-gray-500 mb-3">
-                        {account.status === 'PRE_ORDER' ? 'Pre-order available' : `Stock: ${account.stockQuantity} available`}
+                        {account.status === 'PRE_ORDER' ? 'Có thể đặt trước' : `Kho: ${account.stockQuantity} có sẵn`}
                       </div>
 
                       {/* Games */}
                       {account.games && account.games.length > 0 && (
                         <div className="mb-4">
-                          <p className="text-xs text-gray-500 mb-2">Games included:</p>
+                          <p className="text-xs text-gray-500 mb-2">Game bao gồm:</p>
                           <div className="flex flex-wrap gap-1">
                             {account.games.slice(0, 3).map((game) => (
                               <span key={game.id} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
@@ -454,7 +454,7 @@ const SteamAccounts = () => {
                             ))}
                             {account.games.length > 3 && (
                               <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                +{account.games.length - 3} more
+                                +{account.games.length - 3} khác
                               </span>
                             )}
                           </div>
@@ -492,17 +492,17 @@ const SteamAccounts = () => {
                      disabled={currentPage === 0}
                      onClick={() => setCurrentPage(currentPage - 1)}
                    >
-                     Previous
+                     Trước
                    </Button>
                    <span className="py-2 px-4">
-                     Page {currentPage + 1} of {totalPages} ({filteredAccounts.length} total accounts)
+                     Trang {currentPage + 1} / {totalPages} ({filteredAccounts.length} tài khoản)
                    </span>
                    <Button
                      variant="outline"
                      disabled={currentPage >= totalPages - 1}
                      onClick={() => setCurrentPage(currentPage + 1)}
                    >
-                     Next
+                     Sau
                    </Button>
                  </div>
                )}

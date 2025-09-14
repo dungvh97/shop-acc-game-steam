@@ -15,7 +15,7 @@ const MobileNav = () => {
     {
       path: '/steam-accounts',
       icon: User,
-      label: 'Steam Accounts',
+      label: 'Tài Khoản Steam',
       active: location.pathname.startsWith('/steam-accounts')
     }
   ];

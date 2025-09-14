@@ -155,7 +155,7 @@ const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess, should
       <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
         <CardHeader>
           <CardTitle className="flex justify-between items-center">
-            <span>Order Payment</span>
+            <span>Thanh toán Đơn hàng</span>
             <Button variant="ghost" size="sm" onClick={handleClose}>
               ✕
             </Button>
@@ -168,29 +168,29 @@ const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess, should
               {/* Orders Overview */}
               <div className="space-y-3">
                 <h3 className="font-semibold text-lg">
-                  {orders.length === 1 ? 'Order Overview' : `Orders Overview (${orders.length} items)`}
+                  {orders.length === 1 ? 'Tổng quan Đơn hàng' : `Tổng quan Đơn hàng (${orders.length} sản phẩm)`}
                 </h3>
                 <div className="space-y-3 max-h-40 overflow-y-auto">
                   {orders.map((order, index) => (
                     <div key={order.orderId} className="border rounded p-3 space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span>Order #{index + 1}:</span>
+                        <span>Đơn hàng #{index + 1}:</span>
                         <span className="font-mono">{order.orderId}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Account:</span>
+                        <span>Tài khoản:</span>
                         <span>{order.accountName}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Type:</span>
+                        <span>Loại:</span>
                         <span>{order.accountType}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Amount:</span>
+                        <span>Số tiền:</span>
                         <span className="font-bold text-primary">{formatPrice(order.amount)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Status:</span>
+                        <span>Trạng thái:</span>
                         <span className={`px-2 py-1 rounded text-xs ${
                           order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                           order.status === 'PAID' ? 'bg-green-100 text-green-800' :
@@ -203,7 +203,7 @@ const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess, should
                   ))}
                 </div>
                 <div className="flex justify-between font-bold text-lg border-t pt-2">
-                  <span>Total Amount:</span>
+                  <span>Tổng số tiền:</span>
                   <span className="text-primary">
                     {formatPrice(orders.reduce((total, order) => total + order.amount, 0))}
                   </span>
@@ -214,25 +214,25 @@ const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess, should
               {orders.some(order => order.status === 'PENDING') && (
                 <div className="space-y-4">
                   <div className="text-center">
-                    <h4 className="font-semibold mb-2">Scan QR Code to Pay</h4>
+                    <h4 className="font-semibold mb-2">Quét mã QR để thanh toán</h4>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Time remaining: <span className="font-mono text-red-600">{formatTime(timeLeft)}</span>
+                      Thời gian còn lại: <span className="font-mono text-red-600">{formatTime(timeLeft)}</span>
                     </p>
                   </div>
                   
                   <div className="flex justify-center">
                     <img 
                       src={orders.find(order => order.status === 'PENDING')?.qrCodeUrl} 
-                      alt="QR Code for Payment"
+                      alt="Mã QR thanh toán"
                       className="w-48 h-48 border rounded-lg"
                     />
                   </div>
                   
                   <div className="text-center text-sm text-muted-foreground">
-                    <p>Bank: TPBank</p>
-                    <p>Account: 27727998888</p>
-                    <p>Amount: {formatPrice(orders.reduce((total, order) => total + order.amount, 0))}</p>
-                    <p>Description: {orders.map(order => order.orderId).join(', ')}</p>
+                    <p>Ngân hàng: TPBank</p>
+                    <p>Tài khoản: 27727998888</p>
+                    <p>Số tiền: {formatPrice(orders.reduce((total, order) => total + order.amount, 0))}</p>
+                    <p>Nội dung: {orders.map(order => order.orderId).join(', ')}</p>
                   </div>
                   
                   <div className="text-center">
@@ -241,7 +241,7 @@ const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess, should
                       onClick={checkOrders}
                       className="w-full"
                     >
-                      Check Payment Status
+                      Kiểm tra Trạng thái Thanh toán
                     </Button>
                   </div>
                 </div>
@@ -256,24 +256,24 @@ const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess, should
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <h4 className="font-semibold text-green-600 mb-2">Payment Successful!</h4>
+                    <h4 className="font-semibold text-green-600 mb-2">Thanh toán thành công!</h4>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Your account credentials are ready
+                      Thông tin đăng nhập tài khoản đã sẵn sàng
                     </p>
                   </div>
                   
                   <div className="space-y-3">
-                    <h5 className="font-semibold">Account Credentials</h5>
+                    <h5 className="font-semibold">Thông tin Đăng nhập Tài khoản</h5>
                     <div className="space-y-3 max-h-40 overflow-y-auto">
                       {orders.map((order, index) => (
                         <div key={order.orderId} className="border rounded p-3 space-y-2 text-sm">
-                          <div className="font-semibold">Account #{index + 1}: {order.accountName}</div>
+                          <div className="font-semibold">Tài khoản #{index + 1}: {order.accountName}</div>
                           <div className="flex justify-between">
-                            <span>Username:</span>
+                            <span>Tên đăng nhập:</span>
                             <span className="font-mono bg-gray-100 px-2 py-1 rounded">{order.accountUsername}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span>Password:</span>
+                            <span>Mật khẩu:</span>
                             <span className="font-mono bg-gray-100 px-2 py-1 rounded">{order.accountPassword}</span>
                           </div>
                         </div>
@@ -286,7 +286,7 @@ const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess, should
                       onClick={() => onSuccess(orders[0])}
                       className="w-full"
                     >
-                      Continue
+                      Tiếp tục
                     </Button>
                   </div>
                 </div>

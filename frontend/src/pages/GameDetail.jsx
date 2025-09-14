@@ -59,7 +59,7 @@ const GameDetail = () => {
         <p className="text-gray-500">Không tìm thấy game.</p>
         {fromSteamAccount && steamAccountId && (
           <Link to={`/steam-accounts/${steamAccountId}`} className="underline">
-            Quay lại Steam Account Detail
+            Quay lại Chi Tiết Tài Khoản Steam
           </Link>
         )}
       </div>

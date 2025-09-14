@@ -104,7 +104,7 @@ const GameSelector = ({
             setShowDropdown(true);
           }}
           onFocus={() => setShowDropdown(true)}
-          placeholder={loading ? "Loading games..." : "Search and select games..."}
+          placeholder={loading ? "Đang tải game..." : "Tìm kiếm và chọn game..."}
           className={`w-full pr-10 ${error ? 'border-red-500 focus:border-red-500' : ''}`}
         />
         
@@ -140,10 +140,10 @@ const GameSelector = ({
             }}
           >
             {loading ? (
-              <div className="p-2 text-gray-500 text-sm">Loading games...</div>
+              <div className="p-2 text-gray-500 text-sm">Đang tải game...</div>
             ) : !Array.isArray(filteredGames) || filteredGames.length === 0 ? (
               <div className="p-2 text-gray-500 text-sm">
-                {searchTerm.trim() ? 'No games found matching your search' : 'No games available'}
+                {searchTerm.trim() ? 'Không tìm thấy game phù hợp' : 'Không có game nào'}
               </div>
             ) : (
               <>
@@ -165,7 +165,7 @@ const GameSelector = ({
                 ))}
                 {searchTerm.trim() && filteredGames.length === 50 && (
                   <div className="p-2 text-xs text-gray-500 bg-gray-50 border-t">
-                    Showing first 50 results. Refine your search for more specific results.
+                    Hiển thị 50 kết quả đầu tiên. Tinh chỉnh tìm kiếm để có kết quả cụ thể hơn.
                   </div>
                 )}
               </>
@@ -177,7 +177,7 @@ const GameSelector = ({
         {selectedGames.length > 0 && (
           <div className="mt-2 space-y-1">
             <div className="text-xs text-green-600 font-medium">
-              Selected Games ({selectedGames.length}):
+              Game đã chọn ({selectedGames.length}):
             </div>
             <div className="flex flex-wrap gap-1">
               {selectedGames.map(game => (
@@ -284,7 +284,7 @@ const SteamAccountManager = () => {
       setTotalPages(response.totalPages || 0);
     } catch (error) {
       toast({
-        title: 'Error loading accounts',
+        title: 'Lỗi tải tài khoản',
         description: error.message,
         variant: 'destructive'
       });
@@ -323,8 +323,8 @@ const SteamAccountManager = () => {
       // Validate file type
       if (!file.type.startsWith('image/')) {
         toast({
-          title: 'Invalid file type',
-          description: 'Please select an image file (JPEG, PNG, GIF, etc.)',
+          title: 'Loại file không hợp lệ',
+          description: 'Vui lòng chọn file hình ảnh (JPEG, PNG, GIF, v.v.)',
           variant: 'destructive'
         });
         return;
@@ -333,8 +333,8 @@ const SteamAccountManager = () => {
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast({
-          title: 'File too large',
-          description: 'Please select an image smaller than 5MB',
+          title: 'File quá lớn',
+          description: 'Vui lòng chọn hình ảnh nhỏ hơn 5MB',
           variant: 'destructive'
         });
         return;
@@ -357,14 +357,14 @@ const SteamAccountManager = () => {
     try {
       const uploadResponse = await uploadImage(selectedFile);
       toast({
-        title: 'Image uploaded successfully',
-        description: 'Image has been uploaded and saved',
+        title: 'Tải lên hình ảnh thành công',
+        description: 'Hình ảnh đã được tải lên và lưu',
       });
       return uploadResponse.url;
     } catch (error) {
       toast({
-        title: 'Upload failed',
-        description: error.message || 'Failed to upload image',
+        title: 'Tải lên thất bại',
+        description: error.message || 'Không thể tải lên hình ảnh',
         variant: 'destructive'
       });
       return null;
@@ -385,7 +385,7 @@ const SteamAccountManager = () => {
       const invalidGameIds = formData.gameIds.filter(gameId => !validGameIds.includes(gameId));
       
       if (invalidGameIds.length > 0) {
-        errors.gameIds = 'Some selected games are not valid. Please select games from the dropdown.';
+        errors.gameIds = 'Một số game được chọn không hợp lệ. Vui lòng chọn game từ danh sách thả xuống.';
       }
     }
     
@@ -399,8 +399,8 @@ const SteamAccountManager = () => {
     // Validate form before submission
     if (!validateForm()) {
       toast({
-        title: 'Validation Error',
-        description: 'Please fix the errors before submitting.',
+        title: 'Lỗi xác thực',
+        description: 'Vui lòng sửa các lỗi trước khi gửi.',
         variant: 'destructive'
       });
       return;
@@ -431,10 +431,10 @@ const SteamAccountManager = () => {
 
       if (editingAccount) {
         await updateSteamAccount(editingAccount.id, payload);
-        toast({ title: 'Account updated successfully' });
+        toast({ title: 'Cập nhật tài khoản thành công' });
       } else {
         await createSteamAccount(payload);
-        toast({ title: 'Account created successfully' });
+        toast({ title: 'Tạo tài khoản thành công' });
       }
       
       resetForm();
@@ -449,22 +449,22 @@ const SteamAccountManager = () => {
           // Handle validation errors from backend
           setValidationErrors(errorData.errors);
           toast({
-            title: 'Validation Error',
-            description: 'Please fix the highlighted errors below.',
+            title: 'Lỗi xác thực',
+            description: 'Vui lòng sửa các lỗi được đánh dấu bên dưới.',
             variant: 'destructive'
           });
         } else {
           // Handle other API errors
           toast({
-            title: 'Error saving account',
-            description: errorData.message || 'An unexpected error occurred',
+            title: 'Lỗi lưu tài khoản',
+            description: errorData.message || 'Đã xảy ra lỗi không mong muốn',
             variant: 'destructive'
           });
         }
       } catch (parseError) {
         // Fallback for non-JSON errors
         toast({
-          title: 'Error saving account',
+          title: 'Lỗi lưu tài khoản',
           description: error.message,
           variant: 'destructive'
         });
@@ -475,16 +475,16 @@ const SteamAccountManager = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this account?')) return;
+    if (!window.confirm('Bạn có chắc chắn muốn xóa tài khoản này?')) return;
     
     try {
       await deleteSteamAccount(id);
-      toast({ title: 'Account deleted successfully' });
+      toast({ title: 'Xóa tài khoản thành công' });
       loadAccounts();
       loadStats();
     } catch (error) {
       toast({
-        title: 'Error deleting account',
+        title: 'Lỗi xóa tài khoản',
         description: error.message,
         variant: 'destructive'
       });
@@ -494,12 +494,12 @@ const SteamAccountManager = () => {
   const handleStatusChange = async (id, newStatus) => {
     try {
       await updateSteamAccountStatus(id, newStatus);
-      toast({ title: 'Status updated successfully' });
+      toast({ title: 'Cập nhật trạng thái thành công' });
       loadAccounts();
       loadStats();
     } catch (error) {
       toast({
-        title: 'Error updating status',
+        title: 'Lỗi cập nhật trạng thái',
         description: error.message,
         variant: 'destructive'
       });
@@ -556,25 +556,25 @@ const SteamAccountManager = () => {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-green-600">{stats.availableAccounts || 0}</div>
-            <div className="text-sm text-muted-foreground">Available</div>
+            <div className="text-sm text-muted-foreground">Có sẵn</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-red-600">{stats.soldAccounts || 0}</div>
-            <div className="text-sm text-muted-foreground">Sold</div>
+            <div className="text-sm text-muted-foreground">Đã bán</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-yellow-600">{stats.preOrderAccounts || 0}</div>
-            <div className="text-sm text-muted-foreground">Pre-Order</div>
+            <div className="text-sm text-muted-foreground">Đặt trước</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-blue-600">{stats.maintenanceAccounts || 0}</div>
-            <div className="text-sm text-muted-foreground">Maintenance</div>
+            <div className="text-sm text-muted-foreground">Bảo trì</div>
           </CardContent>
         </Card>
       </div>
@@ -584,13 +584,13 @@ const SteamAccountManager = () => {
         <CardContent className="p-4">
           <div className="flex gap-2">
             <Input
-              placeholder="Search accounts..."
+              placeholder="Tìm kiếm tài khoản..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1"
             />
             <Button onClick={loadAccounts} disabled={loading}>
-              Search
+              Tìm kiếm
             </Button>
           </div>
         </CardContent>
@@ -599,13 +599,13 @@ const SteamAccountManager = () => {
       {/* Form */}
       <Card>
         <CardHeader>
-          <CardTitle>{editingAccount ? 'Edit Account' : 'Add New Account'}</CardTitle>
+          <CardTitle>{editingAccount ? 'Chỉnh sửa Tài khoản' : 'Thêm Tài khoản Mới'}</CardTitle>
         </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium">Account Name *</label>
+                  <label className="text-sm font-medium">Tên Tài khoản *</label>
                   <Input
                     value={formData.name}
                     onChange={(e) => {
@@ -622,7 +622,7 @@ const SteamAccountManager = () => {
                   )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Username *</label>
+                  <label className="text-sm font-medium">Tên đăng nhập *</label>
                   <Input
                     value={formData.username}
                     onChange={(e) => {
@@ -639,7 +639,7 @@ const SteamAccountManager = () => {
                   )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Password *</label>
+                  <label className="text-sm font-medium">Mật khẩu *</label>
                   <Input
                     type="password"
                     value={formData.password}
@@ -650,7 +650,7 @@ const SteamAccountManager = () => {
                       }
                     }}
                     required={!editingAccount}
-                    placeholder={editingAccount ? 'Leave blank to keep current' : ''}
+                    placeholder={editingAccount ? 'Để trống để giữ nguyên' : ''}
                     className={validationErrors.password ? 'border-red-500 focus:border-red-500' : ''}
                   />
                   {validationErrors.password && (
@@ -675,7 +675,7 @@ const SteamAccountManager = () => {
                   )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Account Type *</label>
+                  <label className="text-sm font-medium">Loại Tài khoản *</label>
                   <select
                     className={`w-full border rounded h-10 px-3 ${validationErrors.accountType ? 'border-red-500' : ''}`}
                     value={formData.accountType}
@@ -696,7 +696,7 @@ const SteamAccountManager = () => {
                   )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Account Status *</label>
+                  <label className="text-sm font-medium">Trạng thái Tài khoản *</label>
                   <select
                     className={`w-full border rounded h-10 px-3 ${validationErrors.status ? 'border-red-500' : ''}`}
                     value={formData.status}
@@ -717,7 +717,7 @@ const SteamAccountManager = () => {
                   )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Price *</label>
+                  <label className="text-sm font-medium">Giá *</label>
                   <Input
                     type="number"
                     step="0.01"
@@ -736,7 +736,7 @@ const SteamAccountManager = () => {
                   )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Original Price</label>
+                  <label className="text-sm font-medium">Giá gốc</label>
                   <Input
                     type="number"
                     step="0.01"
@@ -749,7 +749,7 @@ const SteamAccountManager = () => {
                   )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Discount %</label>
+                  <label className="text-sm font-medium">Giảm giá %</label>
                   <Input
                     type="number"
                     min="0"
@@ -763,7 +763,7 @@ const SteamAccountManager = () => {
                   )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Stock Quantity *</label>
+                  <label className="text-sm font-medium">Số lượng Kho *</label>
                   <Input
                     type="number"
                     min="0"
@@ -778,7 +778,7 @@ const SteamAccountManager = () => {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium">Account Image</label>
+                <label className="text-sm font-medium">Hình ảnh Tài khoản</label>
                 <div className="space-y-2">
                   {/* File Input */}
                   <div className="flex items-center gap-2">
@@ -793,7 +793,7 @@ const SteamAccountManager = () => {
                       htmlFor="image-upload"
                       className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm transition-colors"
                     >
-                      {uploadingImage ? 'Uploading...' : 'Choose Image'}
+                      {uploadingImage ? 'Đang tải lên...' : 'Chọn Hình ảnh'}
                     </label>
                     {selectedFile && (
                       <span className="text-sm text-gray-600">
@@ -816,7 +816,7 @@ const SteamAccountManager = () => {
                   {/* Existing Image URL (for editing) */}
                   {editingAccount && formData.imageUrl && !selectedFile && (
                     <div className="mt-2">
-                      <label className="text-sm text-gray-600">Current Image:</label>
+                      <label className="text-sm text-gray-600">Hình ảnh hiện tại:</label>
                       <img
                         src={BACKEND_CONFIG.getImageUrl(formData.imageUrl)}
                         alt="Current"
@@ -831,7 +831,7 @@ const SteamAccountManager = () => {
                   {/* Manual URL input for editing */}
                   {editingAccount && (
                     <div className="mt-2">
-                      <label className="text-sm text-gray-600">Or enter image URL:</label>
+                      <label className="text-sm text-gray-600">Hoặc nhập URL hình ảnh:</label>
                       <Input
                         value={formData.imageUrl}
                         onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
@@ -846,11 +846,11 @@ const SteamAccountManager = () => {
                 )}
               </div>
               <div>
-                <label className="text-sm font-medium">Description</label>
+                <label className="text-sm font-medium">Mô tả</label>
                 <Input
                   value={formData.description}
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  placeholder="Account description..."
+                  placeholder="Mô tả tài khoản..."
                   className={validationErrors.description ? 'border-red-500 focus:border-red-500' : ''}
                 />
                 {validationErrors.description && (
@@ -874,10 +874,10 @@ const SteamAccountManager = () => {
               />
               <div className="flex gap-2">
                 <Button type="submit" disabled={loading}>
-                  {editingAccount ? 'Update' : 'Create'} Account
+                  {editingAccount ? 'Cập nhật' : 'Tạo'} Tài khoản
                 </Button>
                 <Button type="button" variant="outline" onClick={resetForm}>
-                  Cancel
+                  Hủy
                 </Button>
               </div>
             </form>
@@ -887,13 +887,13 @@ const SteamAccountManager = () => {
       {/* Accounts List */}
       <Card>
         <CardHeader>
-          <CardTitle>Accounts ({accounts.length})</CardTitle>
+          <CardTitle>Tài khoản ({accounts.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-4">Loading...</div>
+            <div className="text-center py-4">Đang tải...</div>
           ) : accounts.length === 0 ? (
-            <div className="text-center py-4 text-muted-foreground">No accounts found</div>
+            <div className="text-center py-4 text-muted-foreground">Không tìm thấy tài khoản</div>
           ) : (
             <div className="space-y-4">
               {accounts.map((account) => (
@@ -929,16 +929,16 @@ const SteamAccountManager = () => {
                              </span>
                                                       </div>
                            <p className="text-sm text-muted-foreground mt-1">
-                             {account.description || 'No description'}
+                             {account.description || 'Không có mô tả'}
                            </p>
                            <div className="flex gap-4 mt-2 text-sm">
-                             <span>Price: {account.price} VND</span>
-                             <span>Stock: {account.stockQuantity}</span>
+                             <span>Giá: {account.price} VND</span>
+                             <span>Kho: {account.stockQuantity}</span>
                              {account.steamGuard && <span>Steam Guard: {account.steamGuard}</span>}
                            </div>
                            {(account.gameIds && account.gameIds.length > 0) && (
                              <div className="mt-2">
-                               <span className="text-sm text-blue-600">Games: </span>
+                               <span className="text-sm text-blue-600">Game: </span>
                                <div className="flex flex-wrap gap-1 mt-1">
                                  {account.gameIds.map(gameId => {
                                    const game = games.find(g => g.id === gameId);
@@ -965,10 +965,10 @@ const SteamAccountManager = () => {
                         ))}
                       </select>
                       <Button size="sm" onClick={() => handleEdit(account)}>
-                        Edit
+                        Sửa
                       </Button>
                       <Button size="sm" variant="destructive" onClick={() => handleDelete(account.id)}>
-                        Delete
+                        Xóa
                       </Button>
                     </div>
                   </div>
@@ -985,17 +985,17 @@ const SteamAccountManager = () => {
                 disabled={currentPage === 0}
                 onClick={() => setCurrentPage(currentPage - 1)}
               >
-                Previous
+                Trước
               </Button>
               <span className="py-2 px-4">
-                Page {currentPage + 1} of {totalPages}
+                Trang {currentPage + 1} / {totalPages}
               </span>
               <Button
                 variant="outline"
                 disabled={currentPage >= totalPages - 1}
                 onClick={() => setCurrentPage(currentPage + 1)}
               >
-                Next
+                Sau
               </Button>
             </div>
           )}

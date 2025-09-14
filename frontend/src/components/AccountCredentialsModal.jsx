@@ -122,7 +122,7 @@ const AccountCredentialsModal = ({ isOpen, onClose, orderData }) => {
             <ul className="text-xs text-yellow-700 space-y-1">
               <li>• Lưu thông tin này ở nơi an toàn</li>
               <li>• Không chia sẻ với người khác</li>
-              <li>• Bạn có thể xem lại thông tin này trong tab "Hoạt động"</li>
+              <li>• Bạn có thể xem lại thông tin này trong tab "Lịch sử đơn hàng"</li>
             </ul>
           </div>
 

@@ -30,8 +30,8 @@ const SteamAccountDetail = () => {
       } catch (error) {
         console.error('Error loading steam account:', error);
         toast({
-          title: 'Error',
-          description: 'Failed to load steam account details',
+          title: 'Lỗi',
+          description: 'Không thể tải chi tiết tài khoản Steam',
           variant: 'destructive'
         });
       } finally {
@@ -65,10 +65,10 @@ const SteamAccountDetail = () => {
 
   const getTypeLabel = (type) => {
     const typeLabels = {
-      'MULTI_GAMES': 'Multi Games',
-      'ONE_GAME': 'One Game',
-      'DISCOUNTED': 'Discounted',
-      'OTHER_ACCOUNT': 'Other Account'
+      'MULTI_GAMES': 'Nhiều Game',
+      'ONE_GAME': 'Một Game',
+      'DISCOUNTED': 'Ưu Đãi',
+      'OTHER_ACCOUNT': 'Tài Khoản Khác'
     };
     return typeLabels[type] || type;
   };
@@ -182,8 +182,8 @@ const SteamAccountDetail = () => {
     return (
       <div>
         <div className="container mx-auto px-4 py-6">
-          <p className="text-gray-500">Steam account not found.</p>
-          <Link to="/steam-accounts" className="underline">Back to Steam Accounts</Link>
+          <p className="text-gray-500">Không tìm thấy tài khoản Steam.</p>
+          <Link to="/steam-accounts" className="underline">Quay lại Tài Khoản Steam</Link>
         </div>
       </div>
     );
@@ -244,7 +244,10 @@ const SteamAccountDetail = () => {
               <h1 className="text-3xl font-bold text-gray-800 mb-2">{account.name}</h1>
               <div className="flex items-center gap-2">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(account.status)}`}>
-                  {account.status}
+                  {account.status === 'AVAILABLE' ? 'CÓ SẴN' : 
+                   account.status === 'PRE_ORDER' ? 'ĐẶT TRƯỚC' : 
+                   account.status === 'SOLD' ? 'ĐÃ BÁN' :
+                   account.status === 'MAINTENANCE' ? 'BẢO TRÌ' : account.status}
                 </span>
                 <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
                   {getTypeLabel(account.accountType)}
@@ -270,7 +273,7 @@ const SteamAccountDetail = () => {
                 )}
               </div>
               <p className="text-sm text-gray-500">
-                {account.status === 'PRE_ORDER' ? 'Pre-order available' : `Stock: ${account.stockQuantity} available`}
+                {account.status === 'PRE_ORDER' ? 'Có thể đặt trước' : `Kho: ${account.stockQuantity} có sẵn`}
               </p>
             </div>
 
@@ -339,7 +342,7 @@ const SteamAccountDetail = () => {
         {/* Area 7: Games Section */}
         {account.games && account.games.length > 0 && (
           <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-6">Games Included</h2>
+            <h2 className="text-2xl font-bold mb-6">Game Bao Gồm</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {account.games.map((game) => (
                 <Card key={game.id} className="overflow-hidden hover:shadow-lg transition-shadow">

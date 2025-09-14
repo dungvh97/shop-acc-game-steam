@@ -123,8 +123,8 @@ const Home = () => {
                     {/* Status Badge */}
                     <div className="absolute top-1 right-1">
                       <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${getStatusColor(account.status)}`}>
-                        {account.status === 'AVAILABLE' ? 'Available' : 
-                         account.status === 'PRE_ORDER' ? 'Pre-Order' : account.status}
+                        {account.status === 'AVAILABLE' ? 'CÓ SẴN' : 
+                         account.status === 'PRE_ORDER' ? 'ĐẶT TRƯỚC' : account.status}
                       </span>
                     </div>
                   </CardHeader>
@@ -145,7 +145,7 @@ const Home = () => {
                         </span>
                       </div>
                       <div className="text-xs text-gray-500">
-                        {account.status === 'PRE_ORDER' ? 'Pre-order' : `Stock: ${account.stockQuantity}`}
+                        {account.status === 'PRE_ORDER' ? 'Đặt trước' : `Kho: ${account.stockQuantity}`}
                       </div>
                     </div>
                   </CardContent>
