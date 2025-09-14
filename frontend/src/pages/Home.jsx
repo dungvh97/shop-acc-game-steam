@@ -99,9 +99,9 @@ const Home = () => {
           {/* Grid of steam accounts */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {featuredAccounts.map((account) => (
-              <Card key={account.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <CardHeader className="p-0 relative">
-                  <Link to={`/steam-accounts/${account.id}`}>
+              <Link key={account.id} to={`/steam-accounts/${account.id}`} className="block">
+                <Card className="overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-105">
+                  <CardHeader className="p-0 relative">
                     <div className="relative h-32 sm:h-36 bg-gray-100">
                       {account.imageUrl ? (
                         <img 
@@ -120,44 +120,37 @@ const Home = () => {
                         </svg>
                       </div>
                     </div>
-                  </Link>
-                  {/* Status Badge */}
-                  <div className="absolute top-1 right-1">
-                    <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${getStatusColor(account.status)}`}>
-                      {account.status === 'AVAILABLE' ? 'Available' : 
-                       account.status === 'PRE_ORDER' ? 'Pre-Order' : account.status}
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-2 sm:p-3">
-                  <Link to={`/steam-accounts/${account.id}`} className="hover:underline">
-                    <CardTitle className="line-clamp-2 text-xs sm:text-sm">{account.username}</CardTitle>
-                  </Link>
-                  <CardDescription className="line-clamp-2 mt-1 text-xs hidden sm:block">
-                    {account.description ? account.description.replace(/<[^>]*>/g, '').substring(0, 40) + '...' : 'Steam Account'}
-                  </CardDescription>
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="flex flex-col space-y-0.5">
-                      {account.originalPrice && account.originalPrice > account.price && (
-                        <span className="text-xs text-gray-500 line-through hidden sm:inline">
-                          {formatPrice(account.originalPrice)}
-                        </span>
-                      )}
-                      <span className="text-xs sm:text-sm font-bold text-red-600">
-                        {formatPrice(account.price)}
+                    {/* Status Badge */}
+                    <div className="absolute top-1 right-1">
+                      <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${getStatusColor(account.status)}`}>
+                        {account.status === 'AVAILABLE' ? 'Available' : 
+                         account.status === 'PRE_ORDER' ? 'Pre-Order' : account.status}
                       </span>
                     </div>
-                    <div className="text-xs text-gray-500">
-                      {account.status === 'PRE_ORDER' ? 'Pre-order' : `Stock: ${account.stockQuantity}`}
+                  </CardHeader>
+                  <CardContent className="p-2 sm:p-3">
+                    <CardTitle className="line-clamp-2 text-xs sm:text-sm hover:text-blue-600 transition-colors">{account.username}</CardTitle>
+                    <CardDescription className="line-clamp-2 mt-1 text-xs hidden sm:block">
+                      {account.name ? account.name.replace(/<[^>]*>/g, '').substring(0, 40) : 'Steam Account'}
+                    </CardDescription>
+                    <div className="flex items-center justify-between mt-2">
+                      <div className="flex flex-col space-y-0.5">
+                        {account.originalPrice && account.originalPrice > account.price && (
+                          <span className="text-xs text-gray-500 line-through hidden sm:inline">
+                            {formatPrice(account.originalPrice)}
+                          </span>
+                        )}
+                        <span className="text-xs sm:text-sm font-bold text-red-600">
+                          {formatPrice(account.price)}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {account.status === 'PRE_ORDER' ? 'Pre-order' : `Stock: ${account.stockQuantity}`}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="p-2 sm:p-3 pt-0">
-                  <Link to={`/steam-accounts/${account.id}`} className="w-full">
-                    <Button className="w-full text-xs sm:text-sm py-1.5">View</Button>
-                  </Link>
-                </CardFooter>
-              </Card>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         </div>
