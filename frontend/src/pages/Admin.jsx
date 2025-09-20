@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { useAuth } from '../contexts/AuthContext';
-import { createGame, uploadImage, getAllUserOrders, getSteamAccountsAdmin, getGames, markOrderAsDelivered, cancelOrder, getOrderByOrderId, getAllOrdersAdmin, getOrdersByStatusAdmin, getOrderByIdAdmin, markOrderAsDeliveredAdmin, cancelOrderAdmin, getRevenueStats, getMonthlyRevenue } from '../lib/api';
+import { createGame, uploadImage, getAllUserOrders, getSteamAccountsAdmin, getGames, markOrderAsDelivered, cancelOrder, getOrderByOrderId, getAllOrdersAdmin, getOrdersByStatusAdmin, getOrderByIdAdmin, markOrderAsDeliveredAdmin, cancelOrderAdmin, getRevenueStats, getMonthlyRevenue, getSteamImportStatus, startSteamImport } from '../lib/api';
 import { useToast } from '../hooks/use-toast';
 import SteamAccountManager from '../components/SteamAccountManager';
 import MultiSteamAccountForm from '../components/MultiSteamAccountForm';
@@ -58,6 +58,14 @@ const Admin = () => {
     status: 'all',
     sortBy: 'newest'
   });
+
+  // Steam import state
+  const [steamImportStatus, setSteamImportStatus] = useState({
+    hasBeenImported: false,
+    lastImportDate: null,
+    importedGamesCount: 0
+  });
+  const [loadingSteamImport, setLoadingSteamImport] = useState(false);
 
   // Data fetching functions
   const fetchRevenueData = async () => {
@@ -168,6 +176,57 @@ const Admin = () => {
     }
   };
 
+  // Steam import functions
+  const fetchSteamImportStatus = async () => {
+    try {
+      const status = await getSteamImportStatus();
+      setSteamImportStatus(status);
+    } catch (error) {
+      console.error('Error fetching Steam import status:', error);
+    }
+  };
+
+  const handleSteamImport = async () => {
+    if (!guard()) return;
+
+    setLoadingSteamImport(true);
+    try {
+      if (steamImportStatus.hasBeenImported) {
+        // Show message for subsequent clicks
+        toast({
+          title: 'Thông báo',
+          description: `Đã nhập steam game vào ngày ${steamImportStatus.lastImportDate}, nếu bạn cần nhập thêm vui lòng nhập bằng tay theo bảng bên dưới`,
+        });
+      } else {
+        // First time import
+        const response = await startSteamImport();
+        if (response.success) {
+          toast({
+            title: 'Thành công',
+            description: response.message,
+          });
+          // Update status
+          await fetchSteamImportStatus();
+        } else {
+          toast({
+            title: 'Lỗi',
+            description: response.message || 'Không thể bắt đầu nhập Steam games',
+            variant: 'destructive'
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error starting Steam import:', error);
+      toast({
+        title: 'Lỗi',
+        description: error.message || 'Không thể bắt đầu nhập Steam games',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoadingSteamImport(false);
+    }
+  };
+
   // Load data when tab changes
   useEffect(() => {
     if (activeTab === 'revenue') {
@@ -176,6 +235,8 @@ const Admin = () => {
       fetchOrders();
     } else if (activeTab === 'inventory') {
       fetchInventoryData();
+    } else if (activeTab === 'games') {
+      fetchSteamImportStatus();
     }
   }, [activeTab]);
 
@@ -978,6 +1039,36 @@ const Admin = () => {
       {activeTab === 'games' && (
         <div>
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Thêm tài khoản game</h2>
+          
+          {/* Steam Import Section */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Nhập Steam Game Tự Động</CardTitle>
+              <CardDescription>
+                Tự động nhập danh sách game phổ biến từ Steam
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Button 
+                  onClick={handleSteamImport}
+                  disabled={loadingSteamImport}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {loadingSteamImport ? 'Đang xử lý...' : 'Nhập steam game tự động'}
+                </Button>
+                
+                {steamImportStatus.hasBeenImported && (
+                  <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+                    <div>Đã nhập steam game tự động vào ngày {steamImportStatus.lastImportDate}</div>
+                    <div className="font-medium mt-1">
+                      Tổng số game đã nhập: {steamImportStatus.importedGamesCount}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
           
           <Card className="max-w-2xl">
             <CardHeader>

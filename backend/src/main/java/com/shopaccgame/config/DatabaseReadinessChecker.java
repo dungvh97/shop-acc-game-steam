@@ -16,8 +16,8 @@ import java.sql.SQLException;
 public class DatabaseReadinessChecker implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseReadinessChecker.class);
-    private static final int MAX_RETRIES = 60; // Increased from 30
-    private static final int RETRY_DELAY_MS = 2000; // Increased from 1000
+    private static final int MAX_RETRIES = 30; // Increased from 30
+    private static final int RETRY_DELAY_MS = 1000; // Increased from 1000
 
     @Autowired
     private DataSource dataSource;

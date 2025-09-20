@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface GameRepository extends JpaRepository<Game, Long> {
@@ -22,4 +23,13 @@ public interface GameRepository extends JpaRepository<Game, Long> {
     
     // Find by description with pagination (case insensitive)
     Page<Game> findByDescriptionContainingIgnoreCase(String description, Pageable pageable);
+    
+    // Find by Steam App ID
+    Optional<Game> findBySteamAppId(Long steamAppId);
+    
+    // Find the most recently imported game
+    Optional<Game> findTopByOrderByLastSteamImportDesc();
+    
+    // Count games with Steam App ID
+    long countBySteamAppIdIsNotNull();
 }

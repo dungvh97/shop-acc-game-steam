@@ -68,7 +68,7 @@ public class GameImportService {
                     logger.info("Imported {} games from page {}", importedInPage, page);
                     
                     // Add delay to respect API rate limits
-                    Thread.sleep(1000);
+                    Thread.sleep(500);
                 } else {
                     logger.warn("No data received from RAWG API for page {}", page);
                     break;
@@ -107,7 +107,7 @@ public class GameImportService {
                     totalImported += importedInPage;
                     logger.info("Imported {} {} games from page {}", importedInPage, genre, page);
                     
-                    Thread.sleep(1000);
+                    Thread.sleep(500);
                 } else {
                     break;
                 }

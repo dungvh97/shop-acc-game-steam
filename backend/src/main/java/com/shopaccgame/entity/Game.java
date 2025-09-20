@@ -26,6 +26,18 @@ public class Game {
     @Column
     private String imageUrl;
     
+    @Column
+    private String website;
+    
+    @Column(columnDefinition = "TEXT")
+    private String pcRequirements;
+    
+    @Column
+    private Long steamAppId;
+    
+    @Column
+    private LocalDateTime lastSteamImport;
+    
     @Column(nullable = false)
     private LocalDateTime updatedAt;
     
@@ -95,6 +107,38 @@ public class Game {
         this.imageUrl = imageUrl;
     }
     
+    public String getWebsite() {
+        return website;
+    }
+    
+    public void setWebsite(String website) {
+        this.website = website;
+    }
+    
+    public String getPcRequirements() {
+        return pcRequirements;
+    }
+    
+    public void setPcRequirements(String pcRequirements) {
+        this.pcRequirements = pcRequirements;
+    }
+    
+    public Long getSteamAppId() {
+        return steamAppId;
+    }
+    
+    public void setSteamAppId(Long steamAppId) {
+        this.steamAppId = steamAppId;
+    }
+    
+    public LocalDateTime getLastSteamImport() {
+        return lastSteamImport;
+    }
+    
+    public void setLastSteamImport(LocalDateTime lastSteamImport) {
+        this.lastSteamImport = lastSteamImport;
+    }
+    
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
@@ -119,6 +163,10 @@ public class Game {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", imageUrl='" + imageUrl + '\'' +
+                ", website='" + website + '\'' +
+                ", pcRequirements='" + pcRequirements + '\'' +
+                ", steamAppId=" + steamAppId +
+                ", lastSteamImport=" + lastSteamImport +
                 ", updatedAt=" + updatedAt +
                 '}';
     }

@@ -73,7 +73,7 @@ if "%choice%"=="2" (
         echo version: '3.8' > docker-compose.yml
         echo services: >> docker-compose.yml
         echo   postgres: >> docker-compose.yml
-        echo     image: postgres:15 >> docker-compose.yml
+        echo     image: postgres:14-alpine >> docker-compose.yml
         echo     container_name: shop_acc_game_postgres >> docker-compose.yml
         echo     environment: >> docker-compose.yml
         echo       POSTGRES_DB: shop_acc_game >> docker-compose.yml

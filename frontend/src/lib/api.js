@@ -513,4 +513,15 @@ export const recalculateUserBalance = async () => {
   });
 };
 
+// Steam Import APIs
+export const getSteamImportStatus = async () => {
+  return apiRequest('/admin/steam-import/status');
+};
+
+export const startSteamImport = async () => {
+  return apiRequest('/admin/steam-import/start', {
+    method: 'POST'
+  });
+};
+
 
