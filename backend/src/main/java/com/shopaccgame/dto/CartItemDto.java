@@ -1,16 +1,15 @@
 package com.shopaccgame.dto;
 
 import com.shopaccgame.entity.CartItem;
-import com.shopaccgame.entity.SteamAccount;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class CartItemDto {
     private Long id;
-    private Long steamAccountId;
-    private String steamAccountName;
-    private String steamAccountImageUrl;
-    private String steamAccountDescription;
+    private Long accountInfoId;
+    private String accountInfoName;
+    private String accountInfoImageUrl;
+    private String accountInfoDescription;
     private BigDecimal unitPrice;
     private Integer quantity;
     private LocalDateTime addedAt;
@@ -19,10 +18,10 @@ public class CartItemDto {
     
     public CartItemDto(CartItem cartItem) {
         this.id = cartItem.getId();
-        this.steamAccountId = cartItem.getSteamAccount().getId();
-        this.steamAccountName = cartItem.getSteamAccount().getName();
-        this.steamAccountImageUrl = cartItem.getSteamAccount().getImageUrl();
-        this.steamAccountDescription = cartItem.getSteamAccount().getDescription();
+        this.accountInfoId = cartItem.getAccountInfo().getId();
+        this.accountInfoName = cartItem.getAccountInfo().getName();
+        this.accountInfoImageUrl = cartItem.getAccountInfo().getImageUrl();
+        this.accountInfoDescription = cartItem.getAccountInfo().getDescription();
         this.unitPrice = cartItem.getUnitPrice();
         this.quantity = cartItem.getQuantity();
         this.addedAt = cartItem.getAddedAt();
@@ -37,36 +36,36 @@ public class CartItemDto {
         this.id = id;
     }
     
-    public Long getSteamAccountId() {
-        return steamAccountId;
+    public Long getAccountInfoId() {
+        return accountInfoId;
     }
     
-    public void setSteamAccountId(Long steamAccountId) {
-        this.steamAccountId = steamAccountId;
+    public void setAccountInfoId(Long accountInfoId) {
+        this.accountInfoId = accountInfoId;
     }
     
-    public String getSteamAccountName() {
-        return steamAccountName;
+    public String getAccountInfoName() {
+        return accountInfoName;
     }
     
-    public void setSteamAccountName(String steamAccountName) {
-        this.steamAccountName = steamAccountName;
+    public void setAccountInfoName(String accountInfoName) {
+        this.accountInfoName = accountInfoName;
     }
     
-    public String getSteamAccountImageUrl() {
-        return steamAccountImageUrl;
+    public String getAccountInfoImageUrl() {
+        return accountInfoImageUrl;
     }
     
-    public void setSteamAccountImageUrl(String steamAccountImageUrl) {
-        this.steamAccountImageUrl = steamAccountImageUrl;
+    public void setAccountInfoImageUrl(String accountInfoImageUrl) {
+        this.accountInfoImageUrl = accountInfoImageUrl;
     }
     
-    public String getSteamAccountDescription() {
-        return steamAccountDescription;
+    public String getAccountInfoDescription() {
+        return accountInfoDescription;
     }
     
-    public void setSteamAccountDescription(String steamAccountDescription) {
-        this.steamAccountDescription = steamAccountDescription;
+    public void setAccountInfoDescription(String accountInfoDescription) {
+        this.accountInfoDescription = accountInfoDescription;
     }
     
     public BigDecimal getUnitPrice() {

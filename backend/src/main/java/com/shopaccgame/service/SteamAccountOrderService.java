@@ -3,11 +3,12 @@ package com.shopaccgame.service;
 import com.shopaccgame.dto.OrderRequestDto;
 import com.shopaccgame.dto.OrderResponseDto;
 import com.shopaccgame.entity.SteamAccount;
+import com.shopaccgame.entity.AccountInfo;
 import com.shopaccgame.entity.enums.AccountStatus;
 import com.shopaccgame.entity.SteamAccountOrder;
 import com.shopaccgame.entity.User;
 import com.shopaccgame.repository.SteamAccountOrderRepository;
-import com.shopaccgame.repository.SteamAccountRepository;
+import com.shopaccgame.repository.AccountInfoRepository;
 import com.shopaccgame.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,8 +33,9 @@ public class SteamAccountOrderService {
     @Autowired
     private SteamAccountOrderRepository orderRepository;
     
+    
     @Autowired
-    private SteamAccountRepository steamAccountRepository;
+    private AccountInfoRepository accountInfoRepository;
     
     @Autowired
     private UserRepository userRepository;
@@ -43,34 +44,42 @@ public class SteamAccountOrderService {
     private UserBalanceService userBalanceService;
     
     /**
-     * Create a new order for a steam account
+     * Create a new order for an account info (will select an available steam account)
      */
     public OrderResponseDto createOrder(OrderRequestDto requestDto, String username) {
         // Find the user
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
         
-        // Find the steam account
-        SteamAccount account = steamAccountRepository.findById(requestDto.getAccountId())
-            .orElseThrow(() -> new RuntimeException("Steam account not found"));
+        // Find the account info
+        AccountInfo accountInfo = accountInfoRepository.findById(requestDto.getAccountInfoId())
+            .orElseThrow(() -> new RuntimeException("Account info not found"));
         
-        // Check if account is available
-        if (account.getStatus() != AccountStatus.AVAILABLE || account.getStockQuantity() <= 0) {
-            throw new RuntimeException("Steam account is not available for purchase");
+        // Check if account info has available stock
+        if (accountInfo.getAvailableStockCount() <= 0) {
+            throw new RuntimeException("Account info is not available for purchase");
         }
         
-        // Check if there are any active orders for this account
+        // Verify that there are available steam accounts for this account info
+        boolean hasAvailableAccounts = accountInfo.getSteamAccounts().stream()
+            .anyMatch(account -> account.getStatus() == AccountStatus.AVAILABLE);
+        
+        if (!hasAvailableAccounts) {
+            throw new RuntimeException("No available steam accounts found");
+        }
+        
+        // Check if there are any active orders for this specific steam account
         List<SteamAccountOrder.OrderStatus> activeStatuses = List.of(
             SteamAccountOrder.OrderStatus.PENDING, 
             SteamAccountOrder.OrderStatus.PAID
         );
         
-        if (orderRepository.existsByAccountIdAndStatusIn(account.getId(), activeStatuses)) {
-            throw new RuntimeException("Steam account is already being processed in another order");
+        if (orderRepository.existsByAccountInfoIdAndStatusIn(accountInfo.getId(), activeStatuses)) {
+            throw new RuntimeException("Account info is already being processed in another order");
         }
         
         // Create the order
-        SteamAccountOrder order = new SteamAccountOrder(account, user, account.getPrice());
+        SteamAccountOrder order = new SteamAccountOrder(accountInfo, user, accountInfo.getPrice());
         
         // Generate QR code URL
         String qrCodeUrl = generateQrCodeUrl(order.getOrderId(), order.getAmount());
@@ -80,7 +89,7 @@ public class SteamAccountOrderService {
         SteamAccountOrder savedOrder = orderRepository.save(order);
         
         logger.info("Created order {} for account {} by user {}", 
-            savedOrder.getOrderId(), account.getName(), username);
+            savedOrder.getOrderId(), accountInfo.getName(), username);
         
         return new OrderResponseDto(savedOrder);
     }
@@ -137,6 +146,16 @@ public class SteamAccountOrderService {
         }
         
         order.markAsPaid();
+        
+        // Assign a specific steam account to this order
+        AccountInfo accountInfo = order.getAccountInfo();
+        SteamAccount availableAccount = accountInfo.getSteamAccounts().stream()
+            .filter(account -> account.getStatus() == AccountStatus.AVAILABLE)
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("No available steam accounts found"));
+        
+        order.assignSteamAccount(availableAccount);
+        
         SteamAccountOrder savedOrder = orderRepository.save(order);
         
         logger.info("Order {} marked as paid", orderId);
@@ -206,35 +225,43 @@ public class SteamAccountOrderService {
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
         
-        // Find the steam account
-        SteamAccount account = steamAccountRepository.findById(requestDto.getAccountId())
-            .orElseThrow(() -> new RuntimeException("Steam account not found"));
+        // Find the account info
+        AccountInfo accountInfo = accountInfoRepository.findById(requestDto.getAccountInfoId())
+            .orElseThrow(() -> new RuntimeException("Account info not found"));
         
-        // Check if account is available
-        if (account.getStatus() != AccountStatus.AVAILABLE || account.getStockQuantity() <= 0) {
-            throw new RuntimeException("Steam account is not available for purchase");
+        // Check if account info has available stock
+        if (accountInfo.getAvailableStockCount() <= 0) {
+            throw new RuntimeException("Account info is not available for purchase");
         }
         
-        // Check if there are any active orders for this account
+        // Check if there are any active orders for this account info
         List<SteamAccountOrder.OrderStatus> activeStatuses = List.of(
             SteamAccountOrder.OrderStatus.PENDING, 
             SteamAccountOrder.OrderStatus.PAID
         );
         
-        if (orderRepository.existsByAccountIdAndStatusIn(account.getId(), activeStatuses)) {
-            throw new RuntimeException("Steam account is already being processed in another order");
+        if (orderRepository.existsByAccountInfoIdAndStatusIn(accountInfo.getId(), activeStatuses)) {
+            throw new RuntimeException("Account info is already being processed in another order");
         }
         
         // Check if user has sufficient balance
-        if (!userBalanceService.deductFromBalance(username, account.getPrice())) {
+        if (!userBalanceService.deductFromBalance(username, accountInfo.getPrice())) {
             throw new RuntimeException("Insufficient balance");
         }
         
         // Create the order
-        SteamAccountOrder order = new SteamAccountOrder(account, user, account.getPrice());
+        SteamAccountOrder order = new SteamAccountOrder(accountInfo, user, accountInfo.getPrice());
         
         // Mark as paid immediately since we deducted from balance
         order.markAsPaid();
+        
+        // Assign a specific steam account to this order
+        SteamAccount availableAccount = accountInfo.getSteamAccounts().stream()
+            .filter(account -> account.getStatus() == AccountStatus.AVAILABLE)
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("No available steam accounts found"));
+        
+        order.assignSteamAccount(availableAccount);
         
         // Generate QR code URL (for reference, though not needed for balance payment)
         String qrCodeUrl = generateQrCodeUrl(order.getOrderId(), order.getAmount());
@@ -244,7 +271,7 @@ public class SteamAccountOrderService {
         SteamAccountOrder savedOrder = orderRepository.save(order);
         
         logger.info("Created and paid order {} for account {} by user {} using balance", 
-            savedOrder.getOrderId(), account.getName(), username);
+            savedOrder.getOrderId(), accountInfo.getName(), username);
         
         return new OrderResponseDto(savedOrder);
     }

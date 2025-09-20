@@ -268,7 +268,7 @@ export const getSteamAccountsByStatus = async (status) => {
 };
 
 export const createSteamAccount = async (accountData) => {
-  return apiRequest('/admin/steam-accounts', {
+  return apiRequest('/api/account-info/with-steam-accounts', {
     method: 'POST',
     body: JSON.stringify(accountData),
   });

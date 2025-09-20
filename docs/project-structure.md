@@ -33,8 +33,9 @@ shop-acc-game/
 ### Controllers (`/controller/`)
 REST API endpoints for handling HTTP requests:
 
-- **`AuthController.java`** - User authentication endpoints (login, register, logout)
+- **`AccountInfoController.java`** - Account information management (CRUD operations)
 - **`AdminController.java`** - Admin-only operations and system management
+- **`AuthController.java`** - User authentication endpoints (login, register, logout)
 - **`CartController.java`** - Shopping cart operations (add, remove, view items)
 - **`FileUploadController.java`** - File upload handling for images and documents
 - **`GameController.java`** - Game-related operations and information
@@ -42,19 +43,22 @@ REST API endpoints for handling HTTP requests:
 - **`HealthController.java`** - Health check endpoints for monitoring
 - **`SepayWebhookController.java`** - Payment webhook processing from SePay.vn
 - **`SteamAccountController.java`** - Steam account management (CRUD operations)
+- **`SteamAccountControllerNew.java`** - New Steam account management with AccountInfo integration
 - **`SteamAccountOrderController.java`** - Order processing for Steam accounts
 - **`SteamAccountPublicController.java`** - Public-facing Steam account endpoints
+- **`SteamImportController.java`** - Steam games import functionality
 - **`UserBalanceController.java`** - User balance and wallet management
 - **`WalletDepositController.java`** - Wallet deposit operations and transactions
 
 ### Entities (`/entity/`)
 JPA entities representing database tables:
 
+- **`AccountInfo.java`** - Account information with pricing, metadata, and game associations
 - **`User.java`** - User account information
-- **`SteamAccount.java`** - Steam account product details
-- **`Game.java`** - Game information and metadata
-- **`CartItem.java`** - Shopping cart items
-- **`SteamAccountOrder.java`** - Steam account order processing
+- **`SteamAccount.java`** - Steam account credentials and status (references AccountInfo)
+- **`Game.java`** - Game information and metadata (many-to-many with AccountInfo)
+- **`CartItem.java`** - Shopping cart items (references AccountInfo)
+- **`SteamAccountOrder.java`** - Steam account order processing (references AccountInfo)
 - **`EmailVerification.java`** - Email verification tokens
 - **`WalletDeposit.java`** - Wallet deposit transactions
 - **`enums/`** - Enumeration types
@@ -64,6 +68,9 @@ JPA entities representing database tables:
 ### DTOs (`/dto/`)
 Data Transfer Objects for API request/response handling:
 
+- **`AccountInfoDto.java`** - Account information data transfer
+- **`AccountInfoRequestDto.java`** - Account information creation/update request
+- **`AccountInfoWithSteamAccountsDto.java`** - Account info with associated Steam accounts
 - **`AdminOrderDto.java`** - Admin order management data
 - **`AuthRequest.java`** - Authentication request data
 - **`AuthResponse.java`** - Authentication response data
@@ -77,7 +84,6 @@ Data Transfer Objects for API request/response handling:
 - **`GameDto.java`** - Game information transfer
 - **`GameRequestDto.java`** - Game creation/update request
 - **`GamePageResponseDto.java`** - Paginated game response
-- **`GameWithPriceDto.java`** - Game with pricing information
 - **`RevenueStatsDto.java`** - Revenue statistics data
 - **`UserDto.java`** - User data transfer
 - **`EmailVerificationRequest.java`** - Email verification request
@@ -87,6 +93,7 @@ Data Transfer Objects for API request/response handling:
 ### Repositories (`/repository/`)
 Spring Data JPA repositories for database operations:
 
+- **`AccountInfoRepository.java`** - Account information data access
 - **`UserRepository.java`** - User data access
 - **`SteamAccountRepository.java`** - Steam account data access
 - **`GameRepository.java`** - Game data access
@@ -98,11 +105,14 @@ Spring Data JPA repositories for database operations:
 ### Services (`/service/`)
 Business logic layer:
 
+- **`AccountInfoService.java`** - Account information business logic
 - **`AdminService.java`** - Admin operations and system management
 - **`AuthService.java`** - Authentication and authorization logic
 - **`SteamAccountService.java`** - Steam account business logic
+- **`SteamAccountServiceNew.java`** - New Steam account service with AccountInfo integration
 - **`SteamAccountOrderService.java`** - Steam account order processing
 - **`SteamCheckerService.java`** - Steam account validation service
+- **`SteamImportService.java`** - Steam games import functionality
 - **`EmailService.java`** - Email notification service
 - **`GameService.java`** - Game management business logic
 - **`GameImportService.java`** - Bulk game import functionality
@@ -299,16 +309,50 @@ A standalone Node.js microservice for validating Steam account credentials using
 ## Database Structure
 
 ### Core Tables
+- **`account_info`** - Account information with pricing, metadata, and game associations
 - **`users`** - User accounts and authentication
-- **`steam_accounts`** - Steam account products
+- **`steam_accounts`** - Steam account credentials and status (references account_info)
 - **`games`** - Game information and metadata
-- **`steam_account_orders`** - Steam account order processing
-- **`cart_items`** - Shopping cart items
+- **`account_games`** - Many-to-many relationship between account_info and games
+- **`steam_account_orders`** - Steam account order processing (references account_info)
+- **`cart_items`** - Shopping cart items (references account_info)
 - **`email_verifications`** - Email verification tokens
 - **`wallet_deposits`** - Wallet deposit transactions
 
 ### Migration Scripts
-Located in `backend/src/main/resources/db/migration/` for database schema versioning
+Located in `backend/src/main/resources/db/migration/` for database schema versioning:
+- **`V20241225_001__Add_Steam_Fields_To_Games.sql`** - Added Steam-related fields to games table
+- **`V20241225_002__Split_SteamAccount_To_AccountInfo_And_SteamAccount.sql`** - Split SteamAccount into AccountInfo and SteamAccount entities
+
+## Entity Relationships
+
+### Core Entity Structure
+The application follows a three-tier entity relationship model:
+
+1. **AccountInfo** (Top Level)
+   - Contains account metadata (name, description, image, pricing, discount)
+   - Defines account type (PREMIUM, STANDARD, etc.)
+   - Has many-to-many relationship with Games
+   - Has one-to-many relationship with SteamAccounts
+
+2. **SteamAccount** (Middle Level)
+   - Contains actual Steam account credentials (username, password, steam guard)
+   - References AccountInfo for metadata and pricing
+   - Has account status (AVAILABLE, SOLD, PRE_ORDER, etc.)
+   - Used in orders and cart items
+
+3. **Game** (Reference Level)
+   - Contains game information (name, description, Steam App ID)
+   - Has many-to-many relationship with AccountInfo
+   - Used to categorize and filter accounts
+
+### Relationship Flow
+- **AccountInfo** ↔ **Game**: Many-to-many (accounts can have multiple games, games can be in multiple accounts)
+- **AccountInfo** → **SteamAccount**: One-to-many (one account info can have multiple steam accounts)
+- **SteamAccount** → **SteamAccountOrder**: One-to-many (steam accounts can be ordered multiple times)
+- **AccountInfo** → **CartItem**: One-to-many (account info can be added to cart multiple times)
+- **User** → **SteamAccountOrder**: One-to-many (users can have multiple orders)
+- **User** → **CartItem**: One-to-many (users can have multiple cart items)
 
 ## Key Features by Component
 
@@ -323,11 +367,14 @@ Located in `backend/src/main/resources/db/migration/` for database schema versio
 - Payment verification and confirmation
 
 ### Product Management
+- Account information management with pricing and metadata
 - Steam account listings with validation
 - Game information integration (RAWG API)
+- Many-to-many relationship between accounts and games
 - Image upload and management
-- Inventory tracking
+- Inventory tracking with stock management
 - Steam account credential validation via microservice
+- Discount and pricing management at account level
 
 ### User Management
 - User registration and profiles

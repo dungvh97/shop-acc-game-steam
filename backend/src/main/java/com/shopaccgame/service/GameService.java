@@ -1,7 +1,7 @@
 package com.shopaccgame.service;
 
 import com.shopaccgame.entity.Game;
-import com.shopaccgame.dto.GameWithPriceDto;
+import com.shopaccgame.dto.GameDto;
 import com.shopaccgame.repository.GameRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -31,19 +31,19 @@ public class GameService {
         entityManager.clear();
     }
     
-    public List<GameWithPriceDto> getAllGames() {
+    public List<GameDto> getAllGames() {
         clearSessionCache();
         List<Game> games = gameRepository.findAll();
         return games.stream()
-                .map(GameWithPriceDto::new)
+                .map(GameDto::new)
                 .collect(Collectors.toList());
     }
     
-    public Page<GameWithPriceDto> getAllGames(Pageable pageable) {
+    public Page<GameDto> getAllGames(Pageable pageable) {
         clearSessionCache();
         Page<Game> games = gameRepository.findAll(pageable);
-        List<GameWithPriceDto> dtoList = games.getContent().stream()
-                .map(GameWithPriceDto::new)
+        List<GameDto> dtoList = games.getContent().stream()
+                .map(GameDto::new)
                 .collect(Collectors.toList());
         
         return new org.springframework.data.domain.PageImpl<>(
@@ -59,27 +59,27 @@ public class GameService {
             .orElseThrow(() -> new RuntimeException("Game not found with id: " + id));
     }
     
-    public GameWithPriceDto getGameWithPriceById(Long id) {
+    public GameDto getGameDtoById(Long id) {
         Game game = getGameById(id);
-        return new GameWithPriceDto(game);
+        return new GameDto(game);
     }
     
-    public List<GameWithPriceDto> searchGames(String keyword) {
+    public List<GameDto> searchGames(String keyword) {
         List<Game> games = gameRepository.findByNameContainingIgnoreCase(keyword);
         return games.stream()
-                .map(GameWithPriceDto::new)
+                .map(GameDto::new)
                 .collect(Collectors.toList());
     }
     
-    public Page<GameWithPriceDto> searchGames(String keyword, Pageable pageable) {
+    public Page<GameDto> searchGames(String keyword, Pageable pageable) {
         Page<Game> games = gameRepository.findByNameContainingIgnoreCase(keyword, pageable);
-        return games.map(GameWithPriceDto::new);
+        return games.map(GameDto::new);
     }
     
-    public List<GameWithPriceDto> searchGamesByName(String searchTerm) {
+    public List<GameDto> searchGamesByName(String searchTerm) {
         List<Game> games = gameRepository.findByNameContainingIgnoreCase(searchTerm);
         return games.stream()
-                .map(GameWithPriceDto::new)
+                .map(GameDto::new)
                 .collect(Collectors.toList());
     }
     
@@ -139,11 +139,11 @@ public class GameService {
      * Debug method to get all games with steam accounts
      * @return List of all games with steam accounts loaded
      */
-    public List<GameWithPriceDto> getAllGamesWithSteamAccountsForDebug() {
+    public List<GameDto> getAllGamesWithSteamAccountsForDebug() {
         clearSessionCache();
         List<Game> games = gameRepository.findAll();
         return games.stream()
-                .map(GameWithPriceDto::new)
+                .map(GameDto::new)
                 .collect(Collectors.toList());
     }
     

@@ -3,7 +3,7 @@ package com.shopaccgame.controller;
 import com.shopaccgame.dto.SteamAccountDto;
 import com.shopaccgame.entity.enums.AccountType;
 import com.shopaccgame.entity.enums.AccountStatus;
-import com.shopaccgame.service.SteamAccountService;
+import com.shopaccgame.service.SteamAccountServiceNew;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,7 @@ public class SteamAccountPublicController {
     private static final Logger logger = LoggerFactory.getLogger(SteamAccountPublicController.class);
     
     @Autowired
-    private SteamAccountService steamAccountService;
+    private SteamAccountServiceNew steamAccountService;
 
     @Autowired
     private SteamCheckerService steamCheckerService;
@@ -43,7 +43,7 @@ public class SteamAccountPublicController {
         Pageable pageable = PageRequest.of(page, size, sort);
         
         // Only return available accounts for public access
-        List<SteamAccountDto> availableAccounts = steamAccountService.getAvailableAccounts();
+        List<SteamAccountDto> availableAccounts = steamAccountService.getAvailableSteamAccounts();
         
         // Convert to page format
         int start = (int) pageable.getOffset();
@@ -65,7 +65,7 @@ public class SteamAccountPublicController {
     
     @GetMapping("/all")
     public ResponseEntity<List<SteamAccountDto>> getAllAvailableSteamAccounts() {
-        List<SteamAccountDto> accounts = steamAccountService.getAvailableAccounts();
+        List<SteamAccountDto> accounts = steamAccountService.getAvailableSteamAccounts();
         return ResponseEntity.ok(accounts);
     }
 
@@ -101,7 +101,7 @@ public class SteamAccountPublicController {
             @RequestParam(defaultValue = "12") int size) {
         
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        List<SteamAccountDto> accounts = steamAccountService.getAvailableAccountsByType(accountType);
+        List<SteamAccountDto> accounts = steamAccountService.getAvailableSteamAccountsByType(accountType.toString());
         
         // Convert to page format
         int start = (int) pageable.getOffset();
@@ -190,14 +190,14 @@ public class SteamAccountPublicController {
     
     @GetMapping("/available")
     public ResponseEntity<List<SteamAccountDto>> getAvailableAccounts() {
-        List<SteamAccountDto> accounts = steamAccountService.getAvailableAccounts();
+        List<SteamAccountDto> accounts = steamAccountService.getAvailableSteamAccounts();
         return ResponseEntity.ok(accounts);
     }
     
     @GetMapping("/available/{accountType}")
     public ResponseEntity<List<SteamAccountDto>> getAvailableAccountsByType(
             @PathVariable AccountType accountType) {
-        List<SteamAccountDto> accounts = steamAccountService.getAvailableAccountsByType(accountType);
+        List<SteamAccountDto> accounts = steamAccountService.getAvailableSteamAccountsByType(accountType.toString());
         return ResponseEntity.ok(accounts);
     }
 }

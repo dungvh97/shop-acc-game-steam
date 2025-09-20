@@ -1,7 +1,6 @@
 package com.shopaccgame.controller;
 
 import com.shopaccgame.dto.GameDto;
-import com.shopaccgame.dto.GameWithPriceDto;
 import com.shopaccgame.dto.GamePageResponseDto;
 import com.shopaccgame.dto.GameRequestDto;
 import com.shopaccgame.entity.Game;
@@ -37,7 +36,7 @@ public class GameController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<GameWithPriceDto> games = gameService.getAllGames(pageable);
+        Page<GameDto> games = gameService.getAllGames(pageable);
         return ResponseEntity.ok(GamePageResponseDto.from(games));
     }
     
@@ -49,14 +48,14 @@ public class GameController {
     }
     
     @GetMapping("/all")
-    public ResponseEntity<List<GameWithPriceDto>> getAllGames() {
-        List<GameWithPriceDto> games = gameService.getAllGames();
+    public ResponseEntity<List<GameDto>> getAllGames() {
+        List<GameDto> games = gameService.getAllGames();
         return ResponseEntity.ok(games);
     }
     
     @GetMapping("/names")
     public ResponseEntity<List<Map<String, Object>>> getAllGameNames() {
-        List<GameWithPriceDto> games = gameService.getAllGames();
+        List<GameDto> games = gameService.getAllGames();
         List<Map<String, Object>> gameNames = games.stream()
                 .map(game -> {
                     Map<String, Object> gameMap = new HashMap<>();
@@ -69,8 +68,8 @@ public class GameController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<GameWithPriceDto> getGameById(@PathVariable Long id) {
-        GameWithPriceDto game = gameService.getGameWithPriceById(id);
+    public ResponseEntity<GameDto> getGameById(@PathVariable Long id) {
+        GameDto game = gameService.getGameDtoById(id);
         return ResponseEntity.ok(game);
     }
     
@@ -80,14 +79,14 @@ public class GameController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<GameWithPriceDto> games = gameService.searchGames(keyword, pageable);
+        Page<GameDto> games = gameService.searchGames(keyword, pageable);
         return ResponseEntity.ok(GamePageResponseDto.from(games));
     }
     
     @GetMapping("/search/name")
-    public ResponseEntity<List<GameWithPriceDto>> searchGamesByName(
+    public ResponseEntity<List<GameDto>> searchGamesByName(
             @RequestParam String searchTerm) {
-        List<GameWithPriceDto> games = gameService.searchGamesByName(searchTerm);
+        List<GameDto> games = gameService.searchGamesByName(searchTerm);
         return ResponseEntity.ok(games);
     }
     

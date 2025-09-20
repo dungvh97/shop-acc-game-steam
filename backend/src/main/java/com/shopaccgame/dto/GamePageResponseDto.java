@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class GamePageResponseDto {
-    private List<GameWithPriceDto> content;
+    private List<GameDto> content;
     private int pageNumber;
     private int pageSize;
     private long totalElements;
@@ -18,7 +18,7 @@ public class GamePageResponseDto {
 
     public GamePageResponseDto() {}
 
-    public GamePageResponseDto(Page<GameWithPriceDto> gamePage) {
+    public GamePageResponseDto(Page<GameDto> gamePage) {
         this.content = gamePage.getContent();
         this.pageNumber = gamePage.getNumber();
         this.pageSize = gamePage.getSize();
@@ -31,16 +31,16 @@ public class GamePageResponseDto {
     }
 
     // Static factory method
-    public static GamePageResponseDto from(Page<GameWithPriceDto> gamePage) {
+    public static GamePageResponseDto from(Page<GameDto> gamePage) {
         return new GamePageResponseDto(gamePage);
     }
 
     // Getters and Setters
-    public List<GameWithPriceDto> getContent() {
+    public List<GameDto> getContent() {
         return content;
     }
 
-    public void setContent(List<GameWithPriceDto> content) {
+    public void setContent(List<GameDto> content) {
         this.content = content;
     }
 

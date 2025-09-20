@@ -68,7 +68,7 @@ public class SteamAccountService {
     }
     
     public Optional<SteamAccountDto> getSteamAccountById(Long id) {
-        return steamAccountRepository.findById(id)
+        return steamAccountRepository.findByIdWithAccountInfo(id)
             .map(SteamAccountDto::new);
     }
     
@@ -86,7 +86,7 @@ public class SteamAccountService {
     }
     
     public Optional<SteamAccountAdminDto> getSteamAccountByIdForAdmin(Long id) {
-        return steamAccountRepository.findById(id)
+        return steamAccountRepository.findByIdWithAccountInfo(id)
             .map(this::createAdminDtoWithDecryptedPassword);
     }
     

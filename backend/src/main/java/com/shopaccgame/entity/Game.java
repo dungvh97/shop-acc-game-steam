@@ -41,9 +41,9 @@ public class Game {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
     
-    // Many-to-Many relationship with SteamAccount
+    // Many-to-Many relationship with AccountInfo
     @ManyToMany(mappedBy = "games", fetch = FetchType.LAZY)
-    private java.util.Set<SteamAccount> steamAccounts = new java.util.HashSet<>();
+    private java.util.Set<AccountInfo> accountInfos = new java.util.HashSet<>();
     
     @PrePersist
     protected void onCreate() {
@@ -147,12 +147,12 @@ public class Game {
         this.updatedAt = updatedAt;
     }
     
-    public java.util.Set<SteamAccount> getSteamAccounts() {
-        return steamAccounts;
+    public java.util.Set<AccountInfo> getAccountInfos() {
+        return accountInfos;
     }
     
-    public void setSteamAccounts(java.util.Set<SteamAccount> steamAccounts) {
-        this.steamAccounts = steamAccounts;
+    public void setAccountInfos(java.util.Set<AccountInfo> accountInfos) {
+        this.accountInfos = accountInfos;
     }
     
     @Override

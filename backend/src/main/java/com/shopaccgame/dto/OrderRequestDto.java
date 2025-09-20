@@ -5,21 +5,21 @@ import jakarta.validation.constraints.Positive;
 
 public class OrderRequestDto {
     
-    @NotNull(message = "Account ID is required")
-    @Positive(message = "Account ID must be positive")
-    private Long accountId;
+    @NotNull(message = "Account Info ID is required")
+    @Positive(message = "Account Info ID must be positive")
+    private Long accountInfoId;
     
     public OrderRequestDto() {}
     
-    public OrderRequestDto(Long accountId) {
-        this.accountId = accountId;
+    public OrderRequestDto(Long accountInfoId) {
+        this.accountInfoId = accountInfoId;
     }
     
-    public Long getAccountId() {
-        return accountId;
+    public Long getAccountInfoId() {
+        return accountInfoId;
     }
     
-    public void setAccountId(Long accountId) {
-        this.accountId = accountId;
+    public void setAccountInfoId(Long accountInfoId) {
+        this.accountInfoId = accountInfoId;
     }
 }

@@ -195,23 +195,24 @@ const MultiSteamAccountForm = () => {
   // Form state
   const [accounts, setAccounts] = useState([
     {
+      accountCode: '',
       username: '',
-      name: '',
       password: '',
-      steamGuard: ''
+      steamGuard: '',
+      status: 'AVAILABLE'
     }
   ]);
   
   // Common fields (same for all accounts)
   const [commonFields, setCommonFields] = useState({
+    name: '',
+    description: '',
+    imageUrl: '',
     accountType: 'MULTI_GAMES',
-    status: 'AVAILABLE',
     price: '',
     originalPrice: '',
     discountPercentage: '',
-    imageUrl: '',
     stockQuantity: 1,
-    description: '',
     gameIds: []
   });
   
@@ -312,10 +313,11 @@ const MultiSteamAccountForm = () => {
 
   const addAccount = () => {
     setAccounts([...accounts, {
+      accountCode: '',
       username: '',
-      name: '',
       password: '',
-      steamGuard: ''
+      steamGuard: '',
+      status: 'AVAILABLE'
     }]);
   };
 
@@ -332,10 +334,43 @@ const MultiSteamAccountForm = () => {
     setAccounts(newAccounts);
   };
 
+  // Auto-generate accounts based on stock quantity
+  const generateAccountsFromStock = (stockQuantity) => {
+    const newAccounts = [];
+    for (let i = 1; i <= stockQuantity; i++) {
+      newAccounts.push({
+        accountCode: `ACC-${i}`,
+        username: '',
+        password: '',
+        steamGuard: '',
+        status: 'AVAILABLE'
+      });
+    }
+    setAccounts(newAccounts);
+  };
+
+  // Handle stock quantity change
+  const handleStockQuantityChange = (value) => {
+    const quantity = parseInt(value) || 0;
+    setCommonFields({...commonFields, stockQuantity: quantity});
+    
+    // Auto-generate accounts if quantity is greater than current accounts
+    if (quantity > accounts.length) {
+      generateAccountsFromStock(quantity);
+    } else if (quantity < accounts.length) {
+      // Remove excess accounts
+      setAccounts(accounts.slice(0, quantity));
+    }
+  };
+
   const validateForm = () => {
     const errors = {};
     
     // Validate common fields
+    if (!commonFields.name.trim()) {
+      errors.name = 'Tên sản phẩm không được để trống';
+    }
+    
     if (!commonFields.gameIds || commonFields.gameIds.length === 0) {
       errors.gameIds = 'Vui lòng chọn ít nhất một game';
     }
@@ -350,11 +385,11 @@ const MultiSteamAccountForm = () => {
     
     // Validate individual accounts
     accounts.forEach((account, index) => {
+      if (!account.accountCode.trim()) {
+        errors[`account_${index}_accountCode`] = 'Mã sản phẩm không được để trống';
+      }
       if (!account.username.trim()) {
         errors[`account_${index}_username`] = 'Tên đăng nhập không được để trống';
-      }
-      if (!account.name.trim()) {
-        errors[`account_${index}_name`] = 'Tên tài khoản không được để trống';
       }
       if (!account.password.trim()) {
         errors[`account_${index}_password`] = 'Mật khẩu không được để trống';
@@ -389,22 +424,21 @@ const MultiSteamAccountForm = () => {
         }
       }
 
-      // Create all accounts
-      const promises = accounts.map(account => {
-        const payload = {
-          ...account,
-          ...commonFields,
-          price: commonFields.price,
-          originalPrice: commonFields.originalPrice || null,
-          discountPercentage: commonFields.discountPercentage ? Number(commonFields.discountPercentage) : 0,
-          stockQuantity: Number(commonFields.stockQuantity),
-          imageUrl: imageUrl
-        };
+      // Create payload for the new API structure
+      const payload = {
+        name: commonFields.name,
+        description: commonFields.description,
+        imageUrl: imageUrl,
+        accountType: commonFields.accountType,
+        price: commonFields.price,
+        originalPrice: commonFields.originalPrice || null,
+        discountPercentage: commonFields.discountPercentage ? Number(commonFields.discountPercentage) : 0,
+        stockQuantity: Number(commonFields.stockQuantity),
+        gameIds: commonFields.gameIds,
+        steamAccounts: accounts
+      };
         
-        return createSteamAccount(payload);
-      });
-
-      await Promise.all(promises);
+      await createSteamAccount(payload);
       
       toast({
         title: 'Tạo tài khoản thành công',
@@ -413,20 +447,21 @@ const MultiSteamAccountForm = () => {
       
       // Reset form
       setAccounts([{
+        accountCode: '',
         username: '',
-        name: '',
         password: '',
-        steamGuard: ''
+        steamGuard: '',
+        status: 'AVAILABLE'
       }]);
       setCommonFields({
+        name: '',
+        description: '',
+        imageUrl: '',
         accountType: 'MULTI_GAMES',
-        status: 'AVAILABLE',
         price: '',
         originalPrice: '',
         discountPercentage: '',
-        imageUrl: '',
         stockQuantity: 1,
-        description: '',
         gameIds: []
       });
       setSelectedFile(null);
@@ -456,9 +491,22 @@ const MultiSteamAccountForm = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Common Fields */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Thông tin chung (áp dụng cho tất cả tài khoản)</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Thông tin chung</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Tên sản phẩm *</label>
+                <Input
+                  value={commonFields.name}
+                  onChange={(e) => setCommonFields({...commonFields, name: e.target.value})}
+                  required
+                  className={validationErrors.name ? 'border-red-500 focus:border-red-500' : ''}
+                />
+                {validationErrors.name && (
+                  <div className="text-xs text-red-600 mt-1">{validationErrors.name}</div>
+                )}
+              </div>
+              
               <div>
                 <label className="text-sm font-medium">Loại Tài khoản *</label>
                 <select
@@ -469,20 +517,6 @@ const MultiSteamAccountForm = () => {
                 >
                   {accountTypes.map(type => (
                     <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium">Trạng thái Tài khoản *</label>
-                <select
-                  className={`w-full border rounded h-10 px-3 ${validationErrors.status ? 'border-red-500' : ''}`}
-                  value={commonFields.status}
-                  onChange={(e) => setCommonFields({...commonFields, status: e.target.value})}
-                  required
-                >
-                  {accountStatuses.map(status => (
-                    <option key={status} value={status}>{status}</option>
                   ))}
                 </select>
               </div>
@@ -529,13 +563,16 @@ const MultiSteamAccountForm = () => {
                   type="number"
                   min="0"
                   value={commonFields.stockQuantity}
-                  onChange={(e) => setCommonFields({...commonFields, stockQuantity: e.target.value})}
+                  onChange={(e) => handleStockQuantityChange(e.target.value)}
                   required
                   className={validationErrors.stockQuantity ? 'border-red-500 focus:border-red-500' : ''}
                 />
                 {validationErrors.stockQuantity && (
                   <div className="text-xs text-red-600 mt-1">{validationErrors.stockQuantity}</div>
                 )}
+                <div className="text-xs text-gray-500 mt-1">
+                  Số lượng này sẽ tự động tạo ra các tài khoản tương ứng
+                </div>
               </div>
             </div>
             
@@ -597,9 +634,6 @@ const MultiSteamAccountForm = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold text-gray-900">Thông tin riêng từng tài khoản</h3>
-              <Button type="button" onClick={addAccount} variant="outline">
-                + Thêm tài khoản
-              </Button>
             </div>
             
             {accounts.map((account, index) => (
@@ -620,15 +654,15 @@ const MultiSteamAccountForm = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium">Tên Tài khoản *</label>
+                    <label className="text-sm font-medium">Mã sản phẩm *</label>
                     <Input
-                      value={account.name}
-                      onChange={(e) => updateAccount(index, 'name', e.target.value)}
+                      value={account.accountCode}
+                      onChange={(e) => updateAccount(index, 'accountCode', e.target.value)}
                       required
-                      className={validationErrors[`account_${index}_name`] ? 'border-red-500 focus:border-red-500' : ''}
+                      className={validationErrors[`account_${index}_accountCode`] ? 'border-red-500 focus:border-red-500' : ''}
                     />
-                    {validationErrors[`account_${index}_name`] && (
-                      <div className="text-xs text-red-600 mt-1">{validationErrors[`account_${index}_name`]}</div>
+                    {validationErrors[`account_${index}_accountCode`] && (
+                      <div className="text-xs text-red-600 mt-1">{validationErrors[`account_${index}_accountCode`]}</div>
                     )}
                   </div>
                   
@@ -667,6 +701,20 @@ const MultiSteamAccountForm = () => {
                       onChange={(e) => updateAccount(index, 'steamGuard', e.target.value)}
                     />
                   </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium">Trạng thái Tài khoản *</label>
+                    <select
+                      className="w-full border rounded h-10 px-3"
+                      value={account.status}
+                      onChange={(e) => updateAccount(index, 'status', e.target.value)}
+                      required
+                    >
+                      {accountStatuses.map(status => (
+                        <option key={status} value={status}>{status}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </Card>
             ))}
@@ -674,7 +722,7 @@ const MultiSteamAccountForm = () => {
 
           <div className="flex gap-2">
             <Button type="submit" disabled={submitting || uploadingImage}>
-              {submitting ? 'Đang tạo...' : `Tạo ${accounts.length} tài khoản`}
+              {submitting ? 'Đang tạo...' : `Tạo sản phẩm với ${accounts.length} tài khoản`}
             </Button>
             <Button type="button" variant="outline" onClick={() => window.location.reload()}>
               Hủy

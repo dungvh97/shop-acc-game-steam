@@ -1,60 +1,53 @@
 package com.shopaccgame.dto;
 
 import com.shopaccgame.entity.SteamAccount;
-import com.shopaccgame.entity.enums.AccountType;
 import com.shopaccgame.entity.enums.AccountStatus;
-import com.shopaccgame.entity.Game;
+import com.shopaccgame.entity.enums.AccountType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class SteamAccountDto {
     
     private Long id;
-    private String name; // Display name instead of username
+    private Long accountInfoId;
+    private String accountCode;
+    private String username;
     private String steamGuard;
-    private AccountType accountType;
     private AccountStatus status;
-    private BigDecimal price;
-    private BigDecimal originalPrice;
-    private Integer discountPercentage;
-    private String imageUrl;
-    private Integer stockQuantity;
-    private String description;
-    private LocalDateTime createdAt;
+    private LocalDateTime verifyDate;
     private LocalDateTime updatedAt;
-    private Set<Long> gameIds;
-    private Set<GameDto> games;
+    
+    // AccountInfo fields
+    private String name;
+    private String description;
+    private String imageUrl;
+    private AccountType accountType;
+    private BigDecimal price;
+    private Integer discountPercentage;
+    private BigDecimal originalPrice;
     
     // Constructors
     public SteamAccountDto() {}
     
     public SteamAccountDto(SteamAccount steamAccount) {
         this.id = steamAccount.getId();
-        this.name = steamAccount.getName(); // Use name instead of username
+        this.accountInfoId = steamAccount.getAccountInfo().getId();
+        this.accountCode = steamAccount.getAccountCode();
+        this.username = steamAccount.getUsername();
         this.steamGuard = steamAccount.getSteamGuard();
-        this.accountType = steamAccount.getAccountType();
         this.status = steamAccount.getStatus();
-        this.price = steamAccount.getPrice();
-        this.originalPrice = steamAccount.getOriginalPrice();
-        this.discountPercentage = steamAccount.getDiscountPercentage();
-        this.imageUrl = steamAccount.getImageUrl();
-        this.stockQuantity = steamAccount.getStockQuantity();
-        this.description = steamAccount.getDescription();
-        this.createdAt = steamAccount.getCreatedAt();
+        this.verifyDate = steamAccount.getVerifyDate();
         this.updatedAt = steamAccount.getUpdatedAt();
         
-        if (steamAccount.getGames() != null) {
-            this.gameIds = steamAccount.getGames().stream()
-                .map(Game::getId)
-                .collect(Collectors.toSet());
-            
-            this.games = steamAccount.getGames().stream()
-                .map(GameDto::new)
-                .collect(Collectors.toSet());
-        }
+        // Set AccountInfo fields
+        this.name = steamAccount.getAccountInfo().getName();
+        this.description = steamAccount.getAccountInfo().getDescription();
+        this.imageUrl = steamAccount.getAccountInfo().getImageUrl();
+        this.accountType = steamAccount.getAccountInfo().getAccountType();
+        this.price = steamAccount.getAccountInfo().getPrice();
+        this.discountPercentage = steamAccount.getAccountInfo().getDiscountPercentage();
+        this.originalPrice = steamAccount.getAccountInfo().getOriginalPrice();
     }
     
     // Getters and Setters
@@ -66,12 +59,28 @@ public class SteamAccountDto {
         this.id = id;
     }
     
-    public String getName() {
-        return name;
+    public Long getAccountInfoId() {
+        return accountInfoId;
     }
     
-    public void setName(String name) {
-        this.name = name;
+    public void setAccountInfoId(Long accountInfoId) {
+        this.accountInfoId = accountInfoId;
+    }
+    
+    public String getAccountCode() {
+        return accountCode;
+    }
+    
+    public void setAccountCode(String accountCode) {
+        this.accountCode = accountCode;
+    }
+    
+    public String getUsername() {
+        return username;
+    }
+    
+    public void setUsername(String username) {
+        this.username = username;
     }
     
     public String getSteamGuard() {
@@ -82,14 +91,6 @@ public class SteamAccountDto {
         this.steamGuard = steamGuard;
     }
     
-    public AccountType getAccountType() {
-        return accountType;
-    }
-    
-    public void setAccountType(AccountType accountType) {
-        this.accountType = accountType;
-    }
-    
     public AccountStatus getStatus() {
         return status;
     }
@@ -98,60 +99,12 @@ public class SteamAccountDto {
         this.status = status;
     }
     
-    public BigDecimal getPrice() {
-        return price;
+    public LocalDateTime getVerifyDate() {
+        return verifyDate;
     }
     
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-    
-    public BigDecimal getOriginalPrice() {
-        return originalPrice;
-    }
-    
-    public void setOriginalPrice(BigDecimal originalPrice) {
-        this.originalPrice = originalPrice;
-    }
-    
-    public Integer getDiscountPercentage() {
-        return discountPercentage;
-    }
-    
-    public void setDiscountPercentage(Integer discountPercentage) {
-        this.discountPercentage = discountPercentage;
-    }
-    
-    public String getImageUrl() {
-        return imageUrl;
-    }
-    
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-    
-    public Integer getStockQuantity() {
-        return stockQuantity;
-    }
-    
-    public void setStockQuantity(Integer stockQuantity) {
-        this.stockQuantity = stockQuantity;
-    }
-    
-    public String getDescription() {
-        return description;
-    }
-    
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setVerifyDate(LocalDateTime verifyDate) {
+        this.verifyDate = verifyDate;
     }
     
     public LocalDateTime getUpdatedAt() {
@@ -162,19 +115,60 @@ public class SteamAccountDto {
         this.updatedAt = updatedAt;
     }
     
-    public Set<Long> getGameIds() {
-        return gameIds;
+    // AccountInfo field getters and setters
+    public String getName() {
+        return name;
     }
     
-    public void setGameIds(Set<Long> gameIds) {
-        this.gameIds = gameIds;
+    public void setName(String name) {
+        this.name = name;
     }
     
-    public Set<GameDto> getGames() {
-        return games;
+    public String getDescription() {
+        return description;
     }
     
-    public void setGames(Set<GameDto> games) {
-        this.games = games;
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    
+    public String getImageUrl() {
+        return imageUrl;
+    }
+    
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+    
+    public AccountType getAccountType() {
+        return accountType;
+    }
+    
+    public void setAccountType(AccountType accountType) {
+        this.accountType = accountType;
+    }
+    
+    public BigDecimal getPrice() {
+        return price;
+    }
+    
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+    
+    public Integer getDiscountPercentage() {
+        return discountPercentage;
+    }
+    
+    public void setDiscountPercentage(Integer discountPercentage) {
+        this.discountPercentage = discountPercentage;
+    }
+    
+    public BigDecimal getOriginalPrice() {
+        return originalPrice;
+    }
+    
+    public void setOriginalPrice(BigDecimal originalPrice) {
+        this.originalPrice = originalPrice;
     }
 }

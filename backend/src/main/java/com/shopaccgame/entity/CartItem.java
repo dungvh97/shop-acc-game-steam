@@ -19,8 +19,8 @@ public class CartItem {
     private User user;
     
     @ManyToOne
-    @JoinColumn(name = "steam_account_id", nullable = false)
-    private SteamAccount steamAccount;
+    @JoinColumn(name = "account_info_id", nullable = false)
+    private AccountInfo accountInfo;
     
     @NotNull
     @Positive
@@ -51,12 +51,12 @@ public class CartItem {
         this.user = user;
     }
     
-    public SteamAccount getSteamAccount() {
-        return steamAccount;
+    public AccountInfo getAccountInfo() {
+        return accountInfo;
     }
     
-    public void setSteamAccount(SteamAccount steamAccount) {
-        this.steamAccount = steamAccount;
+    public void setAccountInfo(AccountInfo accountInfo) {
+        this.accountInfo = accountInfo;
     }
     
     public Integer getQuantity() {

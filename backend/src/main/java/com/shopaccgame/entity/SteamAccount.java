@@ -1,13 +1,8 @@
 package com.shopaccgame.entity;
 
-import com.shopaccgame.entity.enums.AccountType;
 import com.shopaccgame.entity.enums.AccountStatus;
 import jakarta.persistence.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
-
 
 @Entity
 @Table(name = "steam_accounts")
@@ -17,11 +12,15 @@ public class SteamAccount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(nullable = false)
-    private String username;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_info_id", nullable = false)
+    private AccountInfo accountInfo;
+    
+    @Column(name = "account_code")
+    private String accountCode;
     
     @Column(nullable = false)
-    private String name;
+    private String username;
     
     @Column(nullable = false)
     private String password;
@@ -31,59 +30,23 @@ public class SteamAccount {
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private AccountType accountType;
-    
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private AccountStatus status;
     
-    @Column(precision = 10, scale = 2, nullable = false)
-    private BigDecimal price;
-    
-    @Column(name = "original_price", precision = 10, scale = 2)
-    private BigDecimal originalPrice;
-    
-    @Column(name = "discount_percentage")
-    private Integer discountPercentage;
-    
-    @Column(name = "image_url")
-    private String imageUrl;
-    
-    @Column(name = "stock_quantity", nullable = false)
-    private Integer stockQuantity = 0; // Default 0 accounts available
-    
-    @Column(columnDefinition = "TEXT")
-    private String description;
-    
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-    
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @Column(name = "verify_date")
     private LocalDateTime verifyDate;
     
-    // Many-to-Many relationship with Game
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-        name = "account_games",
-        joinColumns = @JoinColumn(name = "account_id"),
-        inverseJoinColumns = @JoinColumn(name = "game_id")
-    )
-    private Set<Game> games = new HashSet<>();
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
     
     // Constructors
     public SteamAccount() {}
     
-    public SteamAccount(String username, String name, String password, AccountType accountType, BigDecimal price) {
+    public SteamAccount(AccountInfo accountInfo, String accountCode, String username, String password) {
+        this.accountInfo = accountInfo;
+        this.accountCode = accountCode;
         this.username = username;
-        this.name = name;
         this.password = password; // Will be encrypted by service
-        this.accountType = accountType;
-        this.price = price;
         this.status = AccountStatus.AVAILABLE;
-        this.stockQuantity = 0;
     }
     
     // Getters and Setters
@@ -95,20 +58,28 @@ public class SteamAccount {
         this.id = id;
     }
     
+    public AccountInfo getAccountInfo() {
+        return accountInfo;
+    }
+    
+    public void setAccountInfo(AccountInfo accountInfo) {
+        this.accountInfo = accountInfo;
+    }
+    
+    public String getAccountCode() {
+        return accountCode;
+    }
+    
+    public void setAccountCode(String accountCode) {
+        this.accountCode = accountCode;
+    }
+    
     public String getUsername() {
         return username;
     }
     
     public void setUsername(String username) {
         this.username = username;
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
     }
     
     public String getPassword() {
@@ -133,14 +104,6 @@ public class SteamAccount {
         this.steamGuard = steamGuard;
     }
     
-    public AccountType getAccountType() {
-        return accountType;
-    }
-    
-    public void setAccountType(AccountType accountType) {
-        this.accountType = accountType;
-    }
-    
     public AccountStatus getStatus() {
         return status;
     }
@@ -149,70 +112,6 @@ public class SteamAccount {
         this.status = status;
     }
     
-    public BigDecimal getPrice() {
-        return price;
-    }
-    
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-    
-    public BigDecimal getOriginalPrice() {
-        return originalPrice;
-    }
-    
-    public void setOriginalPrice(BigDecimal originalPrice) {
-        this.originalPrice = originalPrice;
-    }
-    
-    public Integer getDiscountPercentage() {
-        return discountPercentage;
-    }
-    
-    public void setDiscountPercentage(Integer discountPercentage) {
-        this.discountPercentage = discountPercentage;
-    }
-    
-    public String getImageUrl() {
-        return imageUrl;
-    }
-    
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-    
-    public Integer getStockQuantity() {
-        return stockQuantity;
-    }
-    
-    public void setStockQuantity(Integer stockQuantity) {
-        this.stockQuantity = stockQuantity;
-    }
-    
-    public String getDescription() {
-        return description;
-    }
-    
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-    
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-    
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
     public LocalDateTime getVerifyDate() {
         return verifyDate;
     }
@@ -221,43 +120,12 @@ public class SteamAccount {
         this.verifyDate = verifyDate;
     }
     
-    public Set<Game> getGames() {
-        return games;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
     
-    public void setGames(Set<Game> games) {
-        this.games = games;
-    }
-    
-    // Helper methods
-    public void addGame(Game game) {
-        this.games.add(game);
-    }
-    
-    public void removeGame(Game game) {
-        this.games.remove(game);
-    }
-    
-    public void decrementStock() {
-        if (this.stockQuantity > 0) {
-            this.stockQuantity--;
-            if (this.stockQuantity == 0) {
-                this.status = AccountStatus.SOLD;
-            }
-        }
-    }
-    
-    public void incrementStock() {
-        this.stockQuantity++;
-        if (this.status == AccountStatus.SOLD && this.stockQuantity > 0) {
-            this.status = AccountStatus.AVAILABLE;
-        }
-    }
-    
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
     
     @PreUpdate

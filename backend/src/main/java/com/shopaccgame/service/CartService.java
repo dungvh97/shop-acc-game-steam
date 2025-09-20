@@ -3,11 +3,10 @@ package com.shopaccgame.service;
 import com.shopaccgame.dto.CartItemDto;
 import com.shopaccgame.dto.OrderResponseDto;
 import com.shopaccgame.entity.CartItem;
-import com.shopaccgame.entity.SteamAccount;
+import com.shopaccgame.entity.AccountInfo;
 import com.shopaccgame.entity.User;
-import com.shopaccgame.entity.enums.AccountStatus;
 import com.shopaccgame.repository.CartItemRepository;
-import com.shopaccgame.repository.SteamAccountRepository;
+import com.shopaccgame.repository.AccountInfoRepository;
 import com.shopaccgame.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,7 @@ public class CartService {
     private CartItemRepository cartItemRepository;
     
     @Autowired
-    private SteamAccountRepository steamAccountRepository;
+    private AccountInfoRepository accountInfoRepository;
     
     @Autowired
     private UserRepository userRepository;
@@ -37,21 +36,21 @@ public class CartService {
     private com.shopaccgame.service.UserBalanceService userBalanceService;
     
     @Transactional
-    public CartItemDto addToCart(String username, Long steamAccountId, Integer quantity) {
+    public CartItemDto addToCart(String username, Long accountInfoId, Integer quantity) {
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
         
-        SteamAccount steamAccount = steamAccountRepository.findById(steamAccountId)
-            .orElseThrow(() -> new RuntimeException("Steam account not found"));
+        AccountInfo accountInfo = accountInfoRepository.findById(accountInfoId)
+            .orElseThrow(() -> new RuntimeException("Account info not found"));
         
         // Check if item already exists in cart
-        CartItem existingItem = cartItemRepository.findByUserAndSteamAccountId(user, steamAccountId)
+        CartItem existingItem = cartItemRepository.findByUserAndAccountInfo(user, accountInfo)
             .orElse(null);
         
         if (existingItem != null) {
             // Update quantity
             existingItem.setQuantity(existingItem.getQuantity() + quantity);
-            existingItem.setUnitPrice(steamAccount.getPrice());
+            existingItem.setUnitPrice(accountInfo.getPrice());
             existingItem.setAddedAt(LocalDateTime.now());
             CartItem updatedItem = cartItemRepository.save(existingItem);
             return new CartItemDto(updatedItem);
@@ -59,9 +58,9 @@ public class CartService {
             // Create new cart item
             CartItem newItem = new CartItem();
             newItem.setUser(user);
-            newItem.setSteamAccount(steamAccount);
+            newItem.setAccountInfo(accountInfo);
             newItem.setQuantity(quantity);
-            newItem.setUnitPrice(steamAccount.getPrice());
+            newItem.setUnitPrice(accountInfo.getPrice());
             newItem.setAddedAt(LocalDateTime.now());
             
             CartItem savedItem = cartItemRepository.save(newItem);
@@ -80,19 +79,19 @@ public class CartService {
     }
     
     @Transactional
-    public void removeFromCart(String username, Long steamAccountId) {
+    public void removeFromCart(String username, Long accountInfoId) {
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
         
-        cartItemRepository.deleteByUserAndSteamAccountId(user, steamAccountId);
+        cartItemRepository.deleteByUserAndAccountInfoId(user, accountInfoId);
     }
     
     @Transactional
-    public void updateQuantity(String username, Long steamAccountId, Integer quantity) {
+    public void updateQuantity(String username, Long accountInfoId, Integer quantity) {
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
         
-        CartItem cartItem = cartItemRepository.findByUserAndSteamAccountId(user, steamAccountId)
+        CartItem cartItem = cartItemRepository.findByUserAndAccountInfoId(user, accountInfoId)
             .orElseThrow(() -> new RuntimeException("Cart item not found"));
         
         if (quantity <= 0) {
@@ -141,9 +140,9 @@ public class CartService {
         
         // Validate all items are still available
         for (CartItem item : cartItems) {
-            SteamAccount account = item.getSteamAccount();
-            if (account.getStatus() != AccountStatus.AVAILABLE || account.getStockQuantity() <= 0) {
-                throw new RuntimeException("Steam account '" + account.getName() + "' is no longer available");
+            AccountInfo accountInfo = item.getAccountInfo();
+            if (accountInfo.getAvailableStockCount() <= 0) {
+                throw new RuntimeException("Account info '" + accountInfo.getName() + "' is no longer available");
             }
         }
         
@@ -153,7 +152,7 @@ public class CartService {
             try {
                 // Create order request for this item
                 com.shopaccgame.dto.OrderRequestDto orderRequest = new com.shopaccgame.dto.OrderRequestDto();
-                orderRequest.setAccountId(item.getSteamAccount().getId());
+                orderRequest.setAccountInfoId(item.getAccountInfo().getId());
                 
                 // Create the order
                 OrderResponseDto order = orderService.createOrder(orderRequest, username);
@@ -161,7 +160,7 @@ public class CartService {
             } catch (Exception e) {
                 // If any order fails, rollback all orders
                 throw new RuntimeException("Failed to create order for account '" + 
-                    item.getSteamAccount().getName() + "': " + e.getMessage());
+                    item.getAccountInfo().getName() + "': " + e.getMessage());
             }
         }
         
@@ -187,9 +186,9 @@ public class CartService {
         
         // Validate all items are still available
         for (CartItem item : cartItems) {
-            SteamAccount account = item.getSteamAccount();
-            if (account.getStatus() != AccountStatus.AVAILABLE || account.getStockQuantity() <= 0) {
-                throw new RuntimeException("Steam account '" + account.getName() + "' is no longer available");
+            AccountInfo accountInfo = item.getAccountInfo();
+            if (accountInfo.getAvailableStockCount() <= 0) {
+                throw new RuntimeException("Account info '" + accountInfo.getName() + "' is no longer available");
             }
         }
         
@@ -207,7 +206,7 @@ public class CartService {
             try {
                 // Create order request for this item
                 com.shopaccgame.dto.OrderRequestDto orderRequest = new com.shopaccgame.dto.OrderRequestDto();
-                orderRequest.setAccountId(item.getSteamAccount().getId());
+                orderRequest.setAccountInfoId(item.getAccountInfo().getId());
                 
                 // Create and pay the order with balance
                 OrderResponseDto order = orderService.createAndPayWithBalance(orderRequest, username);
@@ -215,7 +214,7 @@ public class CartService {
             } catch (Exception e) {
                 // If any order fails, rollback all orders
                 throw new RuntimeException("Failed to create and pay order for account '" + 
-                    item.getSteamAccount().getName() + "': " + e.getMessage());
+                    item.getAccountInfo().getName() + "': " + e.getMessage());
             }
         }
         
