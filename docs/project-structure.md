@@ -53,11 +53,8 @@ JPA entities representing database tables:
 - **`User.java`** - User account information
 - **`SteamAccount.java`** - Steam account product details
 - **`Game.java`** - Game information and metadata
-- **`Order.java`** - Order records and status
-- **`OrderItem.java`** - Individual items within orders
 - **`CartItem.java`** - Shopping cart items
 - **`SteamAccountOrder.java`** - Steam account order processing
-- **`AccountSale.java`** - Account sale transactions
 - **`EmailVerification.java`** - Email verification tokens
 - **`WalletDeposit.java`** - Wallet deposit transactions
 - **`enums/`** - Enumeration types
@@ -67,10 +64,9 @@ JPA entities representing database tables:
 ### DTOs (`/dto/`)
 Data Transfer Objects for API request/response handling:
 
+- **`AdminOrderDto.java`** - Admin order management data
 - **`AuthRequest.java`** - Authentication request data
 - **`AuthResponse.java`** - Authentication response data
-- **`LoginRequest.java`** - Login credentials
-- **`RegisterRequest.java`** - User registration data
 - **`OAuthRequest.java`** - OAuth authentication request
 - **`SteamAccountDto.java`** - Steam account data transfer
 - **`SteamAccountRequestDto.java`** - Steam account creation/update request
@@ -82,6 +78,7 @@ Data Transfer Objects for API request/response handling:
 - **`GameRequestDto.java`** - Game creation/update request
 - **`GamePageResponseDto.java`** - Paginated game response
 - **`GameWithPriceDto.java`** - Game with pricing information
+- **`RevenueStatsDto.java`** - Revenue statistics data
 - **`UserDto.java`** - User data transfer
 - **`EmailVerificationRequest.java`** - Email verification request
 - **`SendVerificationRequest.java`** - Send verification email request
@@ -93,7 +90,6 @@ Spring Data JPA repositories for database operations:
 - **`UserRepository.java`** - User data access
 - **`SteamAccountRepository.java`** - Steam account data access
 - **`GameRepository.java`** - Game data access
-- **`OrderRepository.java`** - Order data access
 - **`CartItemRepository.java`** - Cart item data access
 - **`SteamAccountOrderRepository.java`** - Steam account order data access
 - **`EmailVerificationRepository.java`** - Email verification token data access
@@ -102,15 +98,12 @@ Spring Data JPA repositories for database operations:
 ### Services (`/service/`)
 Business logic layer:
 
+- **`AdminService.java`** - Admin operations and system management
 - **`AuthService.java`** - Authentication and authorization logic
-- **`UserService.java`** - User management business logic
 - **`SteamAccountService.java`** - Steam account business logic
 - **`SteamAccountOrderService.java`** - Steam account order processing
 - **`SteamCheckerService.java`** - Steam account validation service
-- **`OrderService.java`** - Order processing logic
-- **`PaymentService.java`** - Payment processing logic
 - **`EmailService.java`** - Email notification service
-- **`FileService.java`** - File upload and management
 - **`GameService.java`** - Game management business logic
 - **`GameImportService.java`** - Bulk game import functionality
 - **`CartService.java`** - Shopping cart business logic
@@ -175,12 +168,15 @@ Main application views:
 Reusable UI components:
 
 - **`Navbar.jsx`** - Main navigation bar
-- **`MobileNav.jsx`** - Mobile navigation menup
+- **`MobileNav.jsx`** - Mobile navigation menu
 - **`Footer.jsx`** - Application footer
 - **`Breadcrumbs.jsx`** - Navigation breadcrumbs
 - **`GameSlideshow.jsx`** - Game image slideshow
 - **`SteamAccountManager.jsx`** - Steam account management interface
+- **`MultiSteamAccountForm.jsx`** - Multi-account form component
 - **`PaymentDialog.jsx`** - Payment processing dialog
+- **`PaymentConfirmationDialog.jsx`** - Payment confirmation dialog
+- **`DepositDialog.jsx`** - Wallet deposit dialog
 - **`AccountCredentialsModal.jsx`** - Account credentials display modal
 
 ### UI Components (`/components/ui/`)
@@ -306,11 +302,8 @@ A standalone Node.js microservice for validating Steam account credentials using
 - **`users`** - User accounts and authentication
 - **`steam_accounts`** - Steam account products
 - **`games`** - Game information and metadata
-- **`orders`** - Order records and status
-- **`order_items`** - Individual items within orders
 - **`steam_account_orders`** - Steam account order processing
 - **`cart_items`** - Shopping cart items
-- **`account_sales`** - Account sale transactions
 - **`email_verifications`** - Email verification tokens
 - **`wallet_deposits`** - Wallet deposit transactions
 
