@@ -428,7 +428,7 @@ const Admin = () => {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          Xử lý đơn hàng order
+          Quản lý đơn hàng
         </button>
         <button
           onClick={() => setActiveTab('steam-accounts')}
@@ -664,12 +664,10 @@ const Admin = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ALL">Tất cả</SelectItem>
-                  <SelectItem value="PRE_ORDER">Chờ xử lý (PRE_ORDER)</SelectItem>
-                  <SelectItem value="ORDERED">Đã đặt hàng (ORDERED)</SelectItem>
-                  <SelectItem value="PENDING">Chờ thanh toán (PENDING)</SelectItem>
-                  <SelectItem value="PAID">Đã thanh toán (PAID)</SelectItem>
-                  <SelectItem value="DELIVERED">Đã giao (DELIVERED)</SelectItem>
-                  <SelectItem value="CANCELLED">Đã hủy (CANCELLED)</SelectItem>
+                  <SelectItem value="PRE_ORDER">Chưa ai mua</SelectItem>
+                  <SelectItem value="ORDERED">Chờ xử lý</SelectItem>
+                  <SelectItem value="DELIVERED">Đã hoàn thành</SelectItem>
+                  <SelectItem value="CANCELLED">Đã Huỷ</SelectItem>
                 </SelectContent>
               </Select>
               <Button onClick={fetchOrders} className="bg-blue-600 hover:bg-blue-700">

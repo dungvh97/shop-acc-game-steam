@@ -291,23 +291,19 @@ const SteamAccountDetail = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-red-500 mt-1">•</span>
-                  <span>Chỉ cần đăng nhập và chơi (không chạy file)</span>
+                  <span>Tài khoản Steam sang thẳng tay</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-red-500 mt-1">•</span>
-                  <span>Khi chơi cần chuyển Steam sang Offline Mode</span>
+                  <span>Đổi được email và mật khẩu</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-red-500 mt-1">•</span>
-                  <span>Lưu save game riêng trên máy tính của bạn</span>
+                  <span>Game bản quyền update đầy đủ</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-red-500 mt-1">•</span>
-                  <span>Có quyền sử dụng tài khoản game vĩnh viễn</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-red-500 mt-1">•</span>
-                  <span>Chỉ sử dụng chứ không đổi email, mật khẩu</span>
+                  <span>Không cần chuyển Steam sang chế độ Offline</span>
                 </li>
               </ul>
             </div>
