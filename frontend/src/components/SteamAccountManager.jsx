@@ -511,7 +511,7 @@ const SteamAccountManager = () => {
     setFormData({
       username: account.username,
       name: account.name || '',
-      password: '', // Don't show password
+      password: account.password || '',
       steamGuard: account.steamGuard || '',
       accountType: account.accountType,
       status: account.status || 'AVAILABLE',
@@ -641,7 +641,7 @@ const SteamAccountManager = () => {
                 <div>
                   <label className="text-sm font-medium">Mật khẩu *</label>
                   <Input
-                    type="password"
+                    type={editingAccount ? 'text' : 'password'}
                     value={formData.password}
                     onChange={(e) => {
                       setFormData({...formData, password: e.target.value});

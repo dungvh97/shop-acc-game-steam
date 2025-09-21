@@ -286,7 +286,7 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
       id: sa.id,
       accountCode: sa.accountCode || (sa.itemCode?.startsWith('SA-') ? '' : (sa.itemCode || '')), // prefer raw accountCode
       username: sa.username || '',
-      password: '', // keep empty; only set if admin wants to change
+      password: sa.password || '',
       steamGuard: sa.steamGuard || '',
       status: sa.status || 'AVAILABLE'
     }));

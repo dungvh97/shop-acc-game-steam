@@ -103,12 +103,19 @@ public class SteamAccountServiceNew {
         dto.setAccountInfoId(steamAccount.getAccountInfo().getId());
         dto.setAccountCode(steamAccount.getAccountCode());
         dto.setUsername(steamAccount.getUsername());
-        try {
-            String decryptedPassword = encryptionService.decryptPassword(steamAccount.getPassword());
-            dto.setPassword(decryptedPassword);
-        } catch (Exception e) {
-            logger.error("Error decrypting password for SteamAccount id {}: {}", steamAccount.getId(), e.getMessage());
-            dto.setPassword("[Error: Unable to decrypt password]");
+        String storedPassword = steamAccount.getPassword();
+        if (storedPassword == null || storedPassword.trim().isEmpty()) {
+            dto.setPassword("");
+        } else {
+            try {
+                // Attempt to decrypt. If it fails, assume it was already plaintext.
+                String decryptedPassword = encryptionService.decryptPassword(storedPassword);
+                dto.setPassword(decryptedPassword);
+            } catch (Exception e) {
+                // Downgrade to info to avoid noisy logs when legacy plaintext passwords exist
+                logger.info("Password for SteamAccount id {} appears to be plaintext or uses a different scheme. Using stored value.", steamAccount.getId());
+                dto.setPassword(storedPassword);
+            }
         }
         dto.setSteamGuard(steamAccount.getSteamGuard());
         dto.setStatus(steamAccount.getStatus());
@@ -169,7 +176,10 @@ public class SteamAccountServiceNew {
         steamAccount.setAccountInfo(accountInfo);
         steamAccount.setAccountCode(requestDto.getAccountCode());
         steamAccount.setUsername(requestDto.getUsername());
-        steamAccount.setPassword(encryptionService.encryptPassword(requestDto.getPassword()));
+        // Only update password if a new non-empty password is provided; otherwise keep existing
+        if (requestDto.getPassword() != null && !requestDto.getPassword().trim().isEmpty()) {
+            steamAccount.setPassword(encryptionService.encryptPassword(requestDto.getPassword()));
+        }
         steamAccount.setSteamGuard(requestDto.getSteamGuard());
         steamAccount.setStatus(requestDto.getStatus() != null ? requestDto.getStatus() : AccountStatus.AVAILABLE);
         
