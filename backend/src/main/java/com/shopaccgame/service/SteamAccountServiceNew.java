@@ -49,7 +49,8 @@ public class SteamAccountServiceNew {
     }
     
     public List<SteamAccountDto> getSteamAccountsByType(String accountType, Pageable pageable) {
-        List<SteamAccount> accounts = steamAccountRepository.findAvailableAccountsByType(accountType);
+        com.shopaccgame.entity.enums.AccountType accountTypeEnum = com.shopaccgame.entity.enums.AccountType.valueOf(accountType);
+        List<SteamAccount> accounts = steamAccountRepository.findAvailableAccountsByType(accountTypeEnum);
         return accounts.stream()
             .map(SteamAccountDto::new)
             .collect(Collectors.toList());
@@ -79,7 +80,8 @@ public class SteamAccountServiceNew {
     }
     
     public List<SteamAccountAdminDto> getSteamAccountsByTypeForAdmin(String accountType, Pageable pageable) {
-        List<SteamAccount> accounts = steamAccountRepository.findAvailableAccountsByType(accountType);
+        com.shopaccgame.entity.enums.AccountType accountTypeEnum = com.shopaccgame.entity.enums.AccountType.valueOf(accountType);
+        List<SteamAccount> accounts = steamAccountRepository.findAvailableAccountsByType(accountTypeEnum);
         return accounts.stream()
             .map(this::createAdminDtoWithDecryptedPassword)
             .collect(Collectors.toList());
@@ -170,7 +172,8 @@ public class SteamAccountServiceNew {
     }
     
     public List<SteamAccountDto> getAvailableSteamAccountsByType(String accountType) {
-        List<SteamAccount> accounts = steamAccountRepository.findAvailableAccountsByType(accountType);
+        com.shopaccgame.entity.enums.AccountType accountTypeEnum = com.shopaccgame.entity.enums.AccountType.valueOf(accountType);
+        List<SteamAccount> accounts = steamAccountRepository.findAvailableAccountsByType(accountTypeEnum);
         return accounts.stream()
             .map(SteamAccountDto::new)
             .collect(Collectors.toList());
@@ -184,7 +187,8 @@ public class SteamAccountServiceNew {
     }
     
     public long countAvailableByType(String accountType) {
-        return steamAccountRepository.countAvailableByType(accountType);
+        com.shopaccgame.entity.enums.AccountType accountTypeEnum = com.shopaccgame.entity.enums.AccountType.valueOf(accountType);
+        return steamAccountRepository.countAvailableByType(accountTypeEnum);
     }
     
     public List<SteamAccountDto> getAvailableAccountsByGameName(String gameName) {

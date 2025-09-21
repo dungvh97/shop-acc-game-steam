@@ -209,31 +209,29 @@ const SteamAccountDetail = () => {
         {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-8"> */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
-          {/* Left Column - Game Image */}
+          {/* Left Column - Account Image */}
           <div className="lg:col-span-7 space-y-4">
-            {account.games && account.games.length > 0 && (
-              <div className="relative">
-                <img 
-                  src={BACKEND_CONFIG.getImageUrl(account.imageUrl)} 
-                  alt={account.name} 
-                  className="w-full h-96 object-cover rounded-lg shadow-lg"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
-                <div className="w-full h-96 bg-gray-300 rounded-lg shadow-lg flex items-center justify-center" style={{ display: account.imageUrl ? 'none' : 'flex' }}>
-                  <svg className="w-24 h-24 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                {account.games[0].name && (
-                  <div className="absolute top-4 right-4 bg-white bg-opacity-90 px-3 py-1 rounded text-sm font-semibold text-gray-800">
-                    {account.games[0].name.toUpperCase()}
-                  </div>
-                )}
+            <div className="relative">
+              <img 
+                src={BACKEND_CONFIG.getImageUrl(account.imageUrl)} 
+                alt={account.name} 
+                className="w-full h-96 object-cover rounded-lg shadow-lg"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+              <div className="w-full h-96 bg-gray-300 rounded-lg shadow-lg flex items-center justify-center" style={{ display: account.imageUrl ? 'none' : 'flex' }}>
+                <svg className="w-24 h-24 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                </svg>
               </div>
-            )}
+              {account.games && account.games.length > 0 && account.games[0].name && (
+                <div className="absolute top-4 right-4 bg-white bg-opacity-90 px-3 py-1 rounded text-sm font-semibold text-gray-800">
+                  {account.games[0].name.toUpperCase()}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Right Column - Product Details */}

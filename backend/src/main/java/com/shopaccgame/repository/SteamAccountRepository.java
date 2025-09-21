@@ -30,13 +30,13 @@ public interface SteamAccountRepository extends JpaRepository<SteamAccount, Long
     List<SteamAccount> findAvailableAccounts();
     
     @Query("SELECT sa FROM SteamAccount sa JOIN FETCH sa.accountInfo ai WHERE ai.accountType = :accountType AND (sa.status = 'AVAILABLE' OR sa.status = 'PRE_ORDER')")
-    List<SteamAccount> findAvailableAccountsByType(@Param("accountType") String accountType);
+    List<SteamAccount> findAvailableAccountsByType(@Param("accountType") com.shopaccgame.entity.enums.AccountType accountType);
     
     @Query("SELECT sa FROM SteamAccount sa JOIN FETCH sa.accountInfo WHERE sa.username LIKE %:searchTerm%")
     Page<SteamAccount> findBySearchTerm(@Param("searchTerm") String searchTerm, Pageable pageable);
     
     @Query("SELECT COUNT(sa) FROM SteamAccount sa JOIN sa.accountInfo ai WHERE ai.accountType = :accountType AND (sa.status = 'AVAILABLE' OR sa.status = 'PRE_ORDER')")
-    long countAvailableByType(@Param("accountType") String accountType);
+    long countAvailableByType(@Param("accountType") com.shopaccgame.entity.enums.AccountType accountType);
     
     @Query("SELECT DISTINCT sa FROM SteamAccount sa JOIN FETCH sa.accountInfo ai JOIN ai.games g WHERE g.name LIKE %:gameName% AND (sa.status = 'AVAILABLE' OR sa.status = 'PRE_ORDER')")
     List<SteamAccount> findAvailableAccountsByGameName(@Param("gameName") String gameName);

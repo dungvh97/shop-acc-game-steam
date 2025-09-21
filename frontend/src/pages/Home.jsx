@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
-import { Star, TrendingUp, Gamepad2, User, Package } from 'lucide-react';
 import { getAvailableSteamAccounts } from '../lib/api.js';
 import { BACKEND_CONFIG } from '../lib/config';
 import GameSlideshow from '../components/GameSlideshow';

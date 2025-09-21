@@ -26,11 +26,6 @@ public class GameController {
     @Autowired
     private GameService gameService;
     
-    @GetMapping("/test")
-    public ResponseEntity<String> test() {
-        return ResponseEntity.ok("GameController is working!");
-    }
-    
     @GetMapping("/")
     public ResponseEntity<GamePageResponseDto> getAllGames(
             @RequestParam(defaultValue = "0") int page,
