@@ -6,7 +6,10 @@ import { useToast } from '../hooks/use-toast';
 import {
   createSteamAccount,
   getGameNames,
-  uploadImage
+  uploadImage,
+  getAccountInfoById,
+  updateAccountInfo,
+  updateSteamAccount
 } from '../lib/api';
 import { BACKEND_CONFIG } from '../lib/config';
 
@@ -189,7 +192,7 @@ const GameSelector = ({
   );
 };
 
-const MultiSteamAccountForm = () => {
+const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountInfoData = null }) => {
   const { toast } = useToast();
   
   // Form state
@@ -227,6 +230,7 @@ const MultiSteamAccountForm = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [savingEdits, setSavingEdits] = useState(false);
 
   const accountTypes = [
     'MULTI_GAMES',
@@ -247,6 +251,51 @@ const MultiSteamAccountForm = () => {
     loadGames();
   }, []);
 
+  // If editing an existing AccountInfo, fetch and prefill common fields
+  useEffect(() => {
+    const loadAccountInfo = async () => {
+      if (!selectedAccountInfoId) return;
+      try {
+        const info = await getAccountInfoById(selectedAccountInfoId);
+        if (info) {
+          setCommonFields((prev) => ({
+            ...prev,
+            name: info.name || prev.name,
+            description: info.description || prev.description,
+            imageUrl: info.imageUrl || prev.imageUrl,
+            accountType: info.accountType || prev.accountType,
+            price: info.price ?? prev.price,
+            originalPrice: info.originalPrice ?? prev.originalPrice,
+            discountPercentage: typeof info.discountPercentage === 'number' ? info.discountPercentage : prev.discountPercentage,
+            // Not overriding stockQuantity here since editing existing stock may be a separate flow
+            gameIds: Array.isArray(info.gameIds) ? info.gameIds : prev.gameIds,
+          }));
+        }
+      } catch (e) {
+        console.error('Failed to load AccountInfo for edit:', e);
+        toast({ title: 'Không thể tải sản phẩm', description: e.message || 'Vui lòng thử lại', variant: 'destructive' });
+      }
+    };
+    loadAccountInfo();
+  }, [selectedAccountInfoId]);
+
+  // Prefill accounts list from the provided selectedAccountInfoData (steamAccounts)
+  useEffect(() => {
+    if (!selectedAccountInfoData || !Array.isArray(selectedAccountInfoData.steamAccounts)) return;
+    const mapped = selectedAccountInfoData.steamAccounts.map(sa => ({
+      id: sa.id,
+      accountCode: sa.accountCode || (sa.itemCode?.startsWith('SA-') ? '' : (sa.itemCode || '')), // prefer raw accountCode
+      username: sa.username || '',
+      password: '', // keep empty; only set if admin wants to change
+      steamGuard: sa.steamGuard || '',
+      status: sa.status || 'AVAILABLE'
+    }));
+    if (mapped.length > 0) {
+      setAccounts(mapped);
+      setCommonFields(prev => ({ ...prev, stockQuantity: mapped.length }));
+    }
+  }, [selectedAccountInfoData]);
+
   const loadGames = async () => {
     setGamesLoading(true);
     try {
@@ -258,6 +307,68 @@ const MultiSteamAccountForm = () => {
       setGames([]);
     } finally {
       setGamesLoading(false);
+    }
+  };
+
+  // Save edits for existing AccountInfo and its Steam accounts
+  const handleSaveEdits = async () => {
+    if (!selectedAccountInfoId) {
+      toast({ title: 'Không có sản phẩm để chỉnh sửa', variant: 'destructive' });
+      return;
+    }
+    // Basic validation similar to create flow (allow empty password for existing accounts)
+    const hasName = commonFields.name && commonFields.name.trim();
+    const hasGames = Array.isArray(commonFields.gameIds) && commonFields.gameIds.length > 0;
+    const hasPrice = commonFields.price && Number(commonFields.price) > 0;
+    if (!hasName || !hasGames || !hasPrice) {
+      toast({ title: 'Thiếu thông tin', description: 'Vui lòng kiểm tra Tên sản phẩm, Giá và Game', variant: 'destructive' });
+      return;
+    }
+    setSavingEdits(true);
+    try {
+      // 1) Update AccountInfo
+      await updateAccountInfo(selectedAccountInfoId, {
+        name: commonFields.name,
+        description: commonFields.description,
+        imageUrl: commonFields.imageUrl,
+        accountType: commonFields.accountType,
+        price: commonFields.price,
+        originalPrice: commonFields.originalPrice || null,
+        discountPercentage: commonFields.discountPercentage ? Number(commonFields.discountPercentage) : 0,
+        stockQuantity: Number(commonFields.stockQuantity || 0),
+        gameIds: commonFields.gameIds
+      });
+
+      // 2) Update each Steam Account
+      for (const acc of accounts) {
+        if (!acc.id) continue; // skip accounts without id (creation not handled here)
+        const payload = {
+          // common fields applied to each account
+          accountType: commonFields.accountType,
+          status: acc.status || 'AVAILABLE',
+          price: commonFields.price,
+          originalPrice: commonFields.originalPrice || null,
+          discountPercentage: commonFields.discountPercentage ? Number(commonFields.discountPercentage) : 0,
+          imageUrl: commonFields.imageUrl,
+          stockQuantity: Number(commonFields.stockQuantity || 0),
+          description: commonFields.description,
+          gameIds: commonFields.gameIds,
+          // account-specific fields
+          accountCode: acc.accountCode,
+          username: acc.username,
+          steamGuard: acc.steamGuard,
+        };
+        if (acc.password && acc.password.trim()) {
+          payload.password = acc.password;
+        }
+        await updateSteamAccount(acc.id, payload);
+      }
+
+      toast({ title: 'Đã lưu chỉnh sửa' });
+    } catch (error) {
+      toast({ title: 'Lưu chỉnh sửa thất bại', description: error.message || 'Không thể lưu chỉnh sửa', variant: 'destructive' });
+    } finally {
+      setSavingEdits(false);
     }
   };
 
@@ -391,9 +502,15 @@ const MultiSteamAccountForm = () => {
       if (!account.username.trim()) {
         errors[`account_${index}_username`] = 'Tên đăng nhập không được để trống';
       }
-      if (!account.password.trim()) {
-        errors[`account_${index}_password`] = 'Mật khẩu không được để trống';
-      } else if (account.password.length < 6) {
+      const isNewAccount = !selectedAccountInfoId || !account.id;
+      if (isNewAccount) {
+        if (!account.password.trim()) {
+          errors[`account_${index}_password`] = 'Mật khẩu không được để trống';
+        } else if (account.password.length < 6) {
+          errors[`account_${index}_password`] = 'Mật khẩu phải có ít nhất 6 ký tự';
+        }
+      } else if (account.password && account.password.trim() && account.password.length < 6) {
+        // In edit mode, password is optional, but if provided must meet length criteria
         errors[`account_${index}_password`] = 'Mật khẩu phải có ít nhất 6 ký tự';
       }
     });
@@ -490,6 +607,11 @@ const MultiSteamAccountForm = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {selectedAccountInfoId && (
+          <div className="mb-4 p-3 rounded border bg-purple-50 text-purple-900 text-sm">
+            Đang chỉnh sửa sản phẩm AccountInfo #{selectedAccountInfoId}. Các trường thông tin chung đã được điền trước. Bạn có thể cập nhật thêm tài khoản Steam cho sản phẩm này.
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Common Fields */}
           <div className="space-y-4">
@@ -682,12 +804,12 @@ const MultiSteamAccountForm = () => {
                   </div>
                   
                   <div>
-                    <label className="text-sm font-medium">Mật khẩu *</label>
+                    <label className="text-sm font-medium">Mật khẩu {(!selectedAccountInfoId || !account.id) ? '*' : ''}</label>
                     <Input
                       type="text"
                       value={account.password}
                       onChange={(e) => updateAccount(index, 'password', e.target.value)}
-                      required
+                      required={!selectedAccountInfoId || !account.id}
                       className={validationErrors[`account_${index}_password`] ? 'border-red-500 focus:border-red-500' : ''}
                     />
                     {validationErrors[`account_${index}_password`] && (
@@ -726,6 +848,11 @@ const MultiSteamAccountForm = () => {
             <Button type="submit" disabled={submitting || uploadingImage}>
               {submitting ? 'Đang tạo...' : `Tạo sản phẩm với ${accounts.length} tài khoản`}
             </Button>
+            {selectedAccountInfoId && (
+              <Button type="button" variant="outline" onClick={handleSaveEdits} disabled={savingEdits}>
+                {savingEdits ? 'Đang lưu...' : 'Lưu chỉnh sửa'}
+              </Button>
+            )}
             <Button type="button" variant="outline" onClick={() => window.location.reload()}>
               Hủy
             </Button>

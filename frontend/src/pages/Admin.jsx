@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { useAuth } from '../contexts/AuthContext';
-import { createGame, uploadImage, getAllUserOrders, getSteamAccountsAdmin, getGames, markOrderAsDelivered, cancelOrder, getOrderByOrderId, getAllOrdersAdmin, getOrdersByStatusAdmin, getOrderByIdAdmin, markOrderAsDeliveredAdmin, cancelOrderAdmin, getRevenueStats, getMonthlyRevenue, getSteamImportStatus, startSteamImport } from '../lib/api';
+import { createGame, uploadImage, getAllUserOrders, getSteamAccountsAdmin, getGames, markOrderAsDelivered, cancelOrder, getOrderByOrderId, getAllOrdersAdmin, getOrdersByStatusAdmin, getOrderByIdAdmin, markOrderAsDeliveredAdmin, cancelOrderAdmin, getRevenueStats, getMonthlyRevenue, getSteamImportStatus, startSteamImport, getAccountInfosPage, deleteAccountInfo, deleteSteamAccount } from '../lib/api';
 import { useToast } from '../hooks/use-toast';
 import SteamAccountManager from '../components/SteamAccountManager';
 import MultiSteamAccountForm from '../components/MultiSteamAccountForm';
@@ -50,7 +50,8 @@ const Admin = () => {
   const [processingOrder, setProcessingOrder] = useState(false);
 
   // Inventory management tab state
-  const [inventoryData, setInventoryData] = useState([]);
+  // inventoryGroups: [{ info: {...}, steamAccounts: [{...}, ...] }]
+  const [inventoryGroups, setInventoryGroups] = useState([]);
   const [loadingInventory, setLoadingInventory] = useState(false);
   const [inventoryFilters, setInventoryFilters] = useState({
     title: '',
@@ -58,6 +59,9 @@ const Admin = () => {
     status: 'all',
     sortBy: 'newest'
   });
+  const [selectedAccountInfoId, setSelectedAccountInfoId] = useState(null);
+  const [selectedAccountInfoData, setSelectedAccountInfoData] = useState(null); // { info, steamAccounts }
+  const [steamDialog, setSteamDialog] = useState({ open: false, group: null });
 
   // Steam import state
   const [steamImportStatus, setSteamImportStatus] = useState({
@@ -124,52 +128,72 @@ const Admin = () => {
   const fetchInventoryData = async () => {
     setLoadingInventory(true);
     try {
-      const [steamAccountsResponse, gamesResponse] = await Promise.all([
-        getSteamAccountsAdmin(0, 1000), // Get all accounts with large page size
-        getGames({ page: 0, size: 1000 }) // Get all games with large page size
+      const [steamAccountsResponse, gamesResponse, accountInfosPage] = await Promise.all([
+        getSteamAccountsAdmin(0, 1000), // Get all steam accounts with large page size
+        getGames({ page: 0, size: 1000 }), // Get all games with large page size
+        getAccountInfosPage(0, 1000) // Get account info page for inventory
       ]);
       
       // Extract the actual array from paginated response
       const steamAccounts = steamAccountsResponse.content || steamAccountsResponse || [];
       const games = gamesResponse.content || gamesResponse || [];
+      const accountInfos = accountInfosPage.content || accountInfosPage || [];
       
       // Ensure both are arrays
       const steamAccountsArray = Array.isArray(steamAccounts) ? steamAccounts : [];
       const gamesArray = Array.isArray(games) ? games : [];
+      const accountInfosArray = Array.isArray(accountInfos) ? accountInfos : [];
       
-      // Combine steam accounts and games into inventory data
-      const inventory = [
-        ...steamAccountsArray.map(account => ({
-          id: account.id,
-          type: 'steam_account',
-          itemCode: account.accountCode ? account.accountCode : `SA-${account.id}`,
-          productName: `Tài khoản Steam - ${account.name ?? ''}`.trim(),
-          salePrice: account.price ?? 0,
-          inventoryDate: account.updatedAt || account.verifyDate || null,
-          inventoryQuantity: 1,
-          status: account.status,
-          gameName: Array.isArray(account.gameIds) && account.gameIds.length > 0
-            ? account.gameIds
-                .map(gid => (Array.isArray(gamesArray) ? gamesArray.find(g => g.id === gid) : null))
+      // Map helper for gameId -> name
+      const gameNameById = (gid) => (Array.isArray(gamesArray) ? gamesArray.find(g => g.id === gid)?.name : undefined);
+
+      // Build inventory data from steam accounts (flat list first)
+      const steamInventory = steamAccountsArray.map(account => ({
+        id: account.id,
+        type: 'steam_account',
+        accountInfoId: account.accountInfoId,
+        itemCode: account.accountCode ? account.accountCode : `SA-${account.id}`,
+        accountCode: account.accountCode || '',
+        productName: `Steam: ${account.username ?? account.name ?? ''}`.trim(),
+        username: account.username ?? '',
+        password: account.password ?? '',
+        steamGuard: account.steamGuard ?? '',
+        salePrice: account.price ?? 0,
+        inventoryDate: account.updatedAt || account.verifyDate || null,
+        verifyDate: account.verifyDate || null,
+        inventoryQuantity: 1,
+        status: account.status,
+        gameName: Array.isArray(account.gameIds) && account.gameIds.length > 0
+          ? account.gameIds
+              .map(gid => gameNameById(gid))
+              .filter(Boolean)
+              .join(', ')
+          : 'N/A'
+      }));
+
+      // Build grouped inventory by account info
+      const accountInfoInventory = accountInfosArray.map(info => {
+        const groupSteam = steamInventory.filter(sa => sa.accountInfoId === info.id);
+        const groupInfo = {
+          id: info.id,
+          type: 'account_info',
+          itemCode: `AI-${info.id}`,
+          productName: info.name || 'Gói sản phẩm',
+          salePrice: info.price ?? 0,
+          inventoryDate: info.updatedAt || null,
+          inventoryQuantity: typeof info.availableStockCount === 'number' ? info.availableStockCount : (info.availableStockCount ?? 0),
+          status: (info.availableStockCount ?? 0) > 0 ? 'AVAILABLE' : 'PRE_ORDER',
+          gameName: Array.isArray(info.gameIds) && info.gameIds.length > 0
+            ? info.gameIds
+                .map(gid => gameNameById(gid))
                 .filter(Boolean)
-                .map(g => g.name)
                 .join(', ')
             : 'N/A'
-        })),
-        ...gamesArray.map(game => ({
-          id: game.id,
-          type: 'game',
-          itemCode: `G-${game.id}`,
-          productName: game.name,
-          salePrice: 0,
-          inventoryDate: game.createdAt,
-          inventoryQuantity: 0,
-          status: 'AVAILABLE',
-          gameName: game.name
-        }))
-      ];
+        };
+        return { info: groupInfo, steamAccounts: groupSteam };
+      });
       
-      setInventoryData(inventory);
+      setInventoryGroups(accountInfoInventory);
     } catch (error) {
       console.error('Error fetching inventory data:', error);
       toast({
@@ -427,35 +451,93 @@ const Admin = () => {
     document.body.removeChild(link);
   };
 
-  // Filter inventory data
-  const filteredInventoryData = useMemo(() => {
-    let filtered = [...inventoryData];
+  // Filter inventory groups (filter by AccountInfo row data)
+  const filteredInventoryGroups = useMemo(() => {
+    let groups = Array.isArray(inventoryGroups) ? [...inventoryGroups] : [];
+
+    const matches = (text, query) => (text || '').toString().toLowerCase().includes((query || '').toLowerCase());
 
     if (inventoryFilters.title) {
-      filtered = filtered.filter(item => 
-        item.productName.toLowerCase().includes(inventoryFilters.title.toLowerCase())
-      );
+      groups = groups.filter(g => matches(g.info.productName, inventoryFilters.title));
     }
 
     if (inventoryFilters.gameName) {
-      filtered = filtered.filter(item => 
-        item.gameName.toLowerCase().includes(inventoryFilters.gameName.toLowerCase())
-      );
+      groups = groups.filter(g => matches(g.info.gameName, inventoryFilters.gameName));
     }
 
     if (inventoryFilters.status && inventoryFilters.status !== 'all') {
-      filtered = filtered.filter(item => item.status === inventoryFilters.status);
+      groups = groups.filter(g => g.info.status === inventoryFilters.status);
     }
 
-    // Sort by date
-    if (inventoryFilters.sortBy === 'newest') {
-      filtered.sort((a, b) => new Date(b.inventoryDate) - new Date(a.inventoryDate));
-    } else {
-      filtered.sort((a, b) => new Date(a.inventoryDate) - new Date(b.inventoryDate));
-    }
+    // Sort by AccountInfo inventoryDate
+    groups.sort((a, b) => {
+      const da = new Date(a.info.inventoryDate || 0);
+      const db = new Date(b.info.inventoryDate || 0);
+      return inventoryFilters.sortBy === 'newest' ? (db - da) : (da - db);
+    });
 
-    return filtered;
-  }, [inventoryData, inventoryFilters]);
+    return groups;
+  }, [inventoryGroups, inventoryFilters]);
+
+  const handleEditAccountInfo = (id) => {
+    setSelectedAccountInfoId(id);
+    const group = Array.isArray(inventoryGroups) ? inventoryGroups.find(g => g.info.id === id) : null;
+    if (group) setSelectedAccountInfoData(group);
+    setActiveTab('steam-accounts');
+    toast({ title: 'Chỉnh sửa sản phẩm', description: `Đang chỉnh sửa AccountInfo #${id}` });
+  };
+
+  const handleDeleteAccountInfo = async (id) => {
+    if (!guard()) return;
+    const confirmDelete = window.confirm('Bạn có chắc muốn xóa sản phẩm này? Hành động không thể hoàn tác.');
+    if (!confirmDelete) return;
+    try {
+      await deleteAccountInfo(id);
+      toast({ title: 'Đã xóa', description: `Đã xóa sản phẩm #${id}` });
+      await fetchInventoryData();
+    } catch (error) {
+      toast({ title: 'Xóa thất bại', description: error.message || 'Không thể xóa sản phẩm', variant: 'destructive' });
+    }
+  };
+
+  const handleViewSteamAccounts = (group) => {
+    setSteamDialog({ open: true, group });
+  };
+
+  const closeSteamDialog = () => setSteamDialog({ open: false, group: null });
+
+  const handleEditSteamAccount = (steamAccount) => {
+    // Open edit tab with the group from dialog for full prefill
+    const group = steamDialog.group;
+    if (group) {
+      setSelectedAccountInfoId(group.info.id);
+      setSelectedAccountInfoData(group);
+    }
+    setActiveTab('steam-accounts');
+    toast({ title: 'Chỉnh sửa sản phẩm', description: `Đang chỉnh sửa AccountInfo #${group?.info.id}` });
+    closeSteamDialog();
+  };
+
+  const handleDeleteSteamAccount = async (steamAccount) => {
+    if (!guard()) return;
+    const confirmDelete = window.confirm(`Xóa tài khoản Steam ${steamAccount.username}?`);
+    if (!confirmDelete) return;
+    try {
+      await deleteSteamAccount(steamAccount.id);
+      toast({ title: 'Đã xóa tài khoản Steam' });
+      // Refresh inventory and dialog list
+      await fetchInventoryData();
+      if (steamDialog.open && steamDialog.group) {
+        const updatedGroup = {
+          ...steamDialog.group,
+          steamAccounts: (steamDialog.group.steamAccounts || []).filter(sa => sa.id !== steamAccount.id)
+        };
+        setSteamDialog({ open: true, group: updatedGroup });
+      }
+    } catch (error) {
+      toast({ title: 'Xóa thất bại', description: error.message || 'Không thể xóa tài khoản', variant: 'destructive' });
+    }
+  };
 
   if (!isAdmin) {
     return (
@@ -1037,7 +1119,7 @@ const Admin = () => {
       {activeTab === 'steam-accounts' && (
         <div>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Thêm tài khoản steam</h2>
-          <MultiSteamAccountForm />
+          <MultiSteamAccountForm selectedAccountInfoId={selectedAccountInfoId} selectedAccountInfoData={selectedAccountInfoData} />
         </div>
       )}
 
@@ -1219,49 +1301,56 @@ const Admin = () => {
                         <th className="text-left py-3 px-4">Ngày nhập kho</th>
                         <th className="text-right py-3 px-4">Số lượng</th>
                         <th className="text-center py-3 px-4">Trạng thái</th>
-                        <th className="text-center py-3 px-4">Loại</th>
+                        <th className="text-center py-3 px-4">Thao tác</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredInventoryData.map((item) => (
-                        <tr key={`${item.type}-${item.id}`} className="border-b hover:bg-gray-50">
-                          <td className="py-3 px-4 font-mono text-sm">{item.itemCode}</td>
-                          <td className="py-3 px-4">{item.productName}</td>
-                          <td className="py-3 px-4">{item.gameName}</td>
+                      {filteredInventoryGroups.map((group) => (
+                        <tr
+                          key={`ai-${group.info.id}`}
+                          className="border-b hover:bg-gray-50 cursor-pointer"
+                          onClick={() => handleViewSteamAccounts(group)}
+                        >
+                          <td className="py-3 px-4 font-mono text-sm">{group.info.itemCode}</td>
+                          <td className="py-3 px-4 font-semibold">{group.info.productName}</td>
+                          <td className="py-3 px-4">{group.info.gameName}</td>
                           <td className="text-right py-3 px-4 font-medium">
-                            {item.salePrice > 0 ? `${item.salePrice.toLocaleString('vi-VN')} VNĐ` : 'N/A'}
+                            {group.info.salePrice > 0 ? `${group.info.salePrice.toLocaleString('vi-VN')} VNĐ` : 'N/A'}
                           </td>
                           <td className="py-3 px-4 text-sm">
-                            {new Date(item.inventoryDate).toLocaleDateString('vi-VN')}
+                            {group.info.inventoryDate ? new Date(group.info.inventoryDate).toLocaleDateString('vi-VN') : '—'}
                           </td>
-                          <td className="text-right py-3 px-4">{item.inventoryQuantity}</td>
+                          <td className="text-right py-3 px-4">{group.info.inventoryQuantity}</td>
                           <td className="text-center py-3 px-4">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              item.status === 'AVAILABLE' ? 'bg-green-100 text-green-800' :
-                              item.status === 'SOLD' ? 'bg-red-100 text-red-800' :
-                              item.status === 'PRE_ORDER' ? 'bg-blue-100 text-blue-800' :
-                              item.status === 'MAINTENANCE' ? 'bg-orange-100 text-orange-800' :
+                              group.info.status === 'AVAILABLE' ? 'bg-green-100 text-green-800' :
+                              group.info.status === 'SOLD' ? 'bg-red-100 text-red-800' :
+                              group.info.status === 'PRE_ORDER' ? 'bg-blue-100 text-blue-800' :
+                              group.info.status === 'MAINTENANCE' ? 'bg-orange-100 text-orange-800' :
                               'bg-yellow-100 text-yellow-800'
                             }`}>
-                              {item.status === 'AVAILABLE' ? 'Có sẵn' :
-                               item.status === 'SOLD' ? 'Đã bán' :
-                               item.status === 'PRE_ORDER' ? 'Chờ đặt hàng' :
-                               item.status === 'MAINTENANCE' ? 'Bảo trì' :
-                               item.status}
+                              {group.info.status === 'AVAILABLE' ? 'Có sẵn' :
+                               group.info.status === 'SOLD' ? 'Đã bán' :
+                               group.info.status === 'PRE_ORDER' ? 'Chờ đặt hàng' :
+                               group.info.status === 'MAINTENANCE' ? 'Bảo trì' :
+                               group.info.status}
                             </span>
                           </td>
                           <td className="text-center py-3 px-4">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              item.type === 'steam_account' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
-                            }`}>
-                              {item.type === 'steam_account' ? 'Steam Account' : 'Game'}
-                            </span>
+                            <div className="flex gap-2 justify-center">
+                              <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={(e) => { e.stopPropagation(); handleEditAccountInfo(group.info.id); }}>
+                                Sửa
+                              </Button>
+                              <Button size="sm" variant="outline" className="text-red-600 border-red-600 hover:bg-red-50" onClick={(e) => { e.stopPropagation(); handleDeleteAccountInfo(group.info.id); }}>
+                                Xóa
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                  {filteredInventoryData.length === 0 && (
+                  {filteredInventoryGroups.length === 0 && (
                     <div className="text-center py-8 text-gray-500">
                       Không có sản phẩm nào phù hợp
                     </div>
@@ -1270,6 +1359,73 @@ const Admin = () => {
               </CardContent>
             </Card>
           )}
+        </div>
+      )}
+      {/* Steam Accounts Dialog */}
+      {steamDialog.open && steamDialog.group && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-5xl mx-4 max-h-[90vh] overflow-y-auto">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Tài khoản Steam thuộc: {steamDialog.group.info.productName}</CardTitle>
+                  <CardDescription>Mã sản phẩm: {steamDialog.group.info.itemCode} • Số lượng: {steamDialog.group.info.inventoryQuantity}</CardDescription>
+                </div>
+                <Button variant="outline" onClick={closeSteamDialog}>Đóng</Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4">Mã TK</th>
+                      <th className="text-left py-3 px-4">Username</th>
+                      <th className="text-left py-3 px-4">Password</th>
+                      <th className="text-left py-3 px-4">Steam Guard</th>
+                      <th className="text-center py-3 px-4">Trạng thái</th>
+                      <th className="text-left py-3 px-4">Ngày kiểm tra</th>
+                      <th className="text-center py-3 px-4">Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.isArray(steamDialog.group.steamAccounts) && steamDialog.group.steamAccounts.length > 0 ? (
+                      steamDialog.group.steamAccounts.map((sa) => (
+                        <tr key={`dlg-sa-${sa.id}`} className="border-b hover:bg-gray-50">
+                          <td className="py-3 px-4 font-mono text-sm">{sa.itemCode}</td>
+                          <td className="py-3 px-4">{sa.username || sa.productName}</td>
+                          <td className="py-3 px-4 font-mono text-sm">{sa.password || '—'}</td>
+                          <td className="py-3 px-4 font-mono text-sm">{sa.steamGuard || '—'}</td>
+                          <td className="text-center py-3 px-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              sa.status === 'AVAILABLE' ? 'bg-green-100 text-green-800' :
+                              sa.status === 'SOLD' ? 'bg-red-100 text-red-800' :
+                              sa.status === 'PRE_ORDER' ? 'bg-blue-100 text-blue-800' :
+                              sa.status === 'MAINTENANCE' ? 'bg-orange-100 text-orange-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {sa.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-sm">{sa.verifyDate ? new Date(sa.verifyDate).toLocaleDateString('vi-VN') : '—'}</td>
+                          <td className="text-center py-3 px-4">
+                            <div className="flex gap-2 justify-center">
+                              <Button size="sm" onClick={() => handleEditSteamAccount(sa)}>Sửa</Button>
+                              <Button size="sm" variant="outline" className="text-red-600 border-red-600 hover:bg-red-50" onClick={() => handleDeleteSteamAccount(sa)}>Xóa</Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={7} className="text-center py-6 text-gray-500">Không có tài khoản Steam nào liên kết</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>

@@ -525,3 +525,31 @@ export const startSteamImport = async () => {
 };
 
 
+
+// Account Info APIs
+// Public endpoints for fetching account info to display in inventory
+export const getAllAccountInfos = async () => {
+  return apiRequest('/api/account-info');
+};
+
+export const getAccountInfosPage = async (page = 0, size = 20) => {
+  return apiRequest(`/api/account-info/page?page=${page}&size=${size}`);
+};
+
+export const getAccountInfoById = async (id) => {
+  return apiRequest(`/api/account-info/${id}`);
+};
+
+export const deleteAccountInfo = async (id) => {
+  return apiRequest(`/api/account-info/${id}`, {
+    method: 'DELETE'
+  });
+};
+
+export const updateAccountInfo = async (id, data) => {
+  return apiRequest(`/api/account-info/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+};
+

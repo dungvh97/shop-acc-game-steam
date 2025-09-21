@@ -144,7 +144,10 @@ public class SteamAccountServiceNew {
         steamAccount.setAccountInfo(accountInfo);
         steamAccount.setAccountCode(requestDto.getAccountCode());
         steamAccount.setUsername(requestDto.getUsername());
-        steamAccount.setPassword(encryptionService.encryptPassword(requestDto.getPassword()));
+        // Only update password if a new non-empty password is provided
+        if (requestDto.getPassword() != null && !requestDto.getPassword().trim().isEmpty()) {
+            steamAccount.setPassword(encryptionService.encryptPassword(requestDto.getPassword()));
+        }
         steamAccount.setSteamGuard(requestDto.getSteamGuard());
         steamAccount.setStatus(requestDto.getStatus() != null ? requestDto.getStatus() : AccountStatus.AVAILABLE);
         
