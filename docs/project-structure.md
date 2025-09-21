@@ -15,13 +15,15 @@ shop-acc-game/
 ├── logs/                       # Application logs
 ├── monitoring/                 # Monitoring and observability configs
 ├── nginx-proxy/               # Nginx reverse proxy configuration
+├── .env                        # Local environment configuration
+├── .env.production             # Production environment configuration (local/testing)
 ├── docker-compose.cloudflare.yml  # Docker Compose for production deployment
+├── docker-compose.yml          # Docker Compose for local/dev services
 ├── deploy-cloudflare.bat      # Windows deployment script
 ├── env.production.template    # Environment variables template
 ├── run-local.bat             # Local development startup script
 ├── setup-database.bat        # Database setup script
 ├── start-services.bat        # Service startup script
-├── LOCAL-SETUP.md            # Local development setup guide
 └── README.md                 # Main project documentation
 ```
 
@@ -231,6 +233,8 @@ Helper functions:
 Static files:
 
 - **`logo.png`** - Application logo
+- **`logo_square.png`** - Square logo variant
+- **`guide_update_steam_account.pdf`** - Guide for updating Steam account
 - **`vite.svg`** - Vite logo
 - **`uploads/`** - Static uploaded images (bottom, center, left, right banners, game images)
 
@@ -239,6 +243,7 @@ Static files:
 - **`vite.config.js`** - Vite build configuration
 - **`tailwind.config.js`** - Tailwind CSS configuration
 - **`postcss.config.js`** - PostCSS configuration
+- **`.eslintrc.cjs`** - ESLint configuration
 - **`Dockerfile.cloudflare`** - Docker image for Cloudflare deployment
 - **`nginx.cloudflare.conf`** - Nginx configuration for Cloudflare
 
@@ -251,6 +256,7 @@ A standalone Node.js microservice for validating Steam account credentials using
 - **`index.js`** - Express.js server with Steam account validation endpoints
 - **`package.json`** - Node.js dependencies and scripts
 - **`package-lock.json`** - Dependency lock file
+- **`Dockerfile.cloudflare`** - Docker image for Cloudflare deployment
 
 ### Dependencies
 - **`express`** - Web framework for API endpoints
@@ -303,8 +309,9 @@ A standalone Node.js microservice for validating Steam account credentials using
 - **`start-services.bat`** - Service startup script
 
 ### Environment Configuration
+- **`.env`** - Local development environment variables
+- **`.env.production`** - Production environment variables (local/testing)
 - **`env.production.template`** - Template for production environment variables
-- **`LOCAL-SETUP.md`** - Local development setup instructions
 
 ## Database Structure
 
