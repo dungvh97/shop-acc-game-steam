@@ -6,6 +6,8 @@ import com.shopaccgame.entity.enums.AccountType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class SteamAccountDto {
     
@@ -26,6 +28,12 @@ public class SteamAccountDto {
     private BigDecimal price;
     private Integer discountPercentage;
     private BigDecimal originalPrice;
+    
+    // Games field
+    private List<GameDto> games;
+    
+    // Stock quantity field
+    private Long stockQuantity;
     
     // Constructors
     public SteamAccountDto() {}
@@ -48,6 +56,14 @@ public class SteamAccountDto {
         this.price = steamAccount.getAccountInfo().getPrice();
         this.discountPercentage = steamAccount.getAccountInfo().getDiscountPercentage();
         this.originalPrice = steamAccount.getAccountInfo().getOriginalPrice();
+        
+        // Set games from AccountInfo
+        this.games = steamAccount.getAccountInfo().getGames().stream()
+            .map(GameDto::new)
+            .collect(Collectors.toList());
+        
+        // Set stock quantity from AccountInfo
+        this.stockQuantity = steamAccount.getAccountInfo().getAvailableStockCount();
     }
     
     // Getters and Setters
@@ -170,5 +186,21 @@ public class SteamAccountDto {
     
     public void setOriginalPrice(BigDecimal originalPrice) {
         this.originalPrice = originalPrice;
+    }
+    
+    public List<GameDto> getGames() {
+        return games;
+    }
+    
+    public void setGames(List<GameDto> games) {
+        this.games = games;
+    }
+    
+    public Long getStockQuantity() {
+        return stockQuantity;
+    }
+    
+    public void setStockQuantity(Long stockQuantity) {
+        this.stockQuantity = stockQuantity;
     }
 }

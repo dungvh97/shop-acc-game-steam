@@ -23,7 +23,7 @@ public interface SteamAccountRepository extends JpaRepository<SteamAccount, Long
     
     List<SteamAccount> findByAccountInfoId(Long accountInfoId);
     
-    @Query("SELECT sa FROM SteamAccount sa JOIN FETCH sa.accountInfo WHERE sa.id = :id")
+    @Query("SELECT sa FROM SteamAccount sa JOIN FETCH sa.accountInfo ai LEFT JOIN FETCH ai.games WHERE sa.id = :id")
     Optional<SteamAccount> findByIdWithAccountInfo(@Param("id") Long id);
     
     @Query("SELECT sa FROM SteamAccount sa JOIN FETCH sa.accountInfo WHERE (sa.status = 'AVAILABLE' OR sa.status = 'PRE_ORDER')")

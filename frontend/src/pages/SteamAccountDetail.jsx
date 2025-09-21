@@ -26,6 +26,8 @@ const SteamAccountDetail = () => {
     const loadAccount = async () => {
       try {
         const accountData = await getSteamAccountById(id);
+        console.log('Loaded account data:', accountData);
+        console.log('Account games:', accountData.games);
         setAccount(accountData);
       } catch (error) {
         console.error('Error loading steam account:', error);
@@ -226,12 +228,25 @@ const SteamAccountDetail = () => {
                   <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
                 </svg>
               </div>
-              {account.games && account.games.length > 0 && account.games[0].name && (
+              {account.games && account.games.length > 0 && (
                 <div className="absolute top-4 right-4 bg-white bg-opacity-90 px-3 py-1 rounded text-sm font-semibold text-gray-800">
-                  {account.games[0].name.toUpperCase()}
+                  {account.games.length === 1 
+                    ? account.games[0].name.toUpperCase()
+                    : `${account.games.length} GAMES`
+                  }
                 </div>
               )}
             </div>
+            
+            {/* Account Description */}
+            {account.description && (
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">Mô tả tài khoản</h3>
+                <div className="text-gray-700 leading-relaxed whitespace-pre-line">
+                  {account.description}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right Column - Product Details */}
@@ -281,7 +296,11 @@ const SteamAccountDetail = () => {
               <ul className="space-y-2 text-sm text-gray-700">
                 <li className="flex items-start gap-2">
                   <span className="text-red-500 mt-1">•</span>
-                  <span>Tài khoản Steam có sẵn game {account.games && account.games.length > 0 ? account.games[0].name : 'game'}</span>
+                  <span>
+                    Tài khoản Steam có sẵn game: {account.games && account.games.length > 0 
+                      ? account.games.map(game => game.name).join(', ') 
+                      : 'game'}
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-red-500 mt-1">•</span>
@@ -334,9 +353,9 @@ const SteamAccountDetail = () => {
         </div>
 
         {/* Area 7: Games Section */}
-        {account.games && account.games.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-6">Game Bao Gồm</h2>
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-6">Game Bao Gồm</h2>
+          {account.games && account.games.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {account.games.map((game) => (
                 <Card key={game.id} className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -368,8 +387,13 @@ const SteamAccountDetail = () => {
                 </Card>
               ))}
             </div>
-          </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p>Không có thông tin game cho tài khoản này.</p>
+              <p className="text-sm mt-2">Debug: account.games = {JSON.stringify(account.games)}</p>
+            </div>
           )}
+        </div>
       </div>
 
       {/* Payment Confirmation Dialog */}
