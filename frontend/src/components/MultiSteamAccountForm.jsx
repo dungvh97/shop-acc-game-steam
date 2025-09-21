@@ -393,6 +393,8 @@ const MultiSteamAccountForm = () => {
       }
       if (!account.password.trim()) {
         errors[`account_${index}_password`] = 'Mật khẩu không được để trống';
+      } else if (account.password.length < 6) {
+        errors[`account_${index}_password`] = 'Mật khẩu phải có ít nhất 6 ký tự';
       }
     });
     
@@ -682,7 +684,7 @@ const MultiSteamAccountForm = () => {
                   <div>
                     <label className="text-sm font-medium">Mật khẩu *</label>
                     <Input
-                      type="password"
+                      type="text"
                       value={account.password}
                       onChange={(e) => updateAccount(index, 'password', e.target.value)}
                       required

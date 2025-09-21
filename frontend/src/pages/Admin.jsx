@@ -1030,7 +1030,7 @@ const Admin = () => {
       {/* Steam Accounts Tab */}
       {activeTab === 'steam-accounts' && (
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Thêm tài khoản Steam</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Thêm tài khoản steam</h2>
           <MultiSteamAccountForm />
         </div>
       )}
