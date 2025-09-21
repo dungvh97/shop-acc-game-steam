@@ -143,7 +143,7 @@ const Admin = () => {
           id: account.id,
           type: 'steam_account',
           itemCode: `SA-${account.id}`,
-          productName: `Tài khoản Steam - ${account.username}`,
+          productName: `Tài khoản Steam - ${account.name}`,
           salePrice: account.price,
           inventoryDate: account.createdAt,
           inventoryQuantity: 1,

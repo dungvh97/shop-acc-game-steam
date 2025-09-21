@@ -424,7 +424,7 @@ const SteamAccounts = () => {
                       {account.imageUrl ? (
                         <img
                           src={BACKEND_CONFIG.getImageUrl(account.imageUrl)}
-                          alt={account.username}
+                          alt={account.name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             e.target.style.display = 'none';
@@ -452,7 +452,7 @@ const SteamAccounts = () => {
                       {/* Username */}
                       <Link to={`/steam-accounts/${account.id}`} className="block">
                         <CardTitle className="text-lg mb-2 hover:text-blue-600 transition-colors">
-                          {account.username}
+                          {account.name}
                         </CardTitle>
                       </Link>
 

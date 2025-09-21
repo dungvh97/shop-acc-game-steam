@@ -105,7 +105,7 @@ const Home = () => {
                       {account.imageUrl ? (
                         <img 
                           src={BACKEND_CONFIG.getImageUrl(account.imageUrl)}
-                          alt={account.username}
+                          alt={account.name}
                           className="w-full h-full object-cover hover:opacity-90 transition-opacity"
                           onError={(e) => {
                             e.target.style.display = 'none';
@@ -128,7 +128,7 @@ const Home = () => {
                     </div>
                   </CardHeader>
                   <CardContent className="p-2 sm:p-3">
-                    <CardTitle className="line-clamp-2 text-xs sm:text-sm hover:text-blue-600 transition-colors">{account.username}</CardTitle>
+                    <CardTitle className="line-clamp-2 text-xs sm:text-sm hover:text-blue-600 transition-colors">{account.name}</CardTitle>
                     <CardDescription className="line-clamp-2 mt-1 text-xs hidden sm:block">
                       {account.name ? account.name.replace(/<[^>]*>/g, '').substring(0, 40) : 'Steam Account'}
                     </CardDescription>
