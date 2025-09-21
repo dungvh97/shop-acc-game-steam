@@ -142,13 +142,19 @@ const Admin = () => {
         ...steamAccountsArray.map(account => ({
           id: account.id,
           type: 'steam_account',
-          itemCode: `SA-${account.id}`,
-          productName: `Tài khoản Steam - ${account.name}`,
-          salePrice: account.price,
-          inventoryDate: account.createdAt,
+          itemCode: account.accountCode ? account.accountCode : `SA-${account.id}`,
+          productName: `Tài khoản Steam - ${account.name ?? ''}`.trim(),
+          salePrice: account.price ?? 0,
+          inventoryDate: account.updatedAt || account.verifyDate || null,
           inventoryQuantity: 1,
           status: account.status,
-          gameName: account.games?.map(g => g.name).join(', ') || 'N/A'
+          gameName: Array.isArray(account.gameIds) && account.gameIds.length > 0
+            ? account.gameIds
+                .map(gid => (Array.isArray(gamesArray) ? gamesArray.find(g => g.id === gid) : null))
+                .filter(Boolean)
+                .map(g => g.name)
+                .join(', ')
+            : 'N/A'
         })),
         ...gamesArray.map(game => ({
           id: game.id,

@@ -2,10 +2,16 @@ package com.shopaccgame.controller;
 
 import com.shopaccgame.dto.AdminOrderDto;
 import com.shopaccgame.dto.RevenueStatsDto;
+import com.shopaccgame.dto.SteamAccountAdminDto;
 import com.shopaccgame.service.AdminService;
+import com.shopaccgame.service.SteamAccountServiceNew;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +30,9 @@ public class AdminController {
     
     @Autowired
     private AdminService adminService;
+    
+    @Autowired
+    private SteamAccountServiceNew steamAccountService;
     
     /**
      * Get all orders for admin management
@@ -125,6 +134,57 @@ public class AdminController {
             return ResponseEntity.ok(monthlyRevenue);
         } catch (Exception e) {
             logger.error("Error getting monthly revenue: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    /**
+     * Get all steam accounts for admin management
+     */
+    @GetMapping("/steam-accounts")
+    public ResponseEntity<Page<SteamAccountAdminDto>> getSteamAccounts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        try {
+            Sort sort = sortDir.equalsIgnoreCase("desc") ? 
+                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+            Pageable pageable = PageRequest.of(page, size, sort);
+            
+            Page<SteamAccountAdminDto> accounts = steamAccountService.getSteamAccountsForAdmin(pageable);
+            return ResponseEntity.ok(accounts);
+        } catch (Exception e) {
+            logger.error("Error getting steam accounts for admin: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    /**
+     * Get all steam accounts for admin management (no pagination)
+     */
+    @GetMapping("/steam-accounts/all")
+    public ResponseEntity<List<SteamAccountAdminDto>> getAllSteamAccounts() {
+        try {
+            List<SteamAccountAdminDto> accounts = steamAccountService.getAllSteamAccountsForAdmin();
+            return ResponseEntity.ok(accounts);
+        } catch (Exception e) {
+            logger.error("Error getting all steam accounts for admin: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    /**
+     * Get steam account by ID for admin
+     */
+    @GetMapping("/steam-accounts/{id}")
+    public ResponseEntity<SteamAccountAdminDto> getSteamAccountById(@PathVariable Long id) {
+        try {
+            return steamAccountService.getSteamAccountByIdForAdmin(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            logger.error("Error getting steam account by ID {}: {}", id, e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }

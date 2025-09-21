@@ -103,11 +103,34 @@ public class SteamAccountServiceNew {
         dto.setAccountInfoId(steamAccount.getAccountInfo().getId());
         dto.setAccountCode(steamAccount.getAccountCode());
         dto.setUsername(steamAccount.getUsername());
-        dto.setPassword(encryptionService.decryptPassword(steamAccount.getPassword()));
+        try {
+            String decryptedPassword = encryptionService.decryptPassword(steamAccount.getPassword());
+            dto.setPassword(decryptedPassword);
+        } catch (Exception e) {
+            logger.error("Error decrypting password for SteamAccount id {}: {}", steamAccount.getId(), e.getMessage());
+            dto.setPassword("[Error: Unable to decrypt password]");
+        }
         dto.setSteamGuard(steamAccount.getSteamGuard());
         dto.setStatus(steamAccount.getStatus());
         dto.setVerifyDate(steamAccount.getVerifyDate());
         dto.setUpdatedAt(steamAccount.getUpdatedAt());
+
+        // Map AccountInfo fields for admin UI
+        AccountInfo ai = steamAccount.getAccountInfo();
+        if (ai != null) {
+            dto.setName(ai.getName());
+            dto.setAccountType(ai.getAccountType());
+            dto.setPrice(ai.getPrice());
+            dto.setOriginalPrice(ai.getOriginalPrice());
+            dto.setDiscountPercentage(ai.getDiscountPercentage());
+            dto.setImageUrl(ai.getImageUrl());
+            dto.setDescription(ai.getDescription());
+            dto.setStockQuantity(ai.getAvailableStockCount());
+            dto.setGameIds(ai.getGames()
+                .stream()
+                .map(g -> g.getId())
+                .collect(Collectors.toList()));
+        }
         return dto;
     }
     
