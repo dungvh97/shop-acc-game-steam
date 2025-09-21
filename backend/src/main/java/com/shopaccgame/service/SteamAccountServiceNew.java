@@ -170,10 +170,12 @@ public class SteamAccountServiceNew {
         SteamAccount steamAccount = steamAccountRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("SteamAccount not found with id: " + id));
         
-        AccountInfo accountInfo = accountInfoRepository.findById(requestDto.getAccountInfoId())
-            .orElseThrow(() -> new RuntimeException("AccountInfo not found with id: " + requestDto.getAccountInfoId()));
-        
-        steamAccount.setAccountInfo(accountInfo);
+        // If accountInfoId is provided, update the association; otherwise keep existing
+        if (requestDto.getAccountInfoId() != null) {
+            AccountInfo accountInfo = accountInfoRepository.findById(requestDto.getAccountInfoId())
+                .orElseThrow(() -> new RuntimeException("AccountInfo not found with id: " + requestDto.getAccountInfoId()));
+            steamAccount.setAccountInfo(accountInfo);
+        }
         steamAccount.setAccountCode(requestDto.getAccountCode());
         steamAccount.setUsername(requestDto.getUsername());
         // Only update password if a new non-empty password is provided; otherwise keep existing

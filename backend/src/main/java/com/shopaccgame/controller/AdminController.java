@@ -3,6 +3,11 @@ package com.shopaccgame.controller;
 import com.shopaccgame.dto.AdminOrderDto;
 import com.shopaccgame.dto.RevenueStatsDto;
 import com.shopaccgame.dto.SteamAccountAdminDto;
+import com.shopaccgame.dto.AdminSteamAccountUpdateRequest;
+import com.shopaccgame.dto.SteamAccountRequestDto;
+import com.shopaccgame.dto.SteamAccountDto;
+import com.shopaccgame.entity.enums.AccountStatus;
+
 import com.shopaccgame.service.AdminService;
 import com.shopaccgame.service.SteamAccountServiceNew;
 import org.slf4j.Logger;
@@ -185,6 +190,64 @@ public class AdminController {
                 .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
             logger.error("Error getting steam account by ID {}: {}", id, e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * Update steam account (admin)
+     */
+    @PutMapping("/steam-accounts/{id}")
+    public ResponseEntity<SteamAccountDto> updateSteamAccount(
+            @PathVariable Long id,
+            @RequestBody AdminSteamAccountUpdateRequest request) {
+        try {
+            // Map admin update request to service DTO (validation handled in service)
+            SteamAccountRequestDto dto = new SteamAccountRequestDto();
+            dto.setAccountInfoId(request.getAccountInfoId()); // optional; service keeps existing when null
+            dto.setAccountCode(request.getAccountCode());
+            dto.setUsername(request.getUsername());
+            dto.setPassword(request.getPassword()); // optional; service updates only if non-empty
+            dto.setSteamGuard(request.getSteamGuard());
+            dto.setStatus(request.getStatus());
+
+            SteamAccountDto updated = steamAccountService.updateSteamAccount(id, dto);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            logger.error("Error updating steam account {}: {}", id, e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * Update steam account status (admin)
+     */
+    @PatchMapping("/steam-accounts/{id}/status")
+    public ResponseEntity<SteamAccountDto> updateSteamAccountStatus(
+            @PathVariable Long id,
+            @RequestParam("status") AccountStatus status) {
+        try {
+            // Reuse update method with only status field
+            SteamAccountRequestDto dto = new SteamAccountRequestDto();
+            dto.setStatus(status);
+            SteamAccountDto updated = steamAccountService.updateSteamAccount(id, dto);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            logger.error("Error updating steam account status {}: {}", id, e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * Delete steam account (admin)
+     */
+    @DeleteMapping("/steam-accounts/{id}")
+    public ResponseEntity<Void> deleteSteamAccount(@PathVariable Long id) {
+        try {
+            steamAccountService.deleteSteamAccount(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error("Error deleting steam account {}: {}", id, e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
