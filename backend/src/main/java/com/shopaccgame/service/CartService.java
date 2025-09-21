@@ -7,6 +7,7 @@ import com.shopaccgame.entity.AccountInfo;
 import com.shopaccgame.entity.User;
 import com.shopaccgame.repository.CartItemRepository;
 import com.shopaccgame.repository.AccountInfoRepository;
+import com.shopaccgame.repository.SteamAccountRepository;
 import com.shopaccgame.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,9 @@ public class CartService {
     
     @Autowired
     private AccountInfoRepository accountInfoRepository;
+    
+    @Autowired
+    private SteamAccountRepository steamAccountRepository;
     
     @Autowired
     private UserRepository userRepository;
@@ -150,13 +154,30 @@ public class CartService {
         List<OrderResponseDto> orders = new java.util.ArrayList<>();
         for (CartItem item : cartItems) {
             try {
-                // Create order request for this item
-                com.shopaccgame.dto.OrderRequestDto orderRequest = new com.shopaccgame.dto.OrderRequestDto();
-                orderRequest.setAccountInfoId(item.getAccountInfo().getId());
+                // Find an available steam account for this account info
+                List<com.shopaccgame.entity.SteamAccount> availableAccounts = steamAccountRepository.findByAccountInfoId(item.getAccountInfo().getId())
+                    .stream()
+                    .filter(account -> account.getStatus() == com.shopaccgame.entity.enums.AccountStatus.AVAILABLE)
+                    .toList();
                 
-                // Create the order
-                OrderResponseDto order = orderService.createOrder(orderRequest, username);
-                orders.add(order);
+                if (availableAccounts.isEmpty()) {
+                    throw new RuntimeException("No available steam accounts found for '" + item.getAccountInfo().getName() + "'");
+                }
+                
+                // Create order for each quantity (if quantity > 1, create multiple orders)
+                for (int i = 0; i < item.getQuantity(); i++) {
+                    if (i >= availableAccounts.size()) {
+                        throw new RuntimeException("Not enough available steam accounts for '" + item.getAccountInfo().getName() + "' (requested: " + item.getQuantity() + ", available: " + availableAccounts.size() + ")");
+                    }
+                    
+                    // Create order request for this specific steam account
+                    com.shopaccgame.dto.OrderRequestDto orderRequest = new com.shopaccgame.dto.OrderRequestDto();
+                    orderRequest.setSteamAccountId(availableAccounts.get(i).getId());
+                    
+                    // Create the order
+                    OrderResponseDto order = orderService.createOrder(orderRequest, username);
+                    orders.add(order);
+                }
             } catch (Exception e) {
                 // If any order fails, rollback all orders
                 throw new RuntimeException("Failed to create order for account '" + 
@@ -204,13 +225,30 @@ public class CartService {
         List<OrderResponseDto> orders = new java.util.ArrayList<>();
         for (CartItem item : cartItems) {
             try {
-                // Create order request for this item
-                com.shopaccgame.dto.OrderRequestDto orderRequest = new com.shopaccgame.dto.OrderRequestDto();
-                orderRequest.setAccountInfoId(item.getAccountInfo().getId());
+                // Find an available steam account for this account info
+                List<com.shopaccgame.entity.SteamAccount> availableAccounts = steamAccountRepository.findByAccountInfoId(item.getAccountInfo().getId())
+                    .stream()
+                    .filter(account -> account.getStatus() == com.shopaccgame.entity.enums.AccountStatus.AVAILABLE)
+                    .toList();
                 
-                // Create and pay the order with balance
-                OrderResponseDto order = orderService.createAndPayWithBalance(orderRequest, username);
-                orders.add(order);
+                if (availableAccounts.isEmpty()) {
+                    throw new RuntimeException("No available steam accounts found for '" + item.getAccountInfo().getName() + "'");
+                }
+                
+                // Create order for each quantity (if quantity > 1, create multiple orders)
+                for (int i = 0; i < item.getQuantity(); i++) {
+                    if (i >= availableAccounts.size()) {
+                        throw new RuntimeException("Not enough available steam accounts for '" + item.getAccountInfo().getName() + "' (requested: " + item.getQuantity() + ", available: " + availableAccounts.size() + ")");
+                    }
+                    
+                    // Create order request for this specific steam account
+                    com.shopaccgame.dto.OrderRequestDto orderRequest = new com.shopaccgame.dto.OrderRequestDto();
+                    orderRequest.setSteamAccountId(availableAccounts.get(i).getId());
+                    
+                    // Create and pay the order with balance
+                    OrderResponseDto order = orderService.createAndPayWithBalance(orderRequest, username);
+                    orders.add(order);
+                }
             } catch (Exception e) {
                 // If any order fails, rollback all orders
                 throw new RuntimeException("Failed to create and pay order for account '" + 

@@ -18,8 +18,8 @@ public class SteamAccountOrder {
     private String orderId;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_info_id", nullable = false)
-    private AccountInfo accountInfo;
+    @JoinColumn(name = "steam_account_id", nullable = false)
+    private SteamAccount steamAccount;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -66,8 +66,8 @@ public class SteamAccountOrder {
     // Constructors
     public SteamAccountOrder() {}
     
-    public SteamAccountOrder(AccountInfo accountInfo, User user, BigDecimal amount) {
-        this.accountInfo = accountInfo;
+    public SteamAccountOrder(SteamAccount steamAccount, User user, BigDecimal amount) {
+        this.steamAccount = steamAccount;
         this.user = user;
         this.amount = amount;
         this.status = OrderStatus.PENDING;
@@ -85,25 +85,19 @@ public class SteamAccountOrder {
         this.paidAt = LocalDateTime.now();
         
         // Store account credentials (encryption handled by service layer)
-        if (this.accountInfo != null) {
-            // For now, we'll store placeholder values since we need to select a specific steam account
-            // This will be handled by the service layer
-            this.accountUsername = "Account will be assigned";
-            this.accountPassword = "Password will be provided";
+        if (this.steamAccount != null) {
+            this.accountUsername = this.steamAccount.getUsername();
+            this.accountPassword = this.steamAccount.getPassword();
+            // Mark the steam account as sold
+            this.steamAccount.setStatus(AccountStatus.SOLD);
         }
     }
     
-    // Method to assign a specific steam account to this order
-    public void assignSteamAccount(SteamAccount steamAccount) {
-        if (steamAccount.getStatus() != AccountStatus.AVAILABLE) {
-            throw new RuntimeException("Cannot assign unavailable steam account");
+    // Method to mark the steam account as sold (no longer needed since order is directly linked to steam account)
+    public void markSteamAccountAsSold() {
+        if (this.steamAccount != null && this.steamAccount.getStatus() == AccountStatus.AVAILABLE) {
+            this.steamAccount.setStatus(AccountStatus.SOLD);
         }
-        
-        this.accountUsername = steamAccount.getUsername();
-        this.accountPassword = steamAccount.getPassword();
-        
-        // Mark the steam account as sold
-        steamAccount.setStatus(AccountStatus.SOLD);
     }
     
     public void markAsDelivered() {
@@ -145,12 +139,12 @@ public class SteamAccountOrder {
         this.orderId = orderId;
     }
     
-    public AccountInfo getAccountInfo() {
-        return accountInfo;
+    public SteamAccount getSteamAccount() {
+        return steamAccount;
     }
     
-    public void setAccountInfo(AccountInfo accountInfo) {
-        this.accountInfo = accountInfo;
+    public void setSteamAccount(SteamAccount steamAccount) {
+        this.steamAccount = steamAccount;
     }
     
     public User getUser() {

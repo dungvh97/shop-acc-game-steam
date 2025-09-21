@@ -33,18 +33,18 @@ public interface SteamAccountOrderRepository extends JpaRepository<SteamAccountO
     @Query("SELECT o FROM SteamAccountOrder o WHERE o.user = :user ORDER BY o.createdAt DESC")
     List<SteamAccountOrder> findUserOrdersOrderByCreatedAtDesc(@Param("user") User user);
     
-    @Query("SELECT o FROM SteamAccountOrder o WHERE o.accountInfo.id = :accountInfoId AND o.status IN ('PENDING', 'PAID')")
-    List<SteamAccountOrder> findActiveOrdersByAccountInfoId(@Param("accountInfoId") Long accountInfoId);
+    @Query("SELECT o FROM SteamAccountOrder o WHERE o.steamAccount.id = :steamAccountId AND o.status IN ('PENDING', 'PAID')")
+    List<SteamAccountOrder> findActiveOrdersBySteamAccountId(@Param("steamAccountId") Long steamAccountId);
     
-    @Query("SELECT o FROM SteamAccountOrder o WHERE o.accountInfo.id = :accountInfoId")
-    List<SteamAccountOrder> findByAccountInfoId(@Param("accountInfoId") Long accountInfoId);
+    @Query("SELECT o FROM SteamAccountOrder o WHERE o.steamAccount.id = :steamAccountId")
+    List<SteamAccountOrder> findBySteamAccountId(@Param("steamAccountId") Long steamAccountId);
     
-    boolean existsByAccountInfoIdAndStatusIn(Long accountInfoId, List<SteamAccountOrder.OrderStatus> statuses);
+    boolean existsBySteamAccountIdAndStatusIn(Long steamAccountId, List<SteamAccountOrder.OrderStatus> statuses);
     
     List<SteamAccountOrder> findByStatusAndCreatedAtBetween(SteamAccountOrder.OrderStatus status, LocalDateTime start, LocalDateTime end);
     
     List<SteamAccountOrder> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
     
-    @Query("SELECT DISTINCT o FROM SteamAccountOrder o JOIN o.accountInfo ai JOIN ai.steamAccounts sa WHERE sa.status = :accountStatus")
+    @Query("SELECT o FROM SteamAccountOrder o WHERE o.steamAccount.status = :accountStatus")
     List<SteamAccountOrder> findByAccountStatus(@Param("accountStatus") AccountStatus accountStatus);
 }

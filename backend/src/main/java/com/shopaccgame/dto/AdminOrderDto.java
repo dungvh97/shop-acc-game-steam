@@ -32,8 +32,8 @@ public class AdminOrderDto {
         this.username = order.getUser() != null ? order.getUser().getUsername() : null;
         this.userEmail = order.getUser() != null ? order.getUser().getEmail() : null;
         this.steamAccountUsername = order.getAccountUsername(); // Now stored directly in order
-        this.gameNames = order.getAccountInfo() != null && order.getAccountInfo().getGames() != null 
-            ? order.getAccountInfo().getGames().stream().map(game -> game.getName()).toList() 
+        this.gameNames = order.getSteamAccount() != null && order.getSteamAccount().getAccountInfo() != null && order.getSteamAccount().getAccountInfo().getGames() != null 
+            ? order.getSteamAccount().getAccountInfo().getGames().stream().map(game -> game.getName()).toList() 
             : List.of();
         this.totalAmount = order.getAmount();
         this.status = order.getStatus().name();

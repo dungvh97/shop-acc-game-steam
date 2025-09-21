@@ -5,21 +5,21 @@ import jakarta.validation.constraints.Positive;
 
 public class OrderRequestDto {
     
-    @NotNull(message = "Account Info ID is required")
-    @Positive(message = "Account Info ID must be positive")
-    private Long accountInfoId;
+    @NotNull(message = "Steam Account ID is required")
+    @Positive(message = "Steam Account ID must be positive")
+    private Long steamAccountId;
     
     public OrderRequestDto() {}
     
-    public OrderRequestDto(Long accountInfoId) {
-        this.accountInfoId = accountInfoId;
+    public OrderRequestDto(Long steamAccountId) {
+        this.steamAccountId = steamAccountId;
     }
     
-    public Long getAccountInfoId() {
-        return accountInfoId;
+    public Long getSteamAccountId() {
+        return steamAccountId;
     }
     
-    public void setAccountInfoId(Long accountInfoId) {
-        this.accountInfoId = accountInfoId;
+    public void setSteamAccountId(Long steamAccountId) {
+        this.steamAccountId = steamAccountId;
     }
 }

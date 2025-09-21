@@ -27,9 +27,9 @@ public class OrderResponseDto {
     public OrderResponseDto(SteamAccountOrder order) {
         this.id = order.getId();
         this.orderId = order.getOrderId();
-        this.accountId = order.getAccountInfo().getId();
-        this.accountName = order.getAccountInfo().getName();
-        this.accountType = order.getAccountInfo().getAccountType().name();
+        this.accountId = order.getSteamAccount().getAccountInfo().getId();
+        this.accountName = order.getSteamAccount().getAccountInfo().getName();
+        this.accountType = order.getSteamAccount().getAccountInfo().getAccountType().name();
         this.amount = order.getAmount();
         this.status = order.getStatus();
         this.paymentMethod = order.getPaymentMethod();
@@ -41,7 +41,7 @@ public class OrderResponseDto {
         // Return password and Steam Guard only for paid orders
         if (order.getStatus() == SteamAccountOrder.OrderStatus.PAID) {
             this.accountPassword = order.getAccountPassword();
-            this.steamGuard = null; // Steam guard is now stored in individual steam accounts
+            this.steamGuard = order.getSteamAccount().getSteamGuard();
         } else {
             this.accountPassword = null;
             this.steamGuard = null;
