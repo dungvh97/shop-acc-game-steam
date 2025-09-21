@@ -239,11 +239,12 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
     'OTHER_ACCOUNT'
   ];
 
-  const accountStatuses = [
-    'AVAILABLE',
-    'SOLD',
-    'PRE_ORDER',
-    'MAINTENANCE'
+  // Vietnamese display with specific order for status
+  const accountStatusOptions = [
+    { value: 'AVAILABLE', label: 'Có sẵn' },
+    { value: 'PRE_ORDER', label: 'Đặt hàng' },
+    { value: 'SOLD', label: 'Đã bán' },
+    { value: 'MAINTENANCE', label: 'Lỗi, bảo trì' },
   ];
 
   // Load games on mount
@@ -494,24 +495,32 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
       errors.stockQuantity = 'Số lượng kho phải lớn hơn hoặc bằng 0';
     }
     
+    // Image is required
+    if (!selectedFile && (!commonFields.imageUrl || !`${commonFields.imageUrl}`.trim())) {
+      errors.imageUrl = 'Vui lòng chọn hình ảnh tài khoản';
+    }
+    
     // Validate individual accounts
     accounts.forEach((account, index) => {
-      if (!account.accountCode.trim()) {
-        errors[`account_${index}_accountCode`] = 'Mã sản phẩm không được để trống';
-      }
-      if (!account.username.trim()) {
-        errors[`account_${index}_username`] = 'Tên đăng nhập không được để trống';
-      }
-      const isNewAccount = !selectedAccountInfoId || !account.id;
-      if (isNewAccount) {
-        if (!account.password.trim()) {
-          errors[`account_${index}_password`] = 'Mật khẩu không được để trống';
-        } else if (account.password.length < 6) {
+      const isAvailable = (account.status || 'AVAILABLE') === 'AVAILABLE';
+      if (isAvailable) {
+        if (!account.accountCode.trim()) {
+          errors[`account_${index}_accountCode`] = 'Mã sản phẩm không được để trống';
+        }
+        if (!account.username.trim()) {
+          errors[`account_${index}_username`] = 'Tên đăng nhập không được để trống';
+        }
+        const isNewAccount = !selectedAccountInfoId || !account.id;
+        if (isNewAccount) {
+          if (!account.password.trim()) {
+            errors[`account_${index}_password`] = 'Mật khẩu không được để trống';
+          } else if (account.password.length < 6) {
+            errors[`account_${index}_password`] = 'Mật khẩu phải có ít nhất 6 ký tự';
+          }
+        } else if (account.password && account.password.trim() && account.password.length < 6) {
+          // In edit mode, password is optional, but if provided must meet length criteria
           errors[`account_${index}_password`] = 'Mật khẩu phải có ít nhất 6 ký tự';
         }
-      } else if (account.password && account.password.trim() && account.password.length < 6) {
-        // In edit mode, password is optional, but if provided must meet length criteria
-        errors[`account_${index}_password`] = 'Mật khẩu phải có ít nhất 6 ký tự';
       }
     });
     
@@ -701,7 +710,7 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
             </div>
             
             <div>
-              <label className="text-sm font-medium">Hình ảnh Tài khoản</label>
+              <label className="text-sm font-medium">Hình ảnh Tài khoản *</label>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <input
@@ -732,6 +741,9 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
                       className="w-32 h-32 object-cover rounded border"
                     />
                   </div>
+                )}
+                {validationErrors.imageUrl && (
+                  <div className="text-xs text-red-600 mt-1">{validationErrors.imageUrl}</div>
                 )}
               </div>
             </div>
@@ -779,12 +791,27 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Move status to the first position with Vietnamese labels and order */}
                   <div>
-                    <label className="text-sm font-medium">Mã sản phẩm *</label>
+                    <label className="text-sm font-medium">Trạng thái Tài khoản *</label>
+                    <select
+                      className="w-full border rounded h-10 px-3"
+                      value={account.status}
+                      onChange={(e) => updateAccount(index, 'status', e.target.value)}
+                      required
+                    >
+                      {accountStatusOptions.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium">Mã sản phẩm {account.status === 'AVAILABLE' ? '*' : ''}</label>
                     <Input
                       value={account.accountCode}
                       onChange={(e) => updateAccount(index, 'accountCode', e.target.value)}
-                      required
+                      required={account.status === 'AVAILABLE'}
                       className={validationErrors[`account_${index}_accountCode`] ? 'border-red-500 focus:border-red-500' : ''}
                     />
                     {validationErrors[`account_${index}_accountCode`] && (
@@ -793,11 +820,11 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
                   </div>
                   
                   <div>
-                    <label className="text-sm font-medium">Tên đăng nhập *</label>
+                    <label className="text-sm font-medium">Tên đăng nhập {account.status === 'AVAILABLE' ? '*' : ''}</label>
                     <Input
                       value={account.username}
                       onChange={(e) => updateAccount(index, 'username', e.target.value)}
-                      required
+                      required={account.status === 'AVAILABLE'}
                       className={validationErrors[`account_${index}_username`] ? 'border-red-500 focus:border-red-500' : ''}
                     />
                     {validationErrors[`account_${index}_username`] && (
@@ -806,12 +833,12 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
                   </div>
                   
                   <div>
-                    <label className="text-sm font-medium">Mật khẩu {(!selectedAccountInfoId || !account.id) ? '*' : ''}</label>
+                    <label className="text-sm font-medium">Mật khẩu {(!selectedAccountInfoId || !account.id) && account.status === 'AVAILABLE' ? '*' : ''}</label>
                     <Input
                       type="text"
                       value={account.password}
                       onChange={(e) => updateAccount(index, 'password', e.target.value)}
-                      required={!selectedAccountInfoId || !account.id}
+                      required={(account.status === 'AVAILABLE') && (!selectedAccountInfoId || !account.id)}
                       className={validationErrors[`account_${index}_password`] ? 'border-red-500 focus:border-red-500' : ''}
                     />
                     {validationErrors[`account_${index}_password`] && (
@@ -826,20 +853,6 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
                       value={account.steamGuard}
                       onChange={(e) => updateAccount(index, 'steamGuard', e.target.value)}
                     />
-                  </div>
-                  
-                  <div>
-                    <label className="text-sm font-medium">Trạng thái Tài khoản *</label>
-                    <select
-                      className="w-full border rounded h-10 px-3"
-                      value={account.status}
-                      onChange={(e) => updateAccount(index, 'status', e.target.value)}
-                      required
-                    >
-                      {accountStatuses.map(status => (
-                        <option key={status} value={status}>{status}</option>
-                      ))}
-                    </select>
                   </div>
                 </div>
               </Card>
