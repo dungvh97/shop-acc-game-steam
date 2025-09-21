@@ -388,14 +388,14 @@ export const transformGames = (games) => {
 export const createSteamAccountOrder = async (accountId) => {
   return apiRequest('/steam-account-orders', {
     method: 'POST',
-    body: JSON.stringify({ accountId }),
+    body: JSON.stringify({ steamAccountId: accountId }),
   });
 };
 
 export const createAndPaySteamAccountOrderWithBalance = async (accountId) => {
   return apiRequest('/steam-account-orders/pay-with-balance', {
     method: 'POST',
-    body: JSON.stringify({ accountId }),
+    body: JSON.stringify({ steamAccountId: accountId }),
   });
 };
 
