@@ -86,6 +86,12 @@ const SteamAccountDetail = () => {
       return;
     }
     
+    // If account is PRE_ORDER, skip validation step and go straight to confirmation
+    if (account?.status === 'PRE_ORDER') {
+      setShowPaymentConfirmation(true);
+      return;
+    }
+    
     // Validate Steam account before showing payment dialog
     try {
       toast({

@@ -248,6 +248,13 @@ const SteamAccounts = () => {
       navigate('/login');
       return;
     }
+    
+    // If account is PRE_ORDER, skip validation and go straight to confirmation
+    if (account?.status === 'PRE_ORDER') {
+      setSelectedAccount(account);
+      setShowPaymentConfirmation(true);
+      return;
+    }
     try {
       console.log('Validating account:', account.id);
       const res = await validateSteamAccount(account.id);
