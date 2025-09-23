@@ -5,7 +5,7 @@ import com.shopaccgame.dto.SteamAccountRequestDto;
 import com.shopaccgame.dto.SteamAccountAdminDto;
 import com.shopaccgame.entity.SteamAccount;
 import com.shopaccgame.entity.AccountInfo;
-import com.shopaccgame.entity.enums.AccountStatus;
+import com.shopaccgame.entity.enums.AccountStockStatus;
 import com.shopaccgame.repository.SteamAccountRepository;
 import com.shopaccgame.repository.AccountInfoRepository;
 import org.slf4j.Logger;
@@ -156,7 +156,7 @@ public class SteamAccountServiceNew {
             steamAccount.setPassword(encryptionService.encryptPassword(requestDto.getPassword()));
         }
         steamAccount.setSteamGuard(requestDto.getSteamGuard());
-        steamAccount.setStatus(requestDto.getStatus() != null ? requestDto.getStatus() : AccountStatus.AVAILABLE);
+        steamAccount.setStatus(requestDto.getStatus() != null ? requestDto.getStatus() : AccountStockStatus.IN_STOCK);
         
         SteamAccount savedAccount = steamAccountRepository.save(steamAccount);
         logger.info("Steam account created successfully with ID: {}", savedAccount.getId());
@@ -183,7 +183,7 @@ public class SteamAccountServiceNew {
             steamAccount.setPassword(encryptionService.encryptPassword(requestDto.getPassword()));
         }
         steamAccount.setSteamGuard(requestDto.getSteamGuard());
-        steamAccount.setStatus(requestDto.getStatus() != null ? requestDto.getStatus() : AccountStatus.AVAILABLE);
+        steamAccount.setStatus(requestDto.getStatus() != null ? requestDto.getStatus() : AccountStockStatus.IN_STOCK);
         
         SteamAccount savedAccount = steamAccountRepository.save(steamAccount);
         logger.info("Steam account updated successfully with ID: {}", savedAccount.getId());

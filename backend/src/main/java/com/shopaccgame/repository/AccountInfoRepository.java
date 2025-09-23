@@ -22,13 +22,13 @@ public interface AccountInfoRepository extends JpaRepository<AccountInfo, Long> 
     @Query("SELECT ai FROM AccountInfo ai WHERE ai.name LIKE %:searchTerm% OR ai.description LIKE %:searchTerm%")
     Page<AccountInfo> findBySearchTerm(@Param("searchTerm") String searchTerm, Pageable pageable);
     
-    @Query("SELECT ai FROM AccountInfo ai JOIN ai.steamAccounts sa WHERE sa.status = 'AVAILABLE'")
+    @Query("SELECT ai FROM AccountInfo ai JOIN ai.steamAccounts sa WHERE sa.status = 'IN_STOCK'")
     List<AccountInfo> findAvailableAccountInfos();
     
-    @Query("SELECT ai FROM AccountInfo ai JOIN ai.steamAccounts sa WHERE ai.accountType = :accountType AND sa.status = 'AVAILABLE'")
+    @Query("SELECT ai FROM AccountInfo ai JOIN ai.steamAccounts sa WHERE ai.accountType = :accountType AND sa.status = 'IN_STOCK'")
     List<AccountInfo> findAvailableAccountInfosByType(@Param("accountType") AccountType accountType);
     
-    @Query("SELECT COUNT(sa) FROM SteamAccount sa WHERE sa.accountInfo.id = :accountInfoId AND sa.status = 'AVAILABLE'")
+    @Query("SELECT COUNT(sa) FROM SteamAccount sa WHERE sa.accountInfo.id = :accountInfoId AND sa.status = 'IN_STOCK'")
     long countAvailableSteamAccountsByAccountInfoId(@Param("accountInfoId") Long accountInfoId);
     
     @Query("SELECT DISTINCT ai FROM AccountInfo ai JOIN ai.games g WHERE g.name LIKE %:gameName%")

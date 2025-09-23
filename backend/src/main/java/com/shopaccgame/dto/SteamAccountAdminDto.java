@@ -1,6 +1,6 @@
 package com.shopaccgame.dto;
 
-import com.shopaccgame.entity.enums.AccountStatus;
+import com.shopaccgame.entity.enums.AccountStockStatus;
 import com.shopaccgame.entity.enums.AccountType;
 
 import java.math.BigDecimal;
@@ -15,7 +15,7 @@ public class SteamAccountAdminDto {
     private String username;
     private String password; // decrypted for admin view
     private String steamGuard;
-    private AccountStatus status;
+    private AccountStockStatus status;
     private LocalDateTime verifyDate;
     private LocalDateTime updatedAt;
 
@@ -82,11 +82,11 @@ public class SteamAccountAdminDto {
         this.steamGuard = steamGuard;
     }
     
-    public AccountStatus getStatus() {
+    public AccountStockStatus getStatus() {
         return status;
     }
     
-    public void setStatus(AccountStatus status) {
+    public void setStatus(AccountStockStatus status) {
         this.status = status;
     }
     

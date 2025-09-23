@@ -231,7 +231,7 @@ const SteamAccountManager = () => {
     password: '',
     steamGuard: '',
     accountType: 'MULTI_GAMES',
-    status: 'AVAILABLE',
+    status: 'IN_STOCK',
     price: '',
     originalPrice: '',
     discountPercentage: '',
@@ -260,9 +260,8 @@ const SteamAccountManager = () => {
   ];
 
   const accountStatuses = [
-    'AVAILABLE',
+    'IN_STOCK',
     'SOLD',
-    'PRE_ORDER',
     'MAINTENANCE'
   ];
 
@@ -514,7 +513,7 @@ const SteamAccountManager = () => {
       password: account.password || '',
       steamGuard: account.steamGuard || '',
       accountType: account.accountType,
-      status: account.status || 'AVAILABLE',
+      status: account.status || 'IN_STOCK',
       price: account.price?.toString() || '',
       originalPrice: account.originalPrice?.toString() || '',
       discountPercentage: account.discountPercentage?.toString() || '',
@@ -534,7 +533,7 @@ const SteamAccountManager = () => {
       password: '',
       steamGuard: '',
       accountType: 'MULTI_GAMES',
-      status: 'AVAILABLE',
+      status: 'IN_STOCK',
       price: '',
       originalPrice: '',
       discountPercentage: '',
@@ -917,9 +916,8 @@ const SteamAccountManager = () => {
                            <div className="flex items-center gap-2">
                              <h3 className="font-medium">{account.name}</h3>
                              <span className={`px-2 py-1 rounded text-xs ${
-                               account.status === 'AVAILABLE' ? 'bg-green-100 text-green-800' :
+                               account.status === 'IN_STOCK' ? 'bg-green-100 text-green-800' :
                                account.status === 'SOLD' ? 'bg-red-100 text-red-800' :
-                               account.status === 'PRE_ORDER' ? 'bg-yellow-100 text-yellow-800' :
                                'bg-blue-100 text-blue-800'
                              }`}>
                                {account.status}

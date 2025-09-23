@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.shopaccgame.entity.SteamAccount;
-import com.shopaccgame.entity.enums.AccountStatus;
+import com.shopaccgame.entity.enums.AccountStockStatus;
 import com.shopaccgame.repository.SteamAccountRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,7 +84,7 @@ public class SteamCheckerService {
                 if (!valid && (error.contains("InvalidPassword") || error.contains("AccountLogonDenied") || 
                               error.contains("InvalidLogin") || error.contains("Password") || 
                               error.contains("LoginFailure"))) {
-                    account.setStatus(AccountStatus.MAINTENANCE);
+                    account.setStatus(AccountStockStatus.MAINTENANCE);
                     account.setVerifyDate(LocalDateTime.now());
                     steamAccountRepository.save(account);
                     logger.info("[Checker] Result INVALID_PASSWORD for accountId={}, account moved to MAINTENANCE, error: {}", accountId, error);
@@ -92,7 +92,7 @@ public class SteamCheckerService {
                 }
 
                 // Any other result: treat as error and move to maintenance
-                account.setStatus(AccountStatus.MAINTENANCE);
+                account.setStatus(AccountStockStatus.MAINTENANCE);
                 account.setVerifyDate(LocalDateTime.now());
                 steamAccountRepository.save(account);
                 logger.warn("[Checker] Result ERROR for accountId={}, error: {}, account moved to MAINTENANCE", accountId, error);
@@ -101,14 +101,14 @@ public class SteamCheckerService {
 
             logger.error("[Checker] Non-2xx response or empty body from steam-checker for accountId={}", accountId);
             // Move account to maintenance on service errors
-            account.setStatus(AccountStatus.MAINTENANCE);
+            account.setStatus(AccountStockStatus.MAINTENANCE);
             account.setVerifyDate(LocalDateTime.now());
             steamAccountRepository.save(account);
             return ValidationResult.ERROR;
         } catch (Exception ex) {
             logger.error("[Checker] Error validating accountId={} message={}", accountId, ex.getMessage(), ex);
             // Move account to maintenance on exceptions
-            account.setStatus(AccountStatus.MAINTENANCE);
+            account.setStatus(AccountStockStatus.MAINTENANCE);
             account.setVerifyDate(LocalDateTime.now());
             steamAccountRepository.save(account);
             return ValidationResult.ERROR;

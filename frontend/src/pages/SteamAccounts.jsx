@@ -180,12 +180,10 @@ const SteamAccounts = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'AVAILABLE':
+      case 'IN_STOCK':
         return 'bg-green-100 text-green-800';
       case 'SOLD':
         return 'bg-red-100 text-red-800';
-      case 'PRE_ORDER':
-        return 'bg-yellow-100 text-yellow-800';
       case 'MAINTENANCE':
         return 'bg-blue-100 text-blue-800';
       default:
@@ -249,8 +247,8 @@ const SteamAccounts = () => {
       return;
     }
     
-    // If account is PRE_ORDER, skip validation and go straight to confirmation
-    if (account?.status === 'PRE_ORDER') {
+    // If account is IN_STOCK, proceed to confirmation directly
+    if (account?.status === 'IN_STOCK') {
       setSelectedAccount(account);
       setShowPaymentConfirmation(true);
       return;
@@ -448,8 +446,7 @@ const SteamAccounts = () => {
                       {/* Status Badge */}
                       <div className="absolute top-2 right-2">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(account.status)}`}>
-                          {account.status === 'AVAILABLE' ? 'CÓ SẴN' : 
-                           account.status === 'PRE_ORDER' ? 'ĐẶT TRƯỚC' : account.status}
+                          {account.status === 'IN_STOCK' ? 'CÓ SẴN' : account.status}
                         </span>
                       </div>
                     </div>
@@ -484,7 +481,7 @@ const SteamAccounts = () => {
 
                       {/* Stock */}
                       <div className="text-sm text-gray-500 mb-3">
-                        {account.status === 'PRE_ORDER' ? 'Có thể đặt trước' : `Kho: ${account.stockQuantity} có sẵn`}
+                        {`Kho: ${account.stockQuantity} có sẵn`}
                       </div>
 
                       {/* Games */}
@@ -513,9 +510,9 @@ const SteamAccounts = () => {
                           disabled={account.status === 'SOLD' || account.status === 'MAINTENANCE'}
                           onClick={() => handleBuyNow(account)}
                         >
-                          {account.status === 'PRE_ORDER' ? 'ĐẶT HÀNG' : 'MUA NGAY'}
+                          {'MUA NGAY'}
                         </Button>
-                        {account.status === 'AVAILABLE' && (
+                        {account.status === 'IN_STOCK' && (
                           <Button 
                             className="flex-1 bg-blue-600 hover:bg-blue-700"
                             onClick={() => handleAddToCart(account)}

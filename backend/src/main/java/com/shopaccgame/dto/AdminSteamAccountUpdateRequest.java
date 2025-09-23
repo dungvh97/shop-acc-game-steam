@@ -1,6 +1,6 @@
 package com.shopaccgame.dto;
 
-import com.shopaccgame.entity.enums.AccountStatus;
+import com.shopaccgame.entity.enums.AccountStockStatus;
 
 public class AdminSteamAccountUpdateRequest {
     private Long accountInfoId; // optional for updates
@@ -8,7 +8,7 @@ public class AdminSteamAccountUpdateRequest {
     private String username;
     private String password; // optional for updates; if null/blank keep existing
     private String steamGuard;
-    private AccountStatus status;
+    private AccountStockStatus status;
 
     public AdminSteamAccountUpdateRequest() {}
 
@@ -52,11 +52,11 @@ public class AdminSteamAccountUpdateRequest {
         this.steamGuard = steamGuard;
     }
 
-    public AccountStatus getStatus() {
+    public AccountStockStatus getStatus() {
         return status;
     }
 
-    public void setStatus(AccountStatus status) {
+    public void setStatus(AccountStockStatus status) {
         this.status = status;
     }
 }

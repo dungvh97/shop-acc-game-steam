@@ -3,7 +3,7 @@ package com.shopaccgame.service;
 import com.shopaccgame.dto.OrderRequestDto;
 import com.shopaccgame.dto.OrderResponseDto;
 import com.shopaccgame.entity.SteamAccount;
-import com.shopaccgame.entity.enums.AccountStatus;
+import com.shopaccgame.entity.enums.AccountStockStatus;
 import com.shopaccgame.entity.SteamAccountOrder;
 import com.shopaccgame.entity.User;
 import com.shopaccgame.repository.SteamAccountOrderRepository;
@@ -55,7 +55,7 @@ public class SteamAccountOrderService {
             .orElseThrow(() -> new RuntimeException("Steam account not found"));
         
         // Check if steam account is available
-        if (steamAccount.getStatus() != AccountStatus.AVAILABLE) {
+        if (steamAccount.getStatus() != AccountStockStatus.IN_STOCK) {
             throw new RuntimeException("Steam account is not available for purchase");
         }
         
@@ -212,7 +212,7 @@ public class SteamAccountOrderService {
             .orElseThrow(() -> new RuntimeException("Steam account not found"));
         
         // Check if steam account is available
-        if (steamAccount.getStatus() != AccountStatus.AVAILABLE) {
+        if (steamAccount.getStatus() != AccountStockStatus.IN_STOCK) {
             throw new RuntimeException("Steam account is not available for purchase");
         }
         

@@ -157,7 +157,7 @@ public class CartService {
                 // Find an available steam account for this account info
                 List<com.shopaccgame.entity.SteamAccount> availableAccounts = steamAccountRepository.findByAccountInfoId(item.getAccountInfo().getId())
                     .stream()
-                    .filter(account -> account.getStatus() == com.shopaccgame.entity.enums.AccountStatus.AVAILABLE)
+                    .filter(account -> account.getStatus() == com.shopaccgame.entity.enums.AccountStockStatus.IN_STOCK)
                     .toList();
                 
                 if (availableAccounts.isEmpty()) {
@@ -228,7 +228,7 @@ public class CartService {
                 // Find an available steam account for this account info
                 List<com.shopaccgame.entity.SteamAccount> availableAccounts = steamAccountRepository.findByAccountInfoId(item.getAccountInfo().getId())
                     .stream()
-                    .filter(account -> account.getStatus() == com.shopaccgame.entity.enums.AccountStatus.AVAILABLE)
+                    .filter(account -> account.getStatus() == com.shopaccgame.entity.enums.AccountStockStatus.IN_STOCK)
                     .toList();
                 
                 if (availableAccounts.isEmpty()) {

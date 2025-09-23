@@ -1,6 +1,6 @@
 package com.shopaccgame.dto;
 
-import com.shopaccgame.entity.enums.AccountStatus;
+import com.shopaccgame.entity.enums.AccountStockStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -22,7 +22,7 @@ public class SteamAccountRequestDto {
     
     private String steamGuard;
     
-    private AccountStatus status;
+    private AccountStockStatus status;
     
     // Constructors
     public SteamAccountRequestDto() {}
@@ -68,11 +68,11 @@ public class SteamAccountRequestDto {
         this.steamGuard = steamGuard;
     }
     
-    public AccountStatus getStatus() {
+    public AccountStockStatus getStatus() {
         return status;
     }
     
-    public void setStatus(AccountStatus status) {
+    public void setStatus(AccountStockStatus status) {
         this.status = status;
     }
 }

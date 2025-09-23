@@ -2,7 +2,7 @@ package com.shopaccgame.controller;
 
 import com.shopaccgame.dto.SteamAccountDto;
 import com.shopaccgame.entity.enums.AccountType;
-import com.shopaccgame.entity.enums.AccountStatus;
+import com.shopaccgame.entity.enums.AccountStockStatus;
 import com.shopaccgame.service.SteamAccountServiceNew;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
@@ -83,8 +83,8 @@ public class SteamAccountPublicController {
     public ResponseEntity<SteamAccountDto> getSteamAccountById(@PathVariable Long id) {
         return steamAccountService.getSteamAccountById(id)
             .map(account -> {
-                // Return if account is available or pre-order
-                if (account.getStatus() == AccountStatus.AVAILABLE || account.getStatus() == AccountStatus.PRE_ORDER) {
+                // Return if account is in stock
+                if (account.getStatus() == AccountStockStatus.IN_STOCK) {
                     return account;
                 } else {
                     return null;
@@ -130,9 +130,9 @@ public class SteamAccountPublicController {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<SteamAccountDto> accounts = steamAccountService.searchSteamAccounts(q, pageable);
         
-        // Filter to show available and pre-order accounts
+        // Filter to show in-stock accounts
         List<SteamAccountDto> availableAccounts = accounts.getContent().stream()
-            .filter(account -> account.getStatus() == AccountStatus.AVAILABLE || account.getStatus() == AccountStatus.PRE_ORDER)
+            .filter(account -> account.getStatus() == AccountStockStatus.IN_STOCK)
             .toList();
         
         // Convert to page format

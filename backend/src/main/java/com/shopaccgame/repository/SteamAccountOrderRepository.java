@@ -2,7 +2,7 @@ package com.shopaccgame.repository;
 
 import com.shopaccgame.entity.SteamAccountOrder;
 import com.shopaccgame.entity.User;
-import com.shopaccgame.entity.enums.AccountStatus;
+import com.shopaccgame.entity.enums.AccountStockStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -46,5 +46,5 @@ public interface SteamAccountOrderRepository extends JpaRepository<SteamAccountO
     List<SteamAccountOrder> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
     
     @Query("SELECT o FROM SteamAccountOrder o WHERE o.steamAccount.status = :accountStatus")
-    List<SteamAccountOrder> findByAccountStatus(@Param("accountStatus") AccountStatus accountStatus);
+    List<SteamAccountOrder> findByAccountStatus(@Param("accountStatus") AccountStockStatus accountStatus);
 }

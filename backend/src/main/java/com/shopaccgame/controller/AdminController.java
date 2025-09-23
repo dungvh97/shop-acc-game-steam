@@ -6,7 +6,7 @@ import com.shopaccgame.dto.SteamAccountAdminDto;
 import com.shopaccgame.dto.AdminSteamAccountUpdateRequest;
 import com.shopaccgame.dto.SteamAccountRequestDto;
 import com.shopaccgame.dto.SteamAccountDto;
-import com.shopaccgame.entity.enums.AccountStatus;
+import com.shopaccgame.entity.enums.AccountStockStatus;
 
 import com.shopaccgame.service.AdminService;
 import com.shopaccgame.service.SteamAccountServiceNew;
@@ -225,7 +225,7 @@ public class AdminController {
     @PatchMapping("/steam-accounts/{id}/status")
     public ResponseEntity<SteamAccountDto> updateSteamAccountStatus(
             @PathVariable Long id,
-            @RequestParam("status") AccountStatus status) {
+            @RequestParam("status") AccountStockStatus status) {
         try {
             // Reuse update method with only status field
             SteamAccountRequestDto dto = new SteamAccountRequestDto();

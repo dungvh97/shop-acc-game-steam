@@ -1,6 +1,7 @@
 package com.shopaccgame.entity;
 
-import com.shopaccgame.entity.enums.AccountStatus;
+import com.shopaccgame.entity.enums.AccountStockStatus;
+
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -52,9 +53,7 @@ public class SteamAccountOrder {
     
     @Column(name = "account_password")
     private String accountPassword;
-    
 
-    
     public enum OrderStatus {
         PENDING,
         PAID,
@@ -89,14 +88,14 @@ public class SteamAccountOrder {
             this.accountUsername = this.steamAccount.getUsername();
             this.accountPassword = this.steamAccount.getPassword();
             // Mark the steam account as sold
-            this.steamAccount.setStatus(AccountStatus.SOLD);
+            this.steamAccount.setStatus(AccountStockStatus.SOLD);
         }
     }
     
     // Method to mark the steam account as sold (no longer needed since order is directly linked to steam account)
     public void markSteamAccountAsSold() {
-        if (this.steamAccount != null && this.steamAccount.getStatus() == AccountStatus.AVAILABLE) {
-            this.steamAccount.setStatus(AccountStatus.SOLD);
+        if (this.steamAccount != null && this.steamAccount.getStatus() == AccountStockStatus.IN_STOCK) {
+            this.steamAccount.setStatus(AccountStockStatus.SOLD);
         }
     }
     

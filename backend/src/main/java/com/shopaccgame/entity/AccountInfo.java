@@ -1,6 +1,7 @@
 package com.shopaccgame.entity;
 
 import com.shopaccgame.entity.enums.AccountType;
+import com.shopaccgame.entity.enums.AccountClassification;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -39,6 +40,10 @@ public class AccountInfo {
     
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "classify", nullable = false)
+    private AccountClassification classify = AccountClassification.STOCK;
     
     // One-to-Many relationship with SteamAccount
     @OneToMany(mappedBy = "accountInfo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -171,10 +176,18 @@ public class AccountInfo {
         this.games.remove(game);
     }
     
+    public AccountClassification getClassify() {
+        return classify;
+    }
+    
+    public void setClassify(AccountClassification classify) {
+        this.classify = classify;
+    }
+    
     // Get available stock count
     public long getAvailableStockCount() {
         return steamAccounts.stream()
-            .filter(account -> account.getStatus() == com.shopaccgame.entity.enums.AccountStatus.AVAILABLE)
+            .filter(account -> account.getStatus() == com.shopaccgame.entity.enums.AccountStockStatus.IN_STOCK)
             .count();
     }
     

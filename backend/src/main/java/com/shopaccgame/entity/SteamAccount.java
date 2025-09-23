@@ -1,6 +1,6 @@
 package com.shopaccgame.entity;
 
-import com.shopaccgame.entity.enums.AccountStatus;
+import com.shopaccgame.entity.enums.AccountStockStatus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -30,7 +30,7 @@ public class SteamAccount {
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private AccountStatus status;
+    private AccountStockStatus status;
     
     @Column(name = "verify_date")
     private LocalDateTime verifyDate;
@@ -46,7 +46,7 @@ public class SteamAccount {
         this.accountCode = accountCode;
         this.username = username;
         this.password = password; // Will be encrypted by service
-        this.status = AccountStatus.AVAILABLE;
+        this.status = AccountStockStatus.IN_STOCK;
     }
     
     // Getters and Setters
@@ -104,11 +104,11 @@ public class SteamAccount {
         this.steamGuard = steamGuard;
     }
     
-    public AccountStatus getStatus() {
+    public AccountStockStatus getStatus() {
         return status;
     }
     
-    public void setStatus(AccountStatus status) {
+    public void setStatus(AccountStockStatus status) {
         this.status = status;
     }
     

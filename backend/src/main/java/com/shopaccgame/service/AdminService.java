@@ -3,7 +3,7 @@ package com.shopaccgame.service;
 import com.shopaccgame.dto.AdminOrderDto;
 import com.shopaccgame.dto.RevenueStatsDto;
 import com.shopaccgame.entity.SteamAccountOrder;
-import com.shopaccgame.entity.enums.AccountStatus;
+import com.shopaccgame.entity.enums.AccountStockStatus;
 import com.shopaccgame.repository.SteamAccountOrderRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +54,7 @@ public class AdminService {
             } catch (IllegalArgumentException e1) {
                 // If not a valid order status, try as account status
                 try {
-                    AccountStatus accountStatus = AccountStatus.valueOf(status.toUpperCase());
+                    AccountStockStatus accountStatus = AccountStockStatus.valueOf(status.toUpperCase());
                     List<SteamAccountOrder> orders = orderRepository.findByAccountStatus(accountStatus);
                     return orders.stream()
                             .map(AdminOrderDto::new)

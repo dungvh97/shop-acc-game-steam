@@ -6,7 +6,7 @@ import com.shopaccgame.dto.AccountInfoWithSteamAccountsDto;
 import com.shopaccgame.entity.AccountInfo;
 import com.shopaccgame.entity.Game;
 import com.shopaccgame.entity.SteamAccount;
-import com.shopaccgame.entity.enums.AccountStatus;
+import com.shopaccgame.entity.enums.AccountStockStatus;
 import com.shopaccgame.entity.enums.AccountType;
 import com.shopaccgame.repository.AccountInfoRepository;
 import com.shopaccgame.repository.GameRepository;
@@ -140,7 +140,7 @@ public class AccountInfoService {
                 steamAccount.setUsername(steamAccountData.getUsername());
                 steamAccount.setPassword(encryptionService.encryptPassword(steamAccountData.getPassword()));
                 steamAccount.setSteamGuard(steamAccountData.getSteamGuard());
-                steamAccount.setStatus(steamAccountData.getStatus() != null ? steamAccountData.getStatus() : AccountStatus.AVAILABLE);
+                steamAccount.setStatus(steamAccountData.getStatus() != null ? steamAccountData.getStatus() : AccountStockStatus.IN_STOCK);
                 
                 steamAccountRepository.save(steamAccount);
             }

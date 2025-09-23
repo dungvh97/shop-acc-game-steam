@@ -202,7 +202,7 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
       username: '',
       password: '',
       steamGuard: '',
-      status: 'AVAILABLE'
+      status: 'IN_STOCK'
     }
   ]);
   
@@ -241,8 +241,7 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
 
   // Vietnamese display with specific order for status
   const accountStatusOptions = [
-    { value: 'AVAILABLE', label: 'Có sẵn' },
-    { value: 'PRE_ORDER', label: 'Đặt hàng' },
+    { value: 'IN_STOCK', label: 'Có sẵn' },
     { value: 'SOLD', label: 'Đã bán' },
     { value: 'MAINTENANCE', label: 'Lỗi, bảo trì' },
   ];
@@ -289,7 +288,7 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
       username: sa.username || '',
       password: sa.password || '',
       steamGuard: sa.steamGuard || '',
-      status: sa.status || 'AVAILABLE'
+      status: sa.status || 'IN_STOCK'
     }));
     if (mapped.length > 0) {
       setAccounts(mapped);
@@ -346,7 +345,7 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
         const payload = {
           // common fields applied to each account
           accountType: commonFields.accountType,
-          status: acc.status || 'AVAILABLE',
+          status: acc.status || 'IN_STOCK',
           price: commonFields.price,
           originalPrice: commonFields.originalPrice || null,
           discountPercentage: commonFields.discountPercentage ? Number(commonFields.discountPercentage) : 0,
@@ -429,7 +428,7 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
       username: '',
       password: '',
       steamGuard: '',
-      status: 'AVAILABLE'
+      status: 'IN_STOCK'
     }]);
   };
 
@@ -455,7 +454,7 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
         username: '',
         password: '',
         steamGuard: '',
-        status: 'AVAILABLE'
+        status: 'IN_STOCK'
       });
     }
     setAccounts(newAccounts);
@@ -502,7 +501,7 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
     
     // Validate individual accounts
     accounts.forEach((account, index) => {
-      const isAvailable = (account.status || 'AVAILABLE') === 'AVAILABLE';
+      const isAvailable = (account.status || 'IN_STOCK') === 'IN_STOCK';
       if (isAvailable) {
         if (!account.accountCode.trim()) {
           errors[`account_${index}_accountCode`] = 'Mã sản phẩm không được để trống';
@@ -579,7 +578,7 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
         username: '',
         password: '',
         steamGuard: '',
-        status: 'AVAILABLE'
+        status: 'IN_STOCK'
       }]);
       setCommonFields({
         name: '',
@@ -807,11 +806,11 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium">Mã sản phẩm {account.status === 'AVAILABLE' ? '*' : ''}</label>
+                    <label className="text-sm font-medium">Mã sản phẩm {account.status === 'IN_STOCK' ? '*' : ''}</label>
                     <Input
                       value={account.accountCode}
                       onChange={(e) => updateAccount(index, 'accountCode', e.target.value)}
-                      required={account.status === 'AVAILABLE'}
+                      required={account.status === 'IN_STOCK'}
                       className={validationErrors[`account_${index}_accountCode`] ? 'border-red-500 focus:border-red-500' : ''}
                     />
                     {validationErrors[`account_${index}_accountCode`] && (
@@ -820,11 +819,11 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
                   </div>
                   
                   <div>
-                    <label className="text-sm font-medium">Tên đăng nhập {account.status === 'AVAILABLE' ? '*' : ''}</label>
+                    <label className="text-sm font-medium">Tên đăng nhập {account.status === 'IN_STOCK' ? '*' : ''}</label>
                     <Input
                       value={account.username}
                       onChange={(e) => updateAccount(index, 'username', e.target.value)}
-                      required={account.status === 'AVAILABLE'}
+                      required={account.status === 'IN_STOCK'}
                       className={validationErrors[`account_${index}_username`] ? 'border-red-500 focus:border-red-500' : ''}
                     />
                     {validationErrors[`account_${index}_username`] && (

@@ -48,12 +48,10 @@ const Home = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'AVAILABLE':
+      case 'IN_STOCK':
         return 'bg-green-100 text-green-800';
       case 'SOLD':
         return 'bg-red-100 text-red-800';
-      case 'PRE_ORDER':
-        return 'bg-yellow-100 text-yellow-800';
       case 'MAINTENANCE':
         return 'bg-blue-100 text-blue-800';
       default:
@@ -122,8 +120,7 @@ const Home = () => {
                     {/* Status Badge */}
                     <div className="absolute top-1 right-1">
                       <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${getStatusColor(account.status)}`}>
-                        {account.status === 'AVAILABLE' ? 'CÓ SẴN' : 
-                         account.status === 'PRE_ORDER' ? 'ĐẶT TRƯỚC' : account.status}
+                        {account.status === 'IN_STOCK' ? 'CÓ SẴN' : account.status}
                       </span>
                     </div>
                   </CardHeader>
@@ -144,7 +141,7 @@ const Home = () => {
                         </span>
                       </div>
                       <div className="text-xs text-gray-500">
-                        {account.status === 'PRE_ORDER' ? 'Đặt trước' : `Kho: ${account.stockQuantity}`}
+                        {`Kho: ${account.stockQuantity}`}
                       </div>
                     </div>
                   </CardContent>

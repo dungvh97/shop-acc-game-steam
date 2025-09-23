@@ -52,12 +52,10 @@ const SteamAccountDetail = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'AVAILABLE':
+      case 'IN_STOCK':
         return 'bg-green-100 text-green-800';
       case 'SOLD':
         return 'bg-red-100 text-red-800';
-      case 'PRE_ORDER':
-        return 'bg-yellow-100 text-yellow-800';
       case 'MAINTENANCE':
         return 'bg-blue-100 text-blue-800';
       default:
@@ -86,8 +84,8 @@ const SteamAccountDetail = () => {
       return;
     }
     
-    // If account is PRE_ORDER, skip validation step and go straight to confirmation
-    if (account?.status === 'PRE_ORDER') {
+    // If account is IN_STOCK, proceed to confirmation directly
+    if (account?.status === 'IN_STOCK') {
       setShowPaymentConfirmation(true);
       return;
     }
@@ -263,8 +261,7 @@ const SteamAccountDetail = () => {
               <h1 className="text-3xl font-bold text-gray-800 mb-2">{account.name}</h1>
               <div className="flex items-center gap-2">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(account.status)}`}>
-                  {account.status === 'AVAILABLE' ? 'CÓ SẴN' : 
-                   account.status === 'PRE_ORDER' ? 'ĐẶT TRƯỚC' : 
+                  {account.status === 'IN_STOCK' ? 'CÓ SẴN' : 
                    account.status === 'SOLD' ? 'ĐÃ BÁN' :
                    account.status === 'MAINTENANCE' ? 'BẢO TRÌ' : account.status}
                 </span>
@@ -292,7 +289,7 @@ const SteamAccountDetail = () => {
                 )}
               </div>
               <p className="text-sm text-gray-500">
-                {account.status === 'PRE_ORDER' ? 'Có thể đặt trước' : `Kho: ${account.stockQuantity} có sẵn`}
+                {`Kho: ${account.stockQuantity} có sẵn`}
               </p>
             </div>
 
@@ -340,14 +337,14 @@ const SteamAccountDetail = () => {
                 onClick={handleBuyNow}
               >
                 <div className="font-bold">
-                  {account.status === 'PRE_ORDER' ? 'ĐẶT HÀNG' : 'MUA NGAY'}
+                  {'MUA NGAY'}
                 </div>
               </Button>
 
               {/* Area 6: Add to Cart Button */}
               <Button 
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 text-lg"
-                disabled={account.status === 'SOLD' || account.status === 'MAINTENANCE' || account.status === 'PRE_ORDER'}
+                disabled={account.status === 'SOLD' || account.status === 'MAINTENANCE'}
                 onClick={handleAddToCart}
               >
                 <div className="font-bold">

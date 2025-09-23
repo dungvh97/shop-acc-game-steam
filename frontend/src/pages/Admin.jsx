@@ -182,7 +182,7 @@ const Admin = () => {
           salePrice: info.price ?? 0,
           inventoryDate: info.updatedAt || null,
           inventoryQuantity: typeof info.availableStockCount === 'number' ? info.availableStockCount : (info.availableStockCount ?? 0),
-          status: (info.availableStockCount ?? 0) > 0 ? 'AVAILABLE' : 'PRE_ORDER',
+          status: (info.availableStockCount ?? 0) > 0 ? 'STOCK' : 'ORDER',
           gameName: Array.isArray(info.gameIds) && info.gameIds.length > 0
             ? info.gameIds
                 .map(gid => gameNameById(gid))
@@ -813,8 +813,7 @@ const Admin = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ALL">Tất cả</SelectItem>
-                  <SelectItem value="PRE_ORDER">Chưa ai mua</SelectItem>
-                  <SelectItem value="ORDERED">Chờ xử lý</SelectItem>
+                  <SelectItem value="ORDERING">Chờ xử lý</SelectItem>
                   <SelectItem value="DELIVERED">Đã hoàn thành</SelectItem>
                   <SelectItem value="CANCELLED">Đã Huỷ</SelectItem>
                 </SelectContent>
@@ -1262,8 +1261,7 @@ const Admin = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Tất cả</SelectItem>
-                      <SelectItem value="AVAILABLE">Có sẵn</SelectItem>
-                      <SelectItem value="PRE_ORDER">Chờ đặt hàng</SelectItem>
+                      <SelectItem value="IN_STOCK">Có sẵn</SelectItem>
                       <SelectItem value="SOLD">Đã bán</SelectItem>
                       <SelectItem value="MAINTENANCE">Bảo trì</SelectItem>
                     </SelectContent>
@@ -1323,15 +1321,13 @@ const Admin = () => {
                           <td className="text-right py-3 px-4">{group.info.inventoryQuantity}</td>
                           <td className="text-center py-3 px-4">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              group.info.status === 'AVAILABLE' ? 'bg-green-100 text-green-800' :
+                              group.info.status === 'IN_STOCK' ? 'bg-green-100 text-green-800' :
                               group.info.status === 'SOLD' ? 'bg-red-100 text-red-800' :
-                              group.info.status === 'PRE_ORDER' ? 'bg-blue-100 text-blue-800' :
                               group.info.status === 'MAINTENANCE' ? 'bg-orange-100 text-orange-800' :
                               'bg-yellow-100 text-yellow-800'
                             }`}>
-                              {group.info.status === 'AVAILABLE' ? 'Có sẵn' :
+                              {group.info.status === 'IN_STOCK' ? 'Có sẵn' :
                                group.info.status === 'SOLD' ? 'Đã bán' :
-                               group.info.status === 'PRE_ORDER' ? 'Chờ đặt hàng' :
                                group.info.status === 'MAINTENANCE' ? 'Bảo trì' :
                                group.info.status}
                             </span>
@@ -1398,9 +1394,8 @@ const Admin = () => {
                           <td className="py-3 px-4 font-mono text-sm">{sa.steamGuard || '—'}</td>
                           <td className="text-center py-3 px-4">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              sa.status === 'AVAILABLE' ? 'bg-green-100 text-green-800' :
+                              sa.status === 'IN_STOCK' ? 'bg-green-100 text-green-800' :
                               sa.status === 'SOLD' ? 'bg-red-100 text-red-800' :
-                              sa.status === 'PRE_ORDER' ? 'bg-blue-100 text-blue-800' :
                               sa.status === 'MAINTENANCE' ? 'bg-orange-100 text-orange-800' :
                               'bg-yellow-100 text-yellow-800'
                             }`}>
