@@ -150,6 +150,21 @@ const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess, should
     return null;
   }
 
+  // Build a single QR source and total info for cart payments
+  const pendingOrders = orders.filter(o => o.status === 'PENDING');
+  const totalAmount = orders.reduce((total, order) => total + (Number(order.amount) || 0), 0);
+  const transferNote = orders.map(order => order.orderId).join(', ');
+
+  // Bank config (matches the info shown below)
+  const bankCode = 'TPB'; // TPBank
+  const accountNumber = '27727998888';
+  const accountName = 'SHOP ACC GAME';
+
+  // If there are multiple orders, generate a single VietQR URL; otherwise use the order-provided QR
+  const singleOrderQr = pendingOrders[0]?.qrCodeUrl || orders[0]?.qrCodeUrl;
+  const combinedQrUrl = `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact2.png?amount=${encodeURIComponent(totalAmount)}&addInfo=${encodeURIComponent(transferNote)}&accountName=${encodeURIComponent(accountName)}`;
+  const qrImageSrc = orders.length > 1 ? combinedQrUrl : singleOrderQr;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -205,7 +220,7 @@ const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess, should
                 <div className="flex justify-between font-bold text-lg border-t pt-2">
                   <span>Tổng số tiền:</span>
                   <span className="text-primary">
-                    {formatPrice(orders.reduce((total, order) => total + order.amount, 0))}
+                    {formatPrice(totalAmount)}
                   </span>
                 </div>
               </div>
@@ -222,7 +237,7 @@ const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess, should
                   
                   <div className="flex justify-center">
                     <img 
-                      src={orders.find(order => order.status === 'PENDING')?.qrCodeUrl} 
+                      src={qrImageSrc} 
                       alt="Mã QR thanh toán"
                       className="w-48 h-48 border rounded-lg"
                     />
@@ -230,9 +245,9 @@ const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess, should
                   
                   <div className="text-center text-sm text-muted-foreground">
                     <p>Ngân hàng: TPBank</p>
-                    <p>Tài khoản: 27727998888</p>
-                    <p>Số tiền: {formatPrice(orders.reduce((total, order) => total + order.amount, 0))}</p>
-                    <p>Nội dung: {orders.map(order => order.orderId).join(', ')}</p>
+                    <p>Tài khoản: {accountNumber}</p>
+                    <p>Số tiền: {formatPrice(totalAmount)}</p>
+                    <p>Nội dung: {transferNote}</p>
                   </div>
                   
                   <div className="text-center">
