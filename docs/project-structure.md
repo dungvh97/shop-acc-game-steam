@@ -7,24 +7,22 @@ This document provides a detailed breakdown of the Shop Account Game platform pr
 
 ```
 shop-acc-game/
-├── backend/                    # Spring Boot backend application
-├── frontend/                   # React frontend application
-├── steam-checker/             # Steam account validation microservice
-├── docs/                       # Project documentation
-├── backups/                    # Database backup files
-├── logs/                       # Application logs
-├── monitoring/                 # Monitoring and observability configs
-├── nginx-proxy/               # Nginx reverse proxy configuration
-├── .env                        # Local environment configuration
-├── .env.production             # Production environment configuration (local/testing)
-├── docker-compose.cloudflare.yml  # Docker Compose for production deployment
-├── docker-compose.yml          # Docker Compose for local/dev services
-├── deploy-cloudflare.bat      # Windows deployment script
-├── env.production.template    # Environment variables template
-├── run-local.bat             # Local development startup script
-├── setup-database.bat        # Database setup script
-├── start-services.bat        # Service startup script
-└── README.md                 # Main project documentation
+├── backend/                     # Spring Boot backend application
+├── frontend/                    # React frontend application
+├── steam-checker/               # Steam account validation microservice
+├── docs/                        # Project documentation
+├── backups/                     # Database backup files
+├── logs/                        # Application logs
+├── monitoring/                  # Monitoring and observability configs
+├── nginx-proxy/                 # Nginx reverse proxy configuration
+├── docker-compose.cloudflare.yml # Docker Compose for production deployment
+├── docker-compose.yml           # Docker Compose for local/dev services
+├── deploy-cloudflare.bat        # Windows deployment script
+├── env.production.template      # Environment variables template
+├── run-local.bat                # Local development startup script
+├── setup-database.bat           # Database setup script
+├── start-services.bat           # Service startup script
+└── README.md                    # Main project documentation
 ```
 
 ## Backend Structure (`/backend`)
@@ -132,7 +130,6 @@ Authentication and authorization:
 ### Configuration (`/config/`)
 Application configuration classes:
 
-- **`DatabaseConfig.java`** - Database connection configuration
 - **`DatabaseHealthIndicator.java`** - Database health monitoring
 - **`DatabaseReadinessChecker.java`** - Database readiness checks
 - **`EmailConfig.java`** - Email service configuration
@@ -189,7 +186,7 @@ Reusable UI components:
 - **`PaymentDialog.jsx`** - Payment processing dialog
 - **`PaymentConfirmationDialog.jsx`** - Payment confirmation dialog
 - **`DepositDialog.jsx`** - Wallet deposit dialog
-- **`AccountCredentialsModal.jsx`** - Account credentials display modal
+
 
 ### UI Components (`/components/ui/`)
 Reusable UI primitives (Radix UI based):
@@ -243,7 +240,6 @@ Static files:
 - **`vite.config.js`** - Vite build configuration
 - **`tailwind.config.js`** - Tailwind CSS configuration
 - **`postcss.config.js`** - PostCSS configuration
-- **`.eslintrc.cjs`** - ESLint configuration
 - **`Dockerfile.cloudflare`** - Docker image for Cloudflare deployment
 - **`nginx.cloudflare.conf`** - Nginx configuration for Cloudflare
 
@@ -309,9 +305,7 @@ A standalone Node.js microservice for validating Steam account credentials using
 - **`start-services.bat`** - Service startup script
 
 ### Environment Configuration
-- **`.env`** - Local development environment variables
-- **`.env.production`** - Production environment variables (local/testing)
-- **`env.production.template`** - Template for production environment variables
+- **`env.production.template`** - Template for production environment variables (copy and adapt as needed)
 
 ## Database Structure
 
@@ -328,8 +322,7 @@ A standalone Node.js microservice for validating Steam account credentials using
 
 ### Migration Scripts
 Located in `backend/src/main/resources/db/migration/` for database schema versioning:
-- **`V20241225_001__Add_Steam_Fields_To_Games.sql`** - Added Steam-related fields to games table
-- **`V20241225_002__Split_SteamAccount_To_AccountInfo_And_SteamAccount.sql`** - Split SteamAccount into AccountInfo and SteamAccount entities
+- **`V20250923_001__Account_Classification_And_Status_Refactor.sql`** - Refactor account classification and status enums/tables
 
 ## Entity Relationships
 
