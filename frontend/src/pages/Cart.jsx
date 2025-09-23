@@ -182,7 +182,7 @@ const Cart = () => {
               <Card key={item.id}>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    <span>{item.steamAccountName}</span>
+                    <span>{item.accountInfoName || item.steamAccountName}</span>
                     <Button 
                       variant="ghost" 
                       size="sm" 
@@ -197,8 +197,8 @@ const Cart = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <img 
-                        src={BACKEND_CONFIG.getImageUrl(item.steamAccountImageUrl)} 
-                        alt={item.steamAccountName} 
+                        src={BACKEND_CONFIG.getImageUrl(item.accountInfoImageUrl || item.steamAccountImageUrl)} 
+                        alt={item.accountInfoName || item.steamAccountName} 
                         className="w-16 h-16 object-cover rounded"
                         onError={(e) => {
                           e.target.style.display = 'none';
@@ -211,8 +211,8 @@ const Cart = () => {
                         </svg>
                       </div>
                       <div>
-                        <p className="font-medium">{item.steamAccountName}</p>
-                        <p className="text-sm text-gray-500">{item.steamAccountDescription}</p>
+                        <p className="font-medium">{item.accountInfoName || item.steamAccountName}</p>
+                        <p className="text-sm text-gray-500">{item.accountInfoDescription || item.steamAccountDescription}</p>
                       </div>
                     </div>
                     <div className="text-right space-y-2">

@@ -7,10 +7,11 @@ import com.shopaccgame.entity.AccountInfo;
 import com.shopaccgame.entity.User;
 import com.shopaccgame.entity.SteamAccount;
 import com.shopaccgame.repository.CartItemRepository;
-import com.shopaccgame.repository.AccountInfoRepository;
 import com.shopaccgame.repository.SteamAccountRepository;
 import com.shopaccgame.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,12 +22,11 @@ import java.util.stream.Collectors;
 
 @Service
 public class CartService {
+    private static final Logger log = LoggerFactory.getLogger(CartService.class);
     
     @Autowired
     private CartItemRepository cartItemRepository;
     
-    @Autowired
-    private AccountInfoRepository accountInfoRepository;
     
     @Autowired
     private SteamAccountRepository steamAccountRepository;
@@ -42,12 +42,16 @@ public class CartService {
     
     @Transactional
     public CartItemDto addToCart(String username, Long steamAccountId, Integer quantity) {
+        log.info("Adding to cart: user={}, steamAccountId={}, quantity={}", username, steamAccountId, quantity);
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
         
         SteamAccount steamAccount = steamAccountRepository.findById(steamAccountId)
             .orElseThrow(() -> new RuntimeException("Steam account not found"));
         AccountInfo accountInfo = steamAccount.getAccountInfo();
+        if (accountInfo == null) {
+            log.warn("Steam account {} has no linked AccountInfo", steamAccountId);
+        }
         
         // Check if item already exists in cart
         CartItem existingItem = cartItemRepository.findByUserAndSteamAccount(user, steamAccount)
@@ -59,7 +63,9 @@ public class CartService {
             existingItem.setUnitPrice(accountInfo.getPrice());
             existingItem.setAddedAt(LocalDateTime.now());
             CartItem updatedItem = cartItemRepository.save(existingItem);
-            return new CartItemDto(updatedItem);
+            CartItemDto dto = new CartItemDto(updatedItem);
+            log.debug("Updated cart item: id={}, accountInfoId={}, accountInfoName={}", dto.getId(), dto.getAccountInfoId(), dto.getAccountInfoName());
+            return dto;
         } else {
             // Create new cart item
             CartItem newItem = new CartItem();
@@ -71,7 +77,9 @@ public class CartService {
             newItem.setAddedAt(LocalDateTime.now());
             
             CartItem savedItem = cartItemRepository.save(newItem);
-            return new CartItemDto(savedItem);
+            CartItemDto dto = new CartItemDto(savedItem);
+            log.debug("Created cart item: id={}, accountInfoId={}, accountInfoName={}", dto.getId(), dto.getAccountInfoId(), dto.getAccountInfoName());
+            return dto;
         }
     }
     
@@ -80,9 +88,11 @@ public class CartService {
             .orElseThrow(() -> new RuntimeException("User not found"));
         
         List<CartItem> cartItems = cartItemRepository.findByUserOrderByAddedAtDesc(user);
-        return cartItems.stream()
+        List<CartItemDto> dtos = cartItems.stream()
             .map(CartItemDto::new)
             .collect(Collectors.toList());
+        log.debug("Loaded {} cart items for user={}", dtos.size(), username);
+        return dtos;
     }
     
     @Transactional
