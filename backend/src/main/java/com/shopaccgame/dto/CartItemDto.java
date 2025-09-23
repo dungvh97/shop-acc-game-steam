@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 public class CartItemDto {
     private Long id;
+    private Long steamAccountId;
     private Long accountInfoId;
     private String accountInfoName;
     private String accountInfoImageUrl;
@@ -18,6 +19,7 @@ public class CartItemDto {
     
     public CartItemDto(CartItem cartItem) {
         this.id = cartItem.getId();
+        this.steamAccountId = cartItem.getSteamAccount().getId();
         this.accountInfoId = cartItem.getAccountInfo().getId();
         this.accountInfoName = cartItem.getAccountInfo().getName();
         this.accountInfoImageUrl = cartItem.getAccountInfo().getImageUrl();
@@ -42,6 +44,14 @@ public class CartItemDto {
     
     public void setAccountInfoId(Long accountInfoId) {
         this.accountInfoId = accountInfoId;
+    }
+
+    public Long getSteamAccountId() {
+        return steamAccountId;
+    }
+
+    public void setSteamAccountId(Long steamAccountId) {
+        this.steamAccountId = steamAccountId;
     }
     
     public String getAccountInfoName() {

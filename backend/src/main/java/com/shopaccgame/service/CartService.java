@@ -5,6 +5,7 @@ import com.shopaccgame.dto.OrderResponseDto;
 import com.shopaccgame.entity.CartItem;
 import com.shopaccgame.entity.AccountInfo;
 import com.shopaccgame.entity.User;
+import com.shopaccgame.entity.SteamAccount;
 import com.shopaccgame.repository.CartItemRepository;
 import com.shopaccgame.repository.AccountInfoRepository;
 import com.shopaccgame.repository.SteamAccountRepository;
@@ -40,15 +41,16 @@ public class CartService {
     private com.shopaccgame.service.UserBalanceService userBalanceService;
     
     @Transactional
-    public CartItemDto addToCart(String username, Long accountInfoId, Integer quantity) {
+    public CartItemDto addToCart(String username, Long steamAccountId, Integer quantity) {
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
         
-        AccountInfo accountInfo = accountInfoRepository.findById(accountInfoId)
-            .orElseThrow(() -> new RuntimeException("Account info not found"));
+        SteamAccount steamAccount = steamAccountRepository.findById(steamAccountId)
+            .orElseThrow(() -> new RuntimeException("Steam account not found"));
+        AccountInfo accountInfo = steamAccount.getAccountInfo();
         
         // Check if item already exists in cart
-        CartItem existingItem = cartItemRepository.findByUserAndAccountInfo(user, accountInfo)
+        CartItem existingItem = cartItemRepository.findByUserAndSteamAccount(user, steamAccount)
             .orElse(null);
         
         if (existingItem != null) {
@@ -63,6 +65,7 @@ public class CartService {
             CartItem newItem = new CartItem();
             newItem.setUser(user);
             newItem.setAccountInfo(accountInfo);
+            newItem.setSteamAccount(steamAccount);
             newItem.setQuantity(quantity);
             newItem.setUnitPrice(accountInfo.getPrice());
             newItem.setAddedAt(LocalDateTime.now());
@@ -83,19 +86,19 @@ public class CartService {
     }
     
     @Transactional
-    public void removeFromCart(String username, Long accountInfoId) {
+    public void removeFromCart(String username, Long steamAccountId) {
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
         
-        cartItemRepository.deleteByUserAndAccountInfoId(user, accountInfoId);
+        cartItemRepository.deleteByUserAndSteamAccountId(user, steamAccountId);
     }
     
     @Transactional
-    public void updateQuantity(String username, Long accountInfoId, Integer quantity) {
+    public void updateQuantity(String username, Long steamAccountId, Integer quantity) {
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
         
-        CartItem cartItem = cartItemRepository.findByUserAndAccountInfoId(user, accountInfoId)
+        CartItem cartItem = cartItemRepository.findByUserAndSteamAccountId(user, steamAccountId)
             .orElseThrow(() -> new RuntimeException("Cart item not found"));
         
         if (quantity <= 0) {
