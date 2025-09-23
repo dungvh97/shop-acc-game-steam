@@ -79,7 +79,16 @@ const SteamAccounts = () => {
       }
       
       console.log('API response:', response);
-      setAllAccounts(response || []);
+      // Group by accountInfoId to ensure each Account Info appears only once
+      const groupedMap = new Map();
+      (response || []).forEach((item) => {
+        if (!item || item.accountInfoId == null) return;
+        if (!groupedMap.has(item.accountInfoId)) {
+          groupedMap.set(item.accountInfoId, item);
+        }
+      });
+      const groupedList = Array.from(groupedMap.values());
+      setAllAccounts(groupedList);
     } catch (error) {
       console.error('Error loading steam accounts:', error);
       toast({
@@ -422,7 +431,7 @@ const SteamAccounts = () => {
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {currentAccounts.map((account) => (
-                  <Card key={account.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+                  <Card key={account.accountInfoId ?? account.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
                     <Link to={`/steam-accounts/${account.id}`} className="block">
                     {/* Account Image */}
                     <div className="relative h-48 bg-gray-100">
