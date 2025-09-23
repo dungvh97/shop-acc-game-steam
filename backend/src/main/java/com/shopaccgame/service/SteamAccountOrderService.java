@@ -41,6 +41,9 @@ public class SteamAccountOrderService {
     
     @Autowired
     private UserBalanceService userBalanceService;
+
+    @Autowired
+    private EncryptionService encryptionService;
     
     /**
      * Create a new order for a specific steam account
@@ -82,7 +85,7 @@ public class SteamAccountOrderService {
         logger.info("Created order {} for steam account {} by user {}", 
             savedOrder.getOrderId(), steamAccount.getUsername(), username);
         
-        return new OrderResponseDto(savedOrder);
+        return toOrderResponseDto(savedOrder);
     }
     
     /**
@@ -100,7 +103,7 @@ public class SteamAccountOrderService {
             throw new RuntimeException("Access denied");
         }
         
-        return new OrderResponseDto(order);
+        return toOrderResponseDto(order);
     }
     
     /**
@@ -111,7 +114,7 @@ public class SteamAccountOrderService {
             .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
         
         Page<SteamAccountOrder> orders = orderRepository.findByUser(user, pageable);
-        return orders.map(OrderResponseDto::new);
+        return orders.map(this::toOrderResponseDto);
     }
     
     /**
@@ -122,7 +125,7 @@ public class SteamAccountOrderService {
             .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
         
         List<SteamAccountOrder> orders = orderRepository.findUserOrdersOrderByCreatedAtDesc(user);
-        return orders.stream().map(OrderResponseDto::new).collect(Collectors.toList());
+        return orders.stream().map(this::toOrderResponseDto).collect(Collectors.toList());
     }
     
     /**
@@ -142,7 +145,7 @@ public class SteamAccountOrderService {
         
         logger.info("Order {} marked as paid", orderId);
         
-        return new OrderResponseDto(savedOrder);
+        return toOrderResponseDto(savedOrder);
     }
     
     /**
@@ -169,7 +172,7 @@ public class SteamAccountOrderService {
         
         logger.info("Order {} marked as delivered", orderId);
         
-        return new OrderResponseDto(savedOrder);
+        return toOrderResponseDto(savedOrder);
     }
     
     /**
@@ -247,7 +250,7 @@ public class SteamAccountOrderService {
         logger.info("Created and paid order {} for steam account {} by user {} using balance", 
             savedOrder.getOrderId(), steamAccount.getUsername(), username);
         
-        return new OrderResponseDto(savedOrder);
+        return toOrderResponseDto(savedOrder);
     }
     
     /**
@@ -272,5 +275,18 @@ public class SteamAccountOrderService {
         }
     }
     
+    private OrderResponseDto toOrderResponseDto(SteamAccountOrder order) {
+        OrderResponseDto dto = new OrderResponseDto(order);
+        // Decrypt password only for PAID orders where we actually return credentials
+        if (order.getStatus() == SteamAccountOrder.OrderStatus.PAID && dto.getAccountPassword() != null) {
+            try {
+                String decrypted = encryptionService.decryptPassword(dto.getAccountPassword());
+                dto.setAccountPassword(decrypted);
+            } catch (Exception e) {
+                // If decryption fails (legacy plaintext or different scheme), keep original
+            }
+        }
+        return dto;
+    }
 
 }
