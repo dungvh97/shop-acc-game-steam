@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -45,7 +46,7 @@ const Admin = () => {
   // Order management tab state
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
-  const [orderFilter, setOrderFilter] = useState('PRE_ORDER');
+  const [orderFilter, setOrderFilter] = useState('ALL');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [processingOrder, setProcessingOrder] = useState(false);
 
@@ -269,6 +270,13 @@ const Admin = () => {
       fetchSteamImportStatus();
     }
   }, [activeTab]);
+
+  // Refetch orders when filter changes while on orders tab
+  useEffect(() => {
+    if (activeTab === 'orders') {
+      fetchOrders();
+    }
+  }, [orderFilter]);
 
   const guard = () => {
     if (!isAdmin) {
@@ -853,7 +861,7 @@ const Admin = () => {
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-600">Chờ xử lý</p>
                     <p className="text-xl font-bold text-gray-900">
-                      {orders.filter(o => o.status === 'PRE_ORDER').length}
+                      {orders.filter(o => o.status === 'ORDERING').length}
                     </p>
                   </div>
                 </div>
@@ -922,7 +930,13 @@ const Admin = () => {
               <CardHeader>
                 <CardTitle>Danh sách đơn hàng</CardTitle>
                 <CardDescription>
-                  {orderFilter === 'ALL' ? 'Tất cả đơn hàng' : `Đơn hàng ${orderFilter}`}
+                  {orderFilter === 'ALL' ? 'Tất cả đơn hàng' : (
+                    orderFilter === 'ORDERING' ? 'Đơn hàng Chờ xử lý' : (
+                      orderFilter === 'DELIVERED' ? 'Đơn hàng Đã hoàn thành' : (
+                        orderFilter === 'CANCELLED' ? 'Đơn hàng Đã huỷ' : `Đơn hàng ${orderFilter}`
+                      )
+                    )
+                  )}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -961,22 +975,35 @@ const Admin = () => {
                             {order.totalAmount?.toLocaleString('vi-VN') || 0} VNĐ
                           </td>
                           <td className="text-center py-3 px-4">
+                            {(() => {
+                              const linkableStatuses = new Set(['ORDERING', 'DELIVERED', 'CANCELLED']);
+                              const statusBadge = (
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                               order.status === 'DELIVERED' ? 'bg-green-100 text-green-800' :
                               order.status === 'PAID' ? 'bg-yellow-100 text-yellow-800' :
                               order.status === 'CANCELLED' ? 'bg-red-100 text-red-800' :
                               order.status === 'ORDERED' ? 'bg-purple-100 text-purple-800' :
+                              order.status === 'ORDERING' ? 'bg-orange-100 text-orange-800' :
                               order.status === 'PRE_ORDER' ? 'bg-orange-100 text-orange-800' :
                               'bg-blue-100 text-blue-800'
                             }`}>
                               {order.status === 'PENDING' ? 'Chờ thanh toán' :
-                               order.status === 'PAID' ? 'Đã thanh toán' :
-                               order.status === 'DELIVERED' ? 'Đã giao' :
-                               order.status === 'CANCELLED' ? 'Đã hủy' :
-                               order.status === 'ORDERED' ? 'Đã đặt hàng' :
-                               order.status === 'PRE_ORDER' ? 'Chờ xử lý' :
-                               order.status}
-                            </span>
+                                   order.status === 'PAID' ? 'Đã thanh toán' :
+                                   order.status === 'DELIVERED' ? 'Đã giao' :
+                                   order.status === 'CANCELLED' ? 'Đã hủy' :
+                                   order.status === 'ORDERED' ? 'Đã đặt hàng' :
+                               order.status === 'ORDERING' ? 'Chờ xử lý' :
+                                   order.status === 'PRE_ORDER' ? 'Chờ xử lý' :
+                                   order.status}
+                                </span>
+                              );
+                              return linkableStatuses.has(order.status)
+                                ? (
+                                  <Link to={`/steam-accounts#${order.status}`}>
+                                    {statusBadge}
+                                  </Link>
+                                ) : statusBadge;
+                            })()}
                           </td>
                           <td className="py-3 px-4 text-sm">
                             {new Date(order.createdAt).toLocaleDateString('vi-VN')}
