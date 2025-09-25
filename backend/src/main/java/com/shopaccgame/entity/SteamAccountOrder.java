@@ -1,5 +1,6 @@
 package com.shopaccgame.entity;
 
+import com.shopaccgame.entity.enums.AccountClassification;
 import com.shopaccgame.entity.enums.AccountStockStatus;
 
 import jakarta.persistence.*;
@@ -76,8 +77,6 @@ public class SteamAccountOrder {
         this.orderId = generateOrderId();
     }
     
-
-    
     // Business logic methods
     public void markAsPaid() {
         this.status = OrderStatus.PAID;
@@ -87,8 +86,13 @@ public class SteamAccountOrder {
         if (this.steamAccount != null) {
             this.accountUsername = this.steamAccount.getUsername();
             this.accountPassword = this.steamAccount.getPassword();
-            // Mark the steam account as sold
-            this.steamAccount.setStatus(AccountStockStatus.SOLD);
+
+            // Mark the steam account as sold or ordering
+            if (this.steamAccount.getAccountInfo().getClassify() == AccountClassification.STOCK) {
+                this.steamAccount.setStatus(AccountStockStatus.SOLD);
+            } else if (this.steamAccount.getAccountInfo().getClassify() == AccountClassification.ORDER) {
+                this.steamAccount.setStatus(AccountStockStatus.ORDERING);
+            }
         }
     }
     
