@@ -621,7 +621,7 @@ const SteamAccountManager = () => {
                   )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Tên đăng nhập *</label>
+                  <label className="text-sm font-medium">Tên đăng nhập</label>
                   <Input
                     value={formData.username}
                     onChange={(e) => {
@@ -695,7 +695,7 @@ const SteamAccountManager = () => {
                   )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Trạng thái Tài khoản *</label>
+                  <label className="text-sm font-medium">Trạng thái tài khoản *</label>
                   <select
                     className={`w-full border rounded h-10 px-3 ${validationErrors.status ? 'border-red-500' : ''}`}
                     value={formData.status}
@@ -762,7 +762,7 @@ const SteamAccountManager = () => {
                   )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Số lượng Kho *</label>
+                  <label className="text-sm font-medium">Số lượng kho *</label>
                   <Input
                     type="number"
                     min="0"

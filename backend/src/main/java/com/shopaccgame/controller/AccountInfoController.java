@@ -16,7 +16,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/account-info")
+@RequestMapping("/account-info")
 @CrossOrigin(origins = "*")
 public class AccountInfoController {
     
@@ -91,12 +91,14 @@ public class AccountInfoController {
     
     @GetMapping("/available")
     public ResponseEntity<List<AccountInfoDto>> getAvailableAccountInfos() {
+        System.out.println("[AccountInfoController] getAvailableAccountInfos called");
         List<AccountInfoDto> accountInfos = accountInfoService.getAvailableAccountInfos();
         return ResponseEntity.ok(accountInfos);
     }
     
     @GetMapping("/available/type/{accountType}")
     public ResponseEntity<List<AccountInfoDto>> getAvailableAccountInfosByType(@PathVariable AccountType accountType) {
+        System.out.println("[AccountInfoController] getAvailableAccountInfosByType called accountType=" + accountType);
         List<AccountInfoDto> accountInfos = accountInfoService.getAvailableAccountInfosByType(accountType);
         return ResponseEntity.ok(accountInfos);
     }

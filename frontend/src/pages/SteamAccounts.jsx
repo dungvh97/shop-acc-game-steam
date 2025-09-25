@@ -256,8 +256,8 @@ const SteamAccounts = () => {
       return;
     }
     
-    // If account is IN_STOCK, proceed to confirmation directly
-    if (account?.status === 'IN_STOCK') {
+    // If account is PRE_ORDER, proceed to confirmation directly
+    if (account?.status === 'PRE_ORDER') {
       setSelectedAccount(account);
       setShowPaymentConfirmation(true);
       return;
@@ -455,7 +455,7 @@ const SteamAccounts = () => {
                       {/* Status Badge */}
                       <div className="absolute top-2 right-2">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(account.status)}`}>
-                          {account.status === 'IN_STOCK' ? 'CÓ SẴN' : account.status}
+                          {account.status === 'IN_STOCK' ? 'CÓ SẴN' : account.status === 'PRE_ORDER' ? 'ĐẶT TRƯỚC' : account.status}
                         </span>
                       </div>
                     </div>
@@ -519,7 +519,7 @@ const SteamAccounts = () => {
                           disabled={account.status === 'SOLD' || account.status === 'MAINTENANCE'}
                           onClick={() => handleBuyNow(account)}
                         >
-                          {'MUA NGAY'}
+                          { account.status === 'IN_STOCK'? 'MUA NGAY' : 'ĐẶT HÀNG'}
                         </Button>
                         {account.status === 'IN_STOCK' && (
                           <Button 

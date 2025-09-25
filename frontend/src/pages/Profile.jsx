@@ -713,7 +713,7 @@ const Profile = () => {
                               <div className="flex items-center gap-2">
                                 <input
                                   type="text"
-                                  value={order.accountUsername}
+                                  value={order.accountUsername || 'Đang đặt hàng'}
                                   readOnly
                                   className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs bg-white"
                                 />
@@ -740,7 +740,7 @@ const Profile = () => {
                               <div className="flex items-center gap-2">
                                 <input
                                   type={showPasswords[order.id] ? "text" : "password"}
-                                  value={order.accountPassword}
+                                  value={order.accountPassword || 'Đang đặt hàng'}
                                   readOnly
                                   className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs bg-white"
                                 />
@@ -961,7 +961,7 @@ const Profile = () => {
                       <div className="flex items-center gap-2">
                         <input
                           type="text"
-                          value={selectedOrder.accountUsername || ''}
+                          value={selectedOrder.accountUsername || 'Đang đặt hàng'}
                           readOnly
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm"
                         />
@@ -987,7 +987,7 @@ const Profile = () => {
                       <div className="flex items-center gap-2">
                         <input
                           type={showPasswords[`modal-${selectedOrder.id}`] ? "text" : "password"}
-                          value={selectedOrder.accountPassword || ''}
+                          value={selectedOrder.accountPassword || 'Đang đặt hàng'}
                           readOnly
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm"
                         />

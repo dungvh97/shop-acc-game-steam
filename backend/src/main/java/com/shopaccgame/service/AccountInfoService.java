@@ -7,6 +7,7 @@ import com.shopaccgame.entity.AccountInfo;
 import com.shopaccgame.entity.Game;
 import com.shopaccgame.entity.SteamAccount;
 import com.shopaccgame.entity.enums.AccountStockStatus;
+import com.shopaccgame.entity.enums.AccountClassification;
 import com.shopaccgame.entity.enums.AccountType;
 import com.shopaccgame.repository.AccountInfoRepository;
 import com.shopaccgame.repository.GameRepository;
@@ -81,6 +82,10 @@ public class AccountInfoService {
         accountInfo.setPrice(requestDto.getPrice());
         accountInfo.setOriginalPrice(requestDto.getOriginalPrice());
         accountInfo.setDiscountPercentage(requestDto.getDiscountPercentage());
+        // classify from request (if provided), default to current default
+        if (requestDto.getClassify() != null) {
+            accountInfo.setClassify(requestDto.getClassify());
+        }
         
         // Associate games if provided
         if (requestDto.getGameIds() != null && !requestDto.getGameIds().isEmpty()) {
@@ -114,6 +119,9 @@ public class AccountInfoService {
         accountInfo.setPrice(requestDto.getPrice());
         accountInfo.setOriginalPrice(requestDto.getOriginalPrice());
         accountInfo.setDiscountPercentage(requestDto.getDiscountPercentage());
+        if (requestDto.getClassify() != null) {
+            accountInfo.setClassify(AccountClassification.valueOf(requestDto.getClassify()));
+        }
         
         // Associate games if provided
         if (requestDto.getGameIds() != null && !requestDto.getGameIds().isEmpty()) {
@@ -197,14 +205,18 @@ public class AccountInfoService {
     }
     
     public List<AccountInfoDto> getAvailableAccountInfos() {
+        System.out.println("[AccountInfoService] findAvailableAccountInfos executing");
         List<AccountInfo> accountInfos = accountInfoRepository.findAvailableAccountInfos();
+        System.out.println("[AccountInfoService] found count=" + (accountInfos != null ? accountInfos.size() : 0));
         return accountInfos.stream()
             .map(AccountInfoDto::new)
             .collect(Collectors.toList());
     }
     
     public List<AccountInfoDto> getAvailableAccountInfosByType(AccountType accountType) {
+        System.out.println("[AccountInfoService] findAvailableAccountInfosByType executing accountType=" + accountType);
         List<AccountInfo> accountInfos = accountInfoRepository.findAvailableAccountInfosByType(accountType);
+        System.out.println("[AccountInfoService] found count by type=" + (accountInfos != null ? accountInfos.size() : 0));
         return accountInfos.stream()
             .map(AccountInfoDto::new)
             .collect(Collectors.toList());

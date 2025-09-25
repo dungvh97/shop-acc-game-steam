@@ -1,6 +1,7 @@
 package com.shopaccgame.dto;
 
 import com.shopaccgame.entity.enums.AccountType;
+import com.shopaccgame.entity.enums.AccountClassification;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -22,6 +23,9 @@ public class AccountInfoRequestDto {
     
     @NotNull(message = "Account type is required")
     private AccountType accountType;
+    
+    // STOCK or ORDER
+    private AccountClassification classify;
     
     @NotNull(message = "Price is required")
     @Positive(message = "Price must be positive")
@@ -69,6 +73,14 @@ public class AccountInfoRequestDto {
     
     public void setAccountType(AccountType accountType) {
         this.accountType = accountType;
+    }
+    
+    public AccountClassification getClassify() {
+        return classify;
+    }
+
+    public void setClassify(AccountClassification classify) {
+        this.classify = classify;
     }
     
     public BigDecimal getPrice() {

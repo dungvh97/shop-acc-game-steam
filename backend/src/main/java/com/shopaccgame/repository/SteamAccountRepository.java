@@ -26,21 +26,21 @@ public interface SteamAccountRepository extends JpaRepository<SteamAccount, Long
     @Query("SELECT sa FROM SteamAccount sa JOIN FETCH sa.accountInfo ai LEFT JOIN FETCH ai.games WHERE sa.id = :id")
     Optional<SteamAccount> findByIdWithAccountInfo(@Param("id") Long id);
     
-    @Query("SELECT sa FROM SteamAccount sa JOIN FETCH sa.accountInfo WHERE sa.status = 'IN_STOCK'")
+    @Query("SELECT sa FROM SteamAccount sa JOIN FETCH sa.accountInfo WHERE sa.status IN ('IN_STOCK', 'PRE_ORDER')")
     List<SteamAccount> findAvailableAccounts();
     
-    @Query("SELECT sa FROM SteamAccount sa JOIN FETCH sa.accountInfo ai WHERE ai.accountType = :accountType AND sa.status = 'IN_STOCK'")
+    @Query("SELECT sa FROM SteamAccount sa JOIN FETCH sa.accountInfo ai WHERE ai.accountType = :accountType AND sa.status IN ('IN_STOCK', 'PRE_ORDER')")
     List<SteamAccount> findAvailableAccountsByType(@Param("accountType") com.shopaccgame.entity.enums.AccountType accountType);
     
     @Query("SELECT sa FROM SteamAccount sa JOIN FETCH sa.accountInfo WHERE sa.username LIKE %:searchTerm%")
     Page<SteamAccount> findBySearchTerm(@Param("searchTerm") String searchTerm, Pageable pageable);
     
-    @Query("SELECT COUNT(sa) FROM SteamAccount sa JOIN sa.accountInfo ai WHERE ai.accountType = :accountType AND sa.status = 'IN_STOCK'")
+    @Query("SELECT COUNT(sa) FROM SteamAccount sa JOIN sa.accountInfo ai WHERE ai.accountType = :accountType AND sa.status IN ('IN_STOCK', 'PRE_ORDER')")
     long countAvailableByType(@Param("accountType") com.shopaccgame.entity.enums.AccountType accountType);
     
-    @Query("SELECT DISTINCT sa FROM SteamAccount sa JOIN FETCH sa.accountInfo ai JOIN ai.games g WHERE g.name LIKE %:gameName% AND sa.status = 'IN_STOCK'")
+    @Query("SELECT DISTINCT sa FROM SteamAccount sa JOIN FETCH sa.accountInfo ai JOIN ai.games g WHERE g.name LIKE %:gameName% AND sa.status IN ('IN_STOCK', 'PRE_ORDER')")
     List<SteamAccount> findAvailableAccountsByGameName(@Param("gameName") String gameName);
     
-    @Query("SELECT DISTINCT sa FROM SteamAccount sa JOIN FETCH sa.accountInfo ai JOIN ai.games g WHERE g.id = :gameId AND sa.status = 'IN_STOCK'")
+    @Query("SELECT DISTINCT sa FROM SteamAccount sa JOIN FETCH sa.accountInfo ai JOIN ai.games g WHERE g.id = :gameId AND sa.status IN ('IN_STOCK', 'PRE_ORDER')")
     List<SteamAccount> findAvailableAccountsByGameId(@Param("gameId") Long gameId);
 }

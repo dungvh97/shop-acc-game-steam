@@ -58,7 +58,7 @@ public class SteamAccountOrderService {
             .orElseThrow(() -> new RuntimeException("Steam account not found"));
         
         // Check if steam account is available
-        if (steamAccount.getStatus() != AccountStockStatus.IN_STOCK) {
+        if (steamAccount.getStatus() != AccountStockStatus.IN_STOCK && steamAccount.getStatus() != AccountStockStatus.PRE_ORDER) {
             throw new RuntimeException("Steam account is not available for purchase");
         }
         
@@ -215,7 +215,7 @@ public class SteamAccountOrderService {
             .orElseThrow(() -> new RuntimeException("Steam account not found"));
         
         // Check if steam account is available
-        if (steamAccount.getStatus() != AccountStockStatus.IN_STOCK) {
+        if (steamAccount.getStatus() != AccountStockStatus.IN_STOCK && steamAccount.getStatus() != AccountStockStatus.PRE_ORDER) {
             throw new RuntimeException("Steam account is not available for purchase");
         }
         

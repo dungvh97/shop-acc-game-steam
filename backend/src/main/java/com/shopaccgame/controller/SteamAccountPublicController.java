@@ -83,8 +83,8 @@ public class SteamAccountPublicController {
     public ResponseEntity<SteamAccountDto> getSteamAccountById(@PathVariable Long id) {
         return steamAccountService.getSteamAccountById(id)
             .map(account -> {
-                // Return if account is in stock
-                if (account.getStatus() == AccountStockStatus.IN_STOCK) {
+                // Return if account is in stock or pre order
+                if (account.getStatus() == AccountStockStatus.IN_STOCK || account.getStatus() == AccountStockStatus.PRE_ORDER) {
                     return account;
                 } else {
                     return null;

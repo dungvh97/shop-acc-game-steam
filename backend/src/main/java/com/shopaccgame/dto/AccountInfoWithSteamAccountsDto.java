@@ -3,6 +3,7 @@ package com.shopaccgame.dto;
 import com.shopaccgame.entity.enums.AccountStockStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,6 +26,9 @@ public class AccountInfoWithSteamAccountsDto {
     @NotNull(message = "Account type is required")
     private String accountType;
     
+    // STOCK or ORDER
+    private String classify;
+    
     @NotNull(message = "Price is required")
     @Positive(message = "Price must be positive")
     @JsonProperty("price")
@@ -39,7 +43,7 @@ public class AccountInfoWithSteamAccountsDto {
     
     // SteamAccount fields
     @NotNull(message = "Stock quantity is required")
-    @Positive(message = "Stock quantity must be positive")
+    @Min(value = 0, message = "Stock quantity must be greater than or equal to 0")
     private Integer stockQuantity;
     
     private List<SteamAccountData> steamAccounts;
@@ -155,6 +159,14 @@ public class AccountInfoWithSteamAccountsDto {
         if (priceStr != null && !priceStr.trim().isEmpty()) {
             this.price = new BigDecimal(priceStr.trim());
         }
+    }
+
+    public String getClassify() {
+        return classify;
+    }
+
+    public void setClassify(String classify) {
+        this.classify = classify;
     }
     
     public BigDecimal getOriginalPrice() {

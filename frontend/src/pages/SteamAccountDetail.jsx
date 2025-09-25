@@ -84,8 +84,8 @@ const SteamAccountDetail = () => {
       return;
     }
     
-    // If account is IN_STOCK, proceed to confirmation directly
-    if (account?.status === 'IN_STOCK') {
+    // If account is PRE_ORDER, proceed to confirmation directly
+    if (account?.status === 'PRE_ORDER') {
       setShowPaymentConfirmation(true);
       return;
     }
@@ -262,6 +262,7 @@ const SteamAccountDetail = () => {
               <div className="flex items-center gap-2">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(account.status)}`}>
                   {account.status === 'IN_STOCK' ? 'CÓ SẴN' : 
+                  account.status === 'PRE_ORDER' ? 'ĐẶT TRƯỚC' : 
                    account.status === 'SOLD' ? 'ĐÃ BÁN' :
                    account.status === 'MAINTENANCE' ? 'BẢO TRÌ' : account.status}
                 </span>
@@ -337,20 +338,22 @@ const SteamAccountDetail = () => {
                 onClick={handleBuyNow}
               >
                 <div className="font-bold">
-                  {'MUA NGAY'}
+                  {account.status === 'IN_STOCK'? 'MUA NGAY' : 'ĐẶT HÀNG'}
                 </div>
               </Button>
 
               {/* Area 6: Add to Cart Button */}
-              <Button 
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 text-lg"
-                disabled={account.status === 'SOLD' || account.status === 'MAINTENANCE'}
-                onClick={handleAddToCart}
-              >
-                <div className="font-bold">
-                  THÊM VÀO GIỎ
-                </div>
-              </Button>
+              {account.status === 'IN_STOCK' && (
+                <Button 
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 text-lg"
+                  disabled={account.status === 'SOLD' || account.status === 'MAINTENANCE'}
+                  onClick={handleAddToCart}
+                >
+                  <div className="font-bold">
+                    THÊM VÀO GIỎ
+                  </div>
+                </Button>
+              )}
             </div>
           </div>
         </div>

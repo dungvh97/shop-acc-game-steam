@@ -268,7 +268,7 @@ export const getSteamAccountsByStatus = async (status) => {
 };
 
 export const createSteamAccount = async (accountData) => {
-  return apiRequest('/api/account-info/with-steam-accounts', {
+  return apiRequest('/account-info/with-steam-accounts', {
     method: 'POST',
     body: JSON.stringify(accountData),
   });
@@ -529,25 +529,25 @@ export const startSteamImport = async () => {
 // Account Info APIs
 // Public endpoints for fetching account info to display in inventory
 export const getAllAccountInfos = async () => {
-  return apiRequest('/api/account-info');
+  return apiRequest('/account-info');
 };
 
 export const getAccountInfosPage = async (page = 0, size = 20) => {
-  return apiRequest(`/api/account-info/page?page=${page}&size=${size}`);
+  return apiRequest(`/account-info/page?page=${page}&size=${size}`);
 };
 
 export const getAccountInfoById = async (id) => {
-  return apiRequest(`/api/account-info/${id}`);
+  return apiRequest(`/account-info/${id}`);
 };
 
 export const deleteAccountInfo = async (id) => {
-  return apiRequest(`/api/account-info/${id}`, {
+  return apiRequest(`/account-info/${id}`, {
     method: 'DELETE'
   });
 };
 
 export const updateAccountInfo = async (id, data) => {
-  return apiRequest(`/api/account-info/${id}`, {
+  return apiRequest(`/account-info/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   });

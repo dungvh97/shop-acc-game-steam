@@ -2,6 +2,7 @@ package com.shopaccgame.dto;
 
 import com.shopaccgame.entity.AccountInfo;
 import com.shopaccgame.entity.enums.AccountType;
+import com.shopaccgame.entity.enums.AccountClassification;
 import com.shopaccgame.entity.Game;
 
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ public class AccountInfoDto {
     private Integer discountPercentage;
     private BigDecimal originalPrice;
     private LocalDateTime updatedAt;
+    private AccountClassification classify;
     private long availableStockCount;
     private Set<Long> gameIds;
     private Set<GameDto> games;
@@ -37,6 +39,7 @@ public class AccountInfoDto {
         this.discountPercentage = accountInfo.getDiscountPercentage();
         this.originalPrice = accountInfo.getOriginalPrice();
         this.updatedAt = accountInfo.getUpdatedAt();
+        this.classify = accountInfo.getClassify();
         this.availableStockCount = accountInfo.getAvailableStockCount();
         
         if (accountInfo.getGames() != null) {
@@ -145,5 +148,13 @@ public class AccountInfoDto {
     
     public void setGames(Set<GameDto> games) {
         this.games = games;
+    }
+    
+    public AccountClassification getClassify() {
+        return classify;
+    }
+
+    public void setClassify(AccountClassification classify) {
+        this.classify = classify;
     }
 }
