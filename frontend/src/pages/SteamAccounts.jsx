@@ -519,7 +519,7 @@ const SteamAccounts = () => {
                           disabled={account.status === 'SOLD' || account.status === 'MAINTENANCE'}
                           onClick={() => handleBuyNow(account)}
                         >
-                          { account.status === 'IN_STOCK'? 'MUA NGAY' : 'ĐẶT HÀNG'}
+                          {account.status === 'IN_STOCK'? 'MUA NGAY' : 'ĐẶT HÀNG'}
                         </Button>
                         {account.status === 'IN_STOCK' && (
                           <Button 
