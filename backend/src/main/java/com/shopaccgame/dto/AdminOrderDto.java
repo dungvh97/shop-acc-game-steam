@@ -1,6 +1,7 @@
 package com.shopaccgame.dto;
 
 import com.shopaccgame.entity.SteamAccountOrder;
+import com.shopaccgame.entity.enums.OrderStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -39,7 +40,7 @@ public class AdminOrderDto {
         this.paymentMethod = order.getPaymentMethod();
         this.createdAt = order.getCreatedAt();
         this.paidAt = order.getPaidAt();
-        this.deliveredAt = order.getStatus() == SteamAccountOrder.OrderStatus.DELIVERED ? order.getCreatedAt() : null;
+        this.deliveredAt = order.getStatus() == OrderStatus.DELIVERED ? order.getCreatedAt() : null;
         this.accountUsername = order.getSteamAccount().getUsername();
         this.accountPassword = order.getSteamAccount().getPassword();
     }

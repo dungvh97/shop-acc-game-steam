@@ -1,7 +1,7 @@
 package com.shopaccgame.entity;
 
-import com.shopaccgame.entity.enums.AccountClassification;
 import com.shopaccgame.entity.enums.AccountStockStatus;
+import com.shopaccgame.entity.enums.OrderStatus;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -49,13 +49,6 @@ public class SteamAccountOrder {
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 
-    public enum OrderStatus {
-        PENDING,
-        PAID,
-        DELIVERED,
-        EXPIRED,
-        CANCELLED
-    }
     
     // Constructors
     public SteamAccountOrder() {}

@@ -1,6 +1,7 @@
 package com.shopaccgame.dto;
 
 import com.shopaccgame.entity.SteamAccountOrder;
+import com.shopaccgame.entity.enums.OrderStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -12,7 +13,7 @@ public class OrderResponseDto {
     private String accountName;
     private String accountType;
     private BigDecimal amount;
-    private SteamAccountOrder.OrderStatus status;
+    private OrderStatus status;
     private String paymentMethod;
     private String qrCodeUrl;
     private LocalDateTime createdAt;
@@ -39,7 +40,7 @@ public class OrderResponseDto {
         this.paidAt = order.getPaidAt();
         
         // Return username, password and Steam Guard only for paid or delivery orders
-        if (order.getStatus() == SteamAccountOrder.OrderStatus.PAID || order.getStatus() == SteamAccountOrder.OrderStatus.DELIVERED) {
+        if (order.getStatus() == OrderStatus.PAID || order.getStatus() == OrderStatus.DELIVERED) {
             this.accountUsername = order.getSteamAccount().getUsername();
             this.accountPassword = order.getSteamAccount().getPassword();
             this.steamGuard = order.getSteamAccount().getSteamGuard();
@@ -99,11 +100,11 @@ public class OrderResponseDto {
         this.amount = amount;
     }
     
-    public SteamAccountOrder.OrderStatus getStatus() {
+    public OrderStatus getStatus() {
         return status;
     }
     
-    public void setStatus(SteamAccountOrder.OrderStatus status) {
+    public void setStatus(OrderStatus status) {
         this.status = status;
     }
     

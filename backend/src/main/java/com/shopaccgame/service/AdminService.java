@@ -4,6 +4,7 @@ import com.shopaccgame.dto.AdminOrderDto;
 import com.shopaccgame.dto.RevenueStatsDto;
 import com.shopaccgame.entity.SteamAccountOrder;
 import com.shopaccgame.entity.enums.AccountStockStatus;
+import com.shopaccgame.entity.enums.OrderStatus;
 import com.shopaccgame.repository.SteamAccountOrderRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +47,7 @@ public class AdminService {
         try {
             // First try to parse as order status
             try {
-                SteamAccountOrder.OrderStatus orderStatus = SteamAccountOrder.OrderStatus.valueOf(status.toUpperCase());
+                OrderStatus orderStatus = OrderStatus.valueOf(status.toUpperCase());
                 List<SteamAccountOrder> orders = orderRepository.findByStatus(orderStatus);
                 return orders.stream()
                         .map(AdminOrderDto::new)
@@ -86,7 +87,7 @@ public class AdminService {
         SteamAccountOrder order = orderRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
         
-        if (order.getStatus() != SteamAccountOrder.OrderStatus.PAID) {
+        if (order.getStatus() != OrderStatus.PAID) {
             throw new RuntimeException("Order must be paid before marking as delivered");
         }
         
@@ -102,7 +103,7 @@ public class AdminService {
         SteamAccountOrder order = orderRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
         
-        if (order.getStatus() == SteamAccountOrder.OrderStatus.DELIVERED) {
+        if (order.getStatus() == OrderStatus.DELIVERED) {
             throw new RuntimeException("Cannot cancel delivered order");
         }
         
@@ -119,7 +120,7 @@ public class AdminService {
         LocalDateTime end = endDate != null ? endDate.atTime(23, 59, 59) : LocalDateTime.now();
         
         List<SteamAccountOrder> deliveredOrders = orderRepository.findByStatusAndCreatedAtBetween(
-                SteamAccountOrder.OrderStatus.DELIVERED, start, end);
+                OrderStatus.DELIVERED, start, end);
         
         BigDecimal totalRevenue = deliveredOrders.stream()
                 .map(SteamAccountOrder::getAmount)
@@ -157,7 +158,7 @@ public class AdminService {
         LocalDateTime end = endDate != null ? endDate.atTime(23, 59, 59) : LocalDateTime.now();
         
         List<SteamAccountOrder> deliveredOrders = orderRepository.findByStatusAndCreatedAtBetween(
-                SteamAccountOrder.OrderStatus.DELIVERED, start, end);
+                OrderStatus.DELIVERED, start, end);
         
         Map<String, List<SteamAccountOrder>> ordersByMonth = deliveredOrders.stream()
                 .collect(Collectors.groupingBy(order -> 
@@ -185,7 +186,7 @@ public class AdminService {
         LocalDateTime end = monthEnd.atTime(23, 59, 59);
         
         List<SteamAccountOrder> orders = orderRepository.findByStatusAndCreatedAtBetween(
-                SteamAccountOrder.OrderStatus.DELIVERED, start, end);
+                OrderStatus.DELIVERED, start, end);
         
         return orders.stream()
                 .map(SteamAccountOrder::getAmount)

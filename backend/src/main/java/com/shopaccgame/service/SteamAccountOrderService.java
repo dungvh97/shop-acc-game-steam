@@ -5,6 +5,7 @@ import com.shopaccgame.dto.OrderResponseDto;
 import com.shopaccgame.entity.SteamAccount;
 import com.shopaccgame.entity.enums.AccountClassification;
 import com.shopaccgame.entity.enums.AccountStockStatus;
+import com.shopaccgame.entity.enums.OrderStatus;
 import com.shopaccgame.entity.SteamAccountOrder;
 import com.shopaccgame.entity.User;
 import com.shopaccgame.repository.SteamAccountOrderRepository;
@@ -64,9 +65,9 @@ public class SteamAccountOrderService {
         }
         
         // Check if there are any active orders for this specific steam account
-        List<SteamAccountOrder.OrderStatus> activeStatuses = List.of(
-            SteamAccountOrder.OrderStatus.PENDING, 
-            SteamAccountOrder.OrderStatus.PAID
+        List<OrderStatus> activeStatuses = List.of(
+            OrderStatus.PENDING, 
+            OrderStatus.PAID
         );
         
         if (orderRepository.existsBySteamAccountIdAndStatusIn(steamAccount.getId(), activeStatuses)) {
@@ -175,7 +176,7 @@ public class SteamAccountOrderService {
             throw new RuntimeException("Access denied");
         }
         
-        if (order.getStatus() != SteamAccountOrder.OrderStatus.PAID) {
+        if (order.getStatus() != OrderStatus.PAID) {
             throw new RuntimeException("Order must be paid before it can be delivered");
         }
         
@@ -202,7 +203,7 @@ public class SteamAccountOrderService {
             throw new RuntimeException("Access denied");
         }
         
-        if (order.getStatus() != SteamAccountOrder.OrderStatus.PENDING) {
+        if (order.getStatus() != OrderStatus.PENDING) {
             throw new RuntimeException("Only pending orders can be cancelled");
         }
         
@@ -232,9 +233,9 @@ public class SteamAccountOrderService {
         }
         
         // Check if there are any active orders for this steam account
-        List<SteamAccountOrder.OrderStatus> activeStatuses = List.of(
-            SteamAccountOrder.OrderStatus.PENDING, 
-            SteamAccountOrder.OrderStatus.PAID
+        List<OrderStatus> activeStatuses = List.of(
+            OrderStatus.PENDING, 
+            OrderStatus.PAID
         );
         
         if (orderRepository.existsBySteamAccountIdAndStatusIn(steamAccount.getId(), activeStatuses)) {
