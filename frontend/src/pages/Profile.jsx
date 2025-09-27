@@ -304,8 +304,8 @@ const Profile = () => {
   const getStatusBadge = (status) => {
     const statusConfig = {
       'PENDING': { label: 'Chờ thanh toán', variant: 'secondary' },
-      'PAID': { label: 'Đã thanh toán', variant: 'default' },
-      'DELIVERED': { label: 'Đã giao', variant: 'default' },
+      'PAID': { label: 'Chờ xử lý', variant: 'default' },
+      'DELIVERED': { label: 'Đã hoàn thành', variant: 'default' },
       'EXPIRED': { label: 'Hết hạn', variant: 'destructive' },
       'CANCELLED': { label: 'Đã hủy', variant: 'destructive' }
     };

@@ -37,12 +37,14 @@ public class OrderResponseDto {
         this.createdAt = order.getCreatedAt();
         this.expiresAt = order.getExpiresAt();
         this.paidAt = order.getPaidAt();
-        this.accountUsername = order.getAccountUsername();
-        // Return password and Steam Guard only for paid orders
-        if (order.getStatus() == SteamAccountOrder.OrderStatus.PAID) {
-            this.accountPassword = order.getAccountPassword();
+        
+        // Return username, password and Steam Guard only for paid or delivery orders
+        if (order.getStatus() == SteamAccountOrder.OrderStatus.PAID || order.getStatus() == SteamAccountOrder.OrderStatus.DELIVERED) {
+            this.accountUsername = order.getSteamAccount().getUsername();
+            this.accountPassword = order.getSteamAccount().getPassword();
             this.steamGuard = order.getSteamAccount().getSteamGuard();
         } else {
+            this.accountUsername = null;
             this.accountPassword = null;
             this.steamGuard = null;
         }

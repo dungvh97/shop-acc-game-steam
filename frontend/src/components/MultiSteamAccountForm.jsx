@@ -247,7 +247,7 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
     { value: 'MAINTENANCE', label: 'Lỗi, bảo trì' },
     { value: 'PRE_ORDER', label: 'Chưa đặt hàng' },
     { value: 'ORDERING', label: 'Đang đặt hàng' },
-    { value: 'DELIVERED', label: 'Đã giao' },
+    { value: 'DELIVERED', label: 'Đã hoàn thành' },
     { value: 'CANCELLED', label: 'Đã hủy' },
   ];
 

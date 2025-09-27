@@ -895,7 +895,7 @@ const Admin = () => {
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-600">Đã giao</p>
+                    <p className="text-sm font-medium text-gray-600">Đã hoàn thành</p>
                     <p className="text-xl font-bold text-gray-900">
                       {orders.filter(o => o.status === 'DELIVERED').length}
                     </p>
@@ -988,8 +988,8 @@ const Admin = () => {
                               'bg-blue-100 text-blue-800'
                             }`}>
                               {order.status === 'PENDING' ? 'Chờ thanh toán' :
-                                   order.status === 'PAID' ? 'Đã thanh toán' :
-                                   order.status === 'DELIVERED' ? 'Đã giao' :
+                                   order.status === 'PAID' ? 'Chờ xử lý' :
+                                   order.status === 'DELIVERED' ? 'Đã hoàn thành' :
                                    order.status === 'CANCELLED' ? 'Đã hủy' :
                                    order.status === 'ORDERED' ? 'Đã đặt hàng' :
                                order.status === 'ORDERING' ? 'Chờ xử lý' :
@@ -1106,8 +1106,8 @@ const Admin = () => {
                             'bg-blue-100 text-blue-800'
                           }`}>
                             {selectedOrder.status === 'PENDING' ? 'Chờ thanh toán' :
-                             selectedOrder.status === 'PAID' ? 'Đã thanh toán' :
-                             selectedOrder.status === 'DELIVERED' ? 'Đã giao' :
+                             selectedOrder.status === 'PAID' ? 'Chờ xử lý' :
+                             selectedOrder.status === 'DELIVERED' ? 'Đã hoàn thành' :
                              selectedOrder.status === 'CANCELLED' ? 'Đã hủy' :
                              selectedOrder.status === 'ORDERED' ? 'Đã đặt hàng' :
                              selectedOrder.status === 'PRE_ORDER' ? 'Chờ xử lý' :

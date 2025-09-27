@@ -48,12 +48,6 @@ public class SteamAccountOrder {
     
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
-    
-    @Column(name = "account_username")
-    private String accountUsername;
-    
-    @Column(name = "account_password")
-    private String accountPassword;
 
     public enum OrderStatus {
         PENDING,
@@ -77,23 +71,10 @@ public class SteamAccountOrder {
         this.orderId = generateOrderId();
     }
     
-    // Business logic methods
+    // Set OrderStatus.PAID
     public void markAsPaid() {
         this.status = OrderStatus.PAID;
         this.paidAt = LocalDateTime.now();
-        
-        // Store account credentials (encryption handled by service layer)
-        if (this.steamAccount != null) {
-            this.accountUsername = this.steamAccount.getUsername();
-            this.accountPassword = this.steamAccount.getPassword();
-
-            // Mark the steam account as sold or ordering
-            if (this.steamAccount.getAccountInfo().getClassify() == AccountClassification.STOCK) {
-                this.steamAccount.setStatus(AccountStockStatus.SOLD);
-            } else if (this.steamAccount.getAccountInfo().getClassify() == AccountClassification.ORDER) {
-                this.steamAccount.setStatus(AccountStockStatus.ORDERING);
-            }
-        }
     }
     
     // Method to mark the steam account as sold (no longer needed since order is directly linked to steam account)
@@ -122,8 +103,6 @@ public class SteamAccountOrder {
     public boolean canBePaid() {
         return this.status == OrderStatus.PENDING && !isExpired();
     }
-    
-
     
     // Getters and Setters
     public Long getId() {
@@ -212,22 +191,6 @@ public class SteamAccountOrder {
     
     public void setExpiresAt(LocalDateTime expiresAt) {
         this.expiresAt = expiresAt;
-    }
-    
-    public String getAccountUsername() {
-        return accountUsername;
-    }
-    
-    public void setAccountUsername(String accountUsername) {
-        this.accountUsername = accountUsername;
-    }
-    
-    public String getAccountPassword() {
-        return accountPassword;
-    }
-    
-    public void setAccountPassword(String accountPassword) {
-        this.accountPassword = accountPassword;
     }
     
     // Generate unique order ID with timestamp format

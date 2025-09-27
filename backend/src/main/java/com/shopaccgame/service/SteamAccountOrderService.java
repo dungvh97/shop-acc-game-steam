@@ -3,6 +3,7 @@ package com.shopaccgame.service;
 import com.shopaccgame.dto.OrderRequestDto;
 import com.shopaccgame.dto.OrderResponseDto;
 import com.shopaccgame.entity.SteamAccount;
+import com.shopaccgame.entity.enums.AccountClassification;
 import com.shopaccgame.entity.enums.AccountStockStatus;
 import com.shopaccgame.entity.SteamAccountOrder;
 import com.shopaccgame.entity.User;
@@ -130,6 +131,8 @@ public class SteamAccountOrderService {
     
     /**
      * Mark order as paid (simulate payment confirmation)
+     * Case account_info#classify = STOCK, markOrderAsDelivered
+     * Setting steamAccount#status
      */
     public OrderResponseDto markOrderAsPaid(String orderId) {
         SteamAccountOrder order = orderRepository.findByOrderId(orderId)
@@ -138,12 +141,21 @@ public class SteamAccountOrderService {
         if (!order.canBePaid()) {
             throw new RuntimeException("Order cannot be paid");
         }
-        
-        order.markAsPaid();
-        
+
+        // Handle business for AccountClassification.STOCK and AccountClassification.ORDER
+        if (order.getSteamAccount() != null) {
+            if (AccountClassification.STOCK.equals(order.getSteamAccount().getAccountInfo().getClassify())) {
+                order.markAsDelivered();
+                order.getSteamAccount().setStatus(AccountStockStatus.SOLD);
+                logger.info("Order {} marked as delivered", orderId);
+            } else {
+                order.markAsPaid();
+                order.getSteamAccount().setStatus(AccountStockStatus.ORDERING);
+                logger.info("Order {} marked as paid", orderId);
+            }
+        }
+
         SteamAccountOrder savedOrder = orderRepository.save(order);
-        
-        logger.info("Order {} marked as paid", orderId);
         
         return toOrderResponseDto(savedOrder);
     }
@@ -238,7 +250,18 @@ public class SteamAccountOrderService {
         SteamAccountOrder order = new SteamAccountOrder(steamAccount, user, steamAccount.getAccountInfo().getPrice());
         
         // Mark as paid immediately since we deducted from balance
-        order.markAsPaid();
+        // Handle business for AccountClassification.STOCK and AccountClassification.ORDER
+        if (order.getSteamAccount() != null) {
+            if (AccountClassification.STOCK.equals(order.getSteamAccount().getAccountInfo().getClassify())) {
+                order.markAsDelivered();
+                order.getSteamAccount().setStatus(AccountStockStatus.SOLD);
+                logger.info("Order {} marked as delivered", order.getOrderId());
+            } else {
+                order.markAsPaid();
+                order.getSteamAccount().setStatus(AccountStockStatus.ORDERING);
+                logger.info("Order {} marked as paid", order.getOrderId());
+            }
+        }
         
         // Generate QR code URL (for reference, though not needed for balance payment)
         String qrCodeUrl = generateQrCodeUrl(order.getOrderId(), order.getAmount());
@@ -277,8 +300,7 @@ public class SteamAccountOrderService {
     
     private OrderResponseDto toOrderResponseDto(SteamAccountOrder order) {
         OrderResponseDto dto = new OrderResponseDto(order);
-        // Decrypt password only for PAID orders where we actually return credentials
-        if (order.getStatus() == SteamAccountOrder.OrderStatus.PAID && dto.getAccountPassword() != null) {
+        if (dto.getAccountPassword() != null) {
             try {
                 String decrypted = encryptionService.decryptPassword(dto.getAccountPassword());
                 dto.setAccountPassword(decrypted);
