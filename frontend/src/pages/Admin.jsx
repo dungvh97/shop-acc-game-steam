@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { useAuth } from '../contexts/AuthContext';
-import { createGame, uploadImage, getAllUserOrders, getSteamAccountsAdmin, getGames, markOrderAsDelivered, cancelOrder, getOrderByOrderId, getAllOrdersAdmin, getOrdersByStatusAdmin, getOrdersByClassificationAdmin, getOrderByIdAdmin, markOrderAsDeliveredAdmin, cancelOrderAdmin, getRevenueStats, getMonthlyRevenue, getSteamImportStatus, startSteamImport, getAccountInfosPage, deleteAccountInfo, deleteSteamAccount } from '../lib/api';
+import { createGame, uploadImage, getAllUserOrders, getSteamAccountsAdmin, getGames, markOrderAsDelivered, cancelOrder, getOrderByOrderId, getAllOrdersAdmin, getOrdersByStatusAdmin, getOrdersByClassificationAdmin, getOrderByIdAdmin, markOrderAsDeliveredAdmin, markOrderAsDeliveredWithAccountAdmin, cancelOrderAdmin, getRevenueStats, getMonthlyRevenue, getSteamImportStatus, startSteamImport, getAccountInfosPage, deleteAccountInfo, deleteSteamAccount } from '../lib/api';
 import { useToast } from '../hooks/use-toast';
 import SteamAccountManager from '../components/SteamAccountManager';
 import MultiSteamAccountForm from '../components/MultiSteamAccountForm';
@@ -49,6 +49,12 @@ const Admin = () => {
   const [orderFilter, setOrderFilter] = useState('ALL');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [processingOrder, setProcessingOrder] = useState(false);
+  const [deliveryDialog, setDeliveryDialog] = useState({ open: false, order: null });
+  const [deliveryForm, setDeliveryForm] = useState({
+    username: '',
+    password: '',
+    steamGuard: ''
+  });
 
   // Inventory management tab state
   // inventoryGroups: [{ info: {...}, steamAccounts: [{...}, ...] }]
@@ -416,6 +422,61 @@ const Admin = () => {
       toast({
         title: 'Lỗi xử lý đơn hàng',
         description: error.message || 'Không thể xử lý đơn hàng',
+        variant: 'destructive'
+      });
+    } finally {
+      setProcessingOrder(false);
+    }
+  };
+
+  const handleDeliverOrder = (order) => {
+    setDeliveryDialog({ open: true, order });
+    setDeliveryForm({
+      username: '',
+      password: '',
+      steamGuard: ''
+    });
+  };
+
+  const closeDeliveryDialog = () => {
+    setDeliveryDialog({ open: false, order: null });
+    setDeliveryForm({
+      username: '',
+      password: '',
+      steamGuard: ''
+    });
+  };
+
+  const handleConfirmDelivery = async () => {
+    if (!deliveryForm.username || !deliveryForm.password) {
+      toast({
+        title: 'Thiếu thông tin',
+        description: 'Vui lòng điền đầy đủ username và password',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setProcessingOrder(true);
+    try {
+      await markOrderAsDeliveredWithAccountAdmin(deliveryDialog.order.orderId, {
+        username: deliveryForm.username,
+        password: deliveryForm.password,
+        steamGuard: deliveryForm.steamGuard || ''
+      });
+      
+      toast({
+        title: 'Thành công',
+        description: 'Đơn hàng đã được giao với thông tin tài khoản Steam',
+      });
+      
+      closeDeliveryDialog();
+      await fetchOrders();
+    } catch (error) {
+      console.error('Error delivering order with account:', error);
+      toast({
+        title: 'Lỗi giao hàng',
+        description: error.message || 'Không thể giao hàng với thông tin tài khoản',
         variant: 'destructive'
       });
     } finally {
@@ -938,7 +999,11 @@ const Admin = () => {
                     </thead>
                     <tbody>
                       {filteredOrders.map((order) => (
-                        <tr key={order.id} className="border-b hover:bg-gray-50">
+                        <tr 
+                          key={order.id} 
+                          className="border-b hover:bg-gray-50 cursor-pointer"
+                          onClick={() => handleViewOrderDetails(order.orderId)}
+                        >
                           <td className="py-3 px-4 font-mono text-sm">{order.orderId}</td>
                           <td className="py-3 px-4">
                             <div>
@@ -997,7 +1062,10 @@ const Admin = () => {
                                 <Button 
                                   size="sm" 
                                   className="bg-green-600 hover:bg-green-700"
-                                  onClick={() => handleProcessOrder(order.orderId, 'deliver')}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeliverOrder(order);
+                                  }}
                                   disabled={processingOrder}
                                 >
                                   Giao hàng
@@ -1008,19 +1076,15 @@ const Admin = () => {
                                   size="sm" 
                                   variant="outline"
                                   className="text-red-600 border-red-600 hover:bg-red-50"
-                                  onClick={() => handleProcessOrder(order.orderId, 'cancel')}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleProcessOrder(order.orderId, 'cancel');
+                                  }}
                                   disabled={processingOrder}
                                 >
                                   Hủy
                                 </Button>
                               )}
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => handleViewOrderDetails(order.orderId)}
-                              >
-                                Chi tiết
-                              </Button>
                             </div>
                           </td>
                         </tr>
@@ -1367,6 +1431,108 @@ const Admin = () => {
           )}
         </div>
       )}
+      
+      {/* Delivery Dialog */}
+      {deliveryDialog.open && deliveryDialog.order && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>Giao hàng - Đơn hàng #{deliveryDialog.order.orderId}</CardTitle>
+                <Button 
+                  variant="outline" 
+                  onClick={closeDeliveryDialog}
+                >
+                  Đóng
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Khách hàng</label>
+                    <p className="text-lg">{deliveryDialog.order.username || 'N/A'}</p>
+                    <p className="text-sm text-gray-500">{deliveryDialog.order.userEmail || ''}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Sản phẩm</label>
+                    <p className="text-lg">{deliveryDialog.order.accountInfoName || 'N/A'}</p>
+                    <p className="text-sm text-gray-500">
+                      {deliveryDialog.order.gameNames?.join(', ') || 'N/A'}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="border-t pt-4">
+                  <h3 className="text-lg font-semibold mb-4">Thông tin tài khoản Steam</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label htmlFor="delivery-username" className="block text-sm font-medium text-gray-700 mb-1">
+                        Username *
+                      </label>
+                      <Input
+                        id="delivery-username"
+                        type="text"
+                        value={deliveryForm.username}
+                        onChange={(e) => setDeliveryForm({...deliveryForm, username: e.target.value})}
+                        placeholder="Nhập username Steam"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="delivery-password" className="block text-sm font-medium text-gray-700 mb-1">
+                        Password *
+                      </label>
+                      <Input
+                        id="delivery-password"
+                        type="text"
+                        value={deliveryForm.password}
+                        onChange={(e) => setDeliveryForm({...deliveryForm, password: e.target.value})}
+                        placeholder="Nhập password Steam"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="delivery-steamguard" className="block text-sm font-medium text-gray-700 mb-1">
+                        Steam Guard (tùy chọn)
+                      </label>
+                      <Input
+                        id="delivery-steamguard"
+                        type="text"
+                        value={deliveryForm.steamGuard}
+                        onChange={(e) => setDeliveryForm({...deliveryForm, steamGuard: e.target.value})}
+                        placeholder="Nhập Steam Guard code"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2 pt-4">
+                  <Button 
+                    onClick={handleConfirmDelivery}
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                    disabled={processingOrder}
+                  >
+                    {processingOrder ? 'Đang xử lý...' : 'Xác nhận'}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={closeDeliveryDialog}
+                    className="flex-1"
+                    disabled={processingOrder}
+                  >
+                    Quay lại
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      
       {/* Steam Accounts Dialog */}
       {steamDialog.open && steamDialog.group && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

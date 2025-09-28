@@ -295,7 +295,7 @@ const Profile = () => {
   };
 
   const handleOrderClick = (order) => {
-    if (order.status === 'PAID') {
+    if (order.status === 'PAID' || order.status === 'DELIVERED') {
       setSelectedOrder(order);
       setOrderDetailOpen(true);
     }
@@ -651,7 +651,7 @@ const Profile = () => {
                           {userOrders.map((order) => (
                             <tr 
                               key={order.id} 
-                              className={`hover:bg-gray-50 ${order.status === 'PAID' ? 'cursor-pointer' : ''}`}
+                              className={`hover:bg-gray-50 ${order.status === 'PAID' || order.status === 'DELIVERED' ? 'cursor-pointer' : ''}`}
                               onClick={() => handleOrderClick(order)}
                             >
                               <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">

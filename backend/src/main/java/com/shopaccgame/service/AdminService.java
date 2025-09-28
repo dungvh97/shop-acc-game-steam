@@ -2,11 +2,14 @@ package com.shopaccgame.service;
 
 import com.shopaccgame.dto.AdminOrderDto;
 import com.shopaccgame.dto.RevenueStatsDto;
+import com.shopaccgame.dto.DeliveryRequestDto;
 import com.shopaccgame.entity.SteamAccountOrder;
+import com.shopaccgame.entity.SteamAccount;
 import com.shopaccgame.entity.enums.AccountClassification;
 import com.shopaccgame.entity.enums.AccountStockStatus;
 import com.shopaccgame.entity.enums.OrderStatus;
 import com.shopaccgame.repository.SteamAccountOrderRepository;
+import com.shopaccgame.repository.SteamAccountRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +33,9 @@ public class AdminService {
     
     @Autowired
     private SteamAccountOrderRepository orderRepository;
+    
+    @Autowired
+    private SteamAccountRepository steamAccountRepository;
     
     /**
      * Get all orders for admin management
@@ -114,6 +120,40 @@ public class AdminService {
         order.markAsDelivered();
         orderRepository.save(order);
         logger.info("Order {} marked as delivered", orderId);
+    }
+    
+    /**
+     * Mark order as delivered with Steam account details
+     */
+    public void markOrderAsDeliveredWithAccount(String orderId, DeliveryRequestDto deliveryRequest) {
+        SteamAccountOrder order = orderRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+        
+        if (order.getStatus() != OrderStatus.PAID) {
+            throw new RuntimeException("Order must be paid before marking as delivered");
+        }
+        
+        // Get the associated Steam account
+        SteamAccount steamAccount = order.getSteamAccount();
+        if (steamAccount == null) {
+            throw new RuntimeException("No Steam account associated with this order");
+        }
+        
+        // Update Steam account details
+        steamAccount.setUsername(deliveryRequest.getUsername());
+        steamAccount.setPassword(deliveryRequest.getPassword());
+        steamAccount.setSteamGuard(deliveryRequest.getSteamGuard());
+        steamAccount.setStatus(AccountStockStatus.DELIVERED);
+        
+        // Save Steam account
+        steamAccountRepository.save(steamAccount);
+        
+        // Mark order as delivered
+        order.markAsDelivered();
+        orderRepository.save(order);
+        
+        logger.info("Order {} marked as delivered with Steam account details: username={}", 
+                   orderId, deliveryRequest.getUsername());
     }
     
     /**

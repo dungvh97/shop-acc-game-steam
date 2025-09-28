@@ -6,6 +6,7 @@ import com.shopaccgame.dto.SteamAccountAdminDto;
 import com.shopaccgame.dto.AdminSteamAccountUpdateRequest;
 import com.shopaccgame.dto.SteamAccountRequestDto;
 import com.shopaccgame.dto.SteamAccountDto;
+import com.shopaccgame.dto.DeliveryRequestDto;
 import com.shopaccgame.entity.enums.AccountStockStatus;
 
 import com.shopaccgame.service.AdminService;
@@ -107,6 +108,23 @@ public class AdminController {
         } catch (Exception e) {
             logger.error("Error marking order {} as delivered: {}", orderId, e.getMessage());
             return ResponseEntity.badRequest().body("Error marking order as delivered: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Mark order as delivered with Steam account details
+     */
+    @PostMapping("/orders/{orderId}/deliver-with-account")
+    public ResponseEntity<String> markOrderAsDeliveredWithAccount(
+            @PathVariable String orderId,
+            @RequestBody DeliveryRequestDto deliveryRequest) {
+        try {
+            adminService.markOrderAsDeliveredWithAccount(orderId, deliveryRequest);
+            logger.info("Order {} marked as delivered with Steam account details", orderId);
+            return ResponseEntity.ok("Order marked as delivered with Steam account details successfully");
+        } catch (Exception e) {
+            logger.error("Error marking order {} as delivered with account: {}", orderId, e.getMessage());
+            return ResponseEntity.badRequest().body("Error marking order as delivered with account: " + e.getMessage());
         }
     }
     

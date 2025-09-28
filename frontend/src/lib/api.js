@@ -434,6 +434,13 @@ export const markOrderAsDeliveredAdmin = async (orderId) => {
   });
 };
 
+export const markOrderAsDeliveredWithAccountAdmin = async (orderId, accountDetails) => {
+  return apiRequest(`/admin/orders/${orderId}/deliver-with-account`, {
+    method: 'POST',
+    body: JSON.stringify(accountDetails)
+  });
+};
+
 export const cancelOrderAdmin = async (orderId) => {
   return apiRequest(`/admin/orders/${orderId}/cancel`, {
     method: 'POST'
