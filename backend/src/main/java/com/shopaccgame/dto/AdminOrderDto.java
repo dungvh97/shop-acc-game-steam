@@ -13,7 +13,7 @@ public class AdminOrderDto {
     private String orderId;
     private String username;
     private String userEmail;
-    private String steamAccountUsername;
+    private String accountInfoName;
     private List<String> gameNames;
     private BigDecimal totalAmount;
     private String status;
@@ -32,6 +32,7 @@ public class AdminOrderDto {
         this.orderId = order.getOrderId();
         this.username = order.getUser() != null ? order.getUser().getUsername() : null;
         this.userEmail = order.getUser() != null ? order.getUser().getEmail() : null;
+        this.accountInfoName = order.getSteamAccount().getAccountInfo().getName();
         this.gameNames = order.getSteamAccount() != null && order.getSteamAccount().getAccountInfo() != null && order.getSteamAccount().getAccountInfo().getGames() != null 
             ? order.getSteamAccount().getAccountInfo().getGames().stream().map(game -> game.getName()).toList() 
             : List.of();
@@ -78,12 +79,12 @@ public class AdminOrderDto {
         this.userEmail = userEmail;
     }
     
-    public String getSteamAccountUsername() {
-        return steamAccountUsername;
+    public String getAccountInfoName() {
+        return accountInfoName;
     }
     
-    public void setSteamAccountUsername(String steamAccountUsername) {
-        this.steamAccountUsername = steamAccountUsername;
+    public void setAccountInfoName(String accountInfoName) {
+        this.accountInfoName = accountInfoName;
     }
     
     public List<String> getGameNames() {

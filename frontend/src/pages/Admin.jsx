@@ -271,12 +271,13 @@ const Admin = () => {
     }
   }, [activeTab]);
 
-  // Refetch orders when filter changes while on orders tab
-  useEffect(() => {
-    if (activeTab === 'orders') {
-      fetchOrders();
+  // Filter orders based on orderFilter
+  const filteredOrders = useMemo(() => {
+    if (orderFilter === 'ALL') {
+      return orders;
     }
-  }, [orderFilter]);
+    return orders.filter(order => order.status === orderFilter);
+  }, [orders, orderFilter]);
 
   const guard = () => {
     if (!isAdmin) {
@@ -821,7 +822,7 @@ const Admin = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ALL">Tất cả</SelectItem>
-                  <SelectItem value="ORDERING">Chờ xử lý</SelectItem>
+                  <SelectItem value="PAID">Chờ xử lý</SelectItem>
                   <SelectItem value="DELIVERED">Đã hoàn thành</SelectItem>
                   <SelectItem value="CANCELLED">Đã Huỷ</SelectItem>
                 </SelectContent>
@@ -833,7 +834,7 @@ const Admin = () => {
           </div>
 
           {/* Order Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center">
@@ -861,25 +862,7 @@ const Admin = () => {
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-600">Chờ xử lý</p>
                     <p className="text-xl font-bold text-gray-900">
-                      {orders.filter(o => o.status === 'ORDERING').length}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-600">Đã đặt hàng</p>
-                    <p className="text-xl font-bold text-gray-900">
-                      {orders.filter(o => o.status === 'ORDERED').length}
+                      {orders.filter(o => o.status === 'PAID' || o.status === 'ORDERING').length}
                     </p>
                   </div>
                 </div>
@@ -931,7 +914,7 @@ const Admin = () => {
                 <CardTitle>Danh sách đơn hàng</CardTitle>
                 <CardDescription>
                   {orderFilter === 'ALL' ? 'Tất cả đơn hàng' : (
-                      orderFilter === 'ORDERING' ? 'Đơn hàng Chờ xử lý' : (
+                      orderFilter === 'PAID' ? 'Đơn hàng Chờ xử lý' : (
                         orderFilter === 'DELIVERED' ? 'Đơn hàng Đã hoàn thành' : (
                           orderFilter === 'CANCELLED' ? 'Đơn hàng Đã huỷ' : `Đơn hàng ${orderFilter}`
                         )
@@ -954,7 +937,7 @@ const Admin = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {orders.map((order) => (
+                      {filteredOrders.map((order) => (
                         <tr key={order.id} className="border-b hover:bg-gray-50">
                           <td className="py-3 px-4 font-mono text-sm">{order.orderId}</td>
                           <td className="py-3 px-4">
@@ -965,7 +948,7 @@ const Admin = () => {
                           </td>
                           <td className="py-3 px-4">
                             <div>
-                              <p className="font-medium">{order.steamAccountUsername || 'N/A'}</p>
+                              <p className="font-medium">{order.accountInfoName || 'N/A'}</p>
                               <p className="text-sm text-gray-500">
                                 {order.gameNames?.join(', ') || 'N/A'}
                               </p>
@@ -1044,7 +1027,7 @@ const Admin = () => {
                       ))}
                     </tbody>
                   </table>
-                  {orders.length === 0 && (
+                  {filteredOrders.length === 0 && (
                     <div className="text-center py-8 text-gray-500">
                       Không có đơn hàng nào
                     </div>
@@ -1086,7 +1069,7 @@ const Admin = () => {
                     <div>
                       <label className="text-sm font-medium text-gray-600">Sản phẩm</label>
                       <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-                        <p className="font-medium">{selectedOrder.steamAccountUsername || 'N/A'}</p>
+                        <p className="font-medium">{selectedOrder.accountInfoName || 'N/A'}</p>
                         <p className="text-sm text-gray-500">
                           {selectedOrder.gameNames?.join(', ') || 'N/A'}
                         </p>
