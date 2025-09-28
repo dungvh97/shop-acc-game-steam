@@ -48,4 +48,7 @@ public interface SteamAccountOrderRepository extends JpaRepository<SteamAccountO
     
     @Query("SELECT o FROM SteamAccountOrder o WHERE o.steamAccount.status = :accountStatus")
     List<SteamAccountOrder> findByAccountStatus(@Param("accountStatus") AccountStockStatus accountStatus);
+    
+    @Query("SELECT o FROM SteamAccountOrder o WHERE o.steamAccount.accountInfo.classify = :classification")
+    List<SteamAccountOrder> findByAccountClassification(@Param("classification") com.shopaccgame.entity.enums.AccountClassification classification);
 }

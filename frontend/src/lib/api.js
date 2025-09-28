@@ -420,6 +420,10 @@ export const getOrdersByStatusAdmin = async (status) => {
   return apiRequest(`/admin/orders/status/${status}`);
 };
 
+export const getOrdersByClassificationAdmin = async (classification) => {
+  return apiRequest(`/admin/orders/classification/${classification}`);
+};
+
 export const getOrderByIdAdmin = async (orderId) => {
   return apiRequest(`/admin/orders/${orderId}`);
 };

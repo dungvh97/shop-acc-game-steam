@@ -3,6 +3,7 @@ package com.shopaccgame.service;
 import com.shopaccgame.dto.AdminOrderDto;
 import com.shopaccgame.dto.RevenueStatsDto;
 import com.shopaccgame.entity.SteamAccountOrder;
+import com.shopaccgame.entity.enums.AccountClassification;
 import com.shopaccgame.entity.enums.AccountStockStatus;
 import com.shopaccgame.entity.enums.OrderStatus;
 import com.shopaccgame.repository.SteamAccountOrderRepository;
@@ -68,6 +69,25 @@ public class AdminService {
         } catch (Exception e) {
             logger.error("Error getting orders by status {}: {}", status, e.getMessage());
             throw new RuntimeException("Error getting orders by status: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Get orders by account classification (ORDER or STOCK)
+     */
+    public List<AdminOrderDto> getOrdersByClassification(String classification) {
+        try {
+            AccountClassification accountClassification = AccountClassification.valueOf(classification.toUpperCase());
+            List<SteamAccountOrder> orders = orderRepository.findByAccountClassification(accountClassification);
+            return orders.stream()
+                    .map(AdminOrderDto::new)
+                    .collect(Collectors.toList());
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid classification: {} (not a valid account classification)", classification);
+            throw new RuntimeException("Invalid classification: " + classification + " (valid values: ORDER, STOCK)");
+        } catch (Exception e) {
+            logger.error("Error getting orders by classification {}: {}", classification, e.getMessage());
+            throw new RuntimeException("Error getting orders by classification: " + e.getMessage());
         }
     }
     

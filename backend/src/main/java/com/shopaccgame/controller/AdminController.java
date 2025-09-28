@@ -68,6 +68,20 @@ public class AdminController {
     }
     
     /**
+     * Get orders by account classification (ORDER or STOCK)
+     */
+    @GetMapping("/orders/classification/{classification}")
+    public ResponseEntity<List<AdminOrderDto>> getOrdersByClassification(@PathVariable String classification) {
+        try {
+            List<AdminOrderDto> orders = adminService.getOrdersByClassification(classification);
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            logger.error("Error getting orders by classification {}: {}", classification, e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    /**
      * Get order by ID for admin
      */
     @GetMapping("/orders/{orderId}")

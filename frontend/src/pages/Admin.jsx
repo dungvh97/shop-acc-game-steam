@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { useAuth } from '../contexts/AuthContext';
-import { createGame, uploadImage, getAllUserOrders, getSteamAccountsAdmin, getGames, markOrderAsDelivered, cancelOrder, getOrderByOrderId, getAllOrdersAdmin, getOrdersByStatusAdmin, getOrderByIdAdmin, markOrderAsDeliveredAdmin, cancelOrderAdmin, getRevenueStats, getMonthlyRevenue, getSteamImportStatus, startSteamImport, getAccountInfosPage, deleteAccountInfo, deleteSteamAccount } from '../lib/api';
+import { createGame, uploadImage, getAllUserOrders, getSteamAccountsAdmin, getGames, markOrderAsDelivered, cancelOrder, getOrderByOrderId, getAllOrdersAdmin, getOrdersByStatusAdmin, getOrdersByClassificationAdmin, getOrderByIdAdmin, markOrderAsDeliveredAdmin, cancelOrderAdmin, getRevenueStats, getMonthlyRevenue, getSteamImportStatus, startSteamImport, getAccountInfosPage, deleteAccountInfo, deleteSteamAccount } from '../lib/api';
 import { useToast } from '../hooks/use-toast';
 import SteamAccountManager from '../components/SteamAccountManager';
 import MultiSteamAccountForm from '../components/MultiSteamAccountForm';
@@ -110,9 +110,9 @@ const Admin = () => {
   const fetchOrders = async () => {
     setLoadingOrders(true);
     try {
-      const allOrders = orderFilter === 'ALL' 
-        ? await getAllOrdersAdmin()
-        : await getOrdersByStatusAdmin(orderFilter);
+      let allOrders;
+      // Fetch only orders linked to steam accounts with account_info classification = ORDER
+      allOrders = await getOrdersByClassificationAdmin('ORDER');
       setOrders(allOrders);
     } catch (error) {
       console.error('Error fetching orders:', error);
@@ -931,11 +931,11 @@ const Admin = () => {
                 <CardTitle>Danh sách đơn hàng</CardTitle>
                 <CardDescription>
                   {orderFilter === 'ALL' ? 'Tất cả đơn hàng' : (
-                    orderFilter === 'ORDERING' ? 'Đơn hàng Chờ xử lý' : (
-                      orderFilter === 'DELIVERED' ? 'Đơn hàng Đã hoàn thành' : (
-                        orderFilter === 'CANCELLED' ? 'Đơn hàng Đã huỷ' : `Đơn hàng ${orderFilter}`
+                      orderFilter === 'ORDERING' ? 'Đơn hàng Chờ xử lý' : (
+                        orderFilter === 'DELIVERED' ? 'Đơn hàng Đã hoàn thành' : (
+                          orderFilter === 'CANCELLED' ? 'Đơn hàng Đã huỷ' : `Đơn hàng ${orderFilter}`
+                        )
                       )
-                    )
                   )}
                 </CardDescription>
               </CardHeader>
