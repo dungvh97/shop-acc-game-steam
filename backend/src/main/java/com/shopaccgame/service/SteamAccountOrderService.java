@@ -281,7 +281,7 @@ public class SteamAccountOrderService {
      * Generate QR code URL for payment
      */
     private String generateQrCodeUrl(String orderId, java.math.BigDecimal amount) {
-        return String.format("https://qr.sepay.vn/img?acc=27727998888&bank=TPBank&amount=%s&des=%s", 
+        return String.format("https://qr.sepay.vn/img?acc=0764820777&bank=MBBank&amount=%s&des=%s", 
             amount.toString(), orderId);
     }
     

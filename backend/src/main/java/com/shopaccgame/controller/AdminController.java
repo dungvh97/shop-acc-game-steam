@@ -129,7 +129,7 @@ public class AdminController {
     }
     
     /**
-     * Cancel order
+     * Cancel order and refund
      */
     @PostMapping("/orders/{orderId}/cancel")
     public ResponseEntity<String> cancelOrder(@PathVariable String orderId) {

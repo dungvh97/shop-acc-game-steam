@@ -241,7 +241,7 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
   ];
 
   // Vietnamese display with specific account stock status - map with AccountStockStatus
-  const accountStockOptions = [
+  const allAccountStockOptions = [
     { value: 'IN_STOCK', label: 'Có sẵn trong kho' },
     { value: 'SOLD', label: 'Đã bán' },
     { value: 'MAINTENANCE', label: 'Lỗi, bảo trì' },
@@ -250,6 +250,20 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
     { value: 'DELIVERED', label: 'Đã hoàn thành' },
     { value: 'CANCELLED', label: 'Đã hủy' },
   ];
+
+  // Get filtered status options based on classification
+  const getAccountStockOptions = (classify) => {
+    if (classify === 'STOCK') {
+      return allAccountStockOptions.filter(option => 
+        ['IN_STOCK', 'SOLD', 'MAINTENANCE'].includes(option.value)
+      );
+    } else if (classify === 'ORDER') {
+      return allAccountStockOptions.filter(option => 
+        ['PRE_ORDER', 'ORDERING', 'DELIVERED', 'CANCELLED'].includes(option.value)
+      );
+    }
+    return allAccountStockOptions;
+  };
 
   // Load games on mount
   useEffect(() => {
@@ -512,12 +526,13 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
     // Validate individual accounts
     if (commonFields.classify === 'STOCK' || commonFields.classify === 'ORDER') {
       accounts.forEach((account, index) => {
-      const isAvailable = (account.status || 'IN_STOCK') === 'IN_STOCK';
-      if (isAvailable) {
-        if (!account.accountCode.trim()) {
-          errors[`account_${index}_accountCode`] = 'Mã sản phẩm không được để trống';
+        const accountStatus = account.status || 'IN_STOCK';
+        const isAvailable = accountStatus === 'IN_STOCK';
+        if (isAvailable) {
+          if (!account.accountCode.trim()) {
+            errors[`account_${index}_accountCode`] = 'Mã sản phẩm không được để trống';
+          }
         }
-      }
       });
     }
     
@@ -663,11 +678,25 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
                     // Treat ORDER like STOCK: ensure stockQuantity at least 1 and manage accounts
                     const nextQty = !commonFields.stockQuantity || commonFields.stockQuantity < 1 ? 1 : commonFields.stockQuantity;
                     setCommonFields({ ...commonFields, classify: next, stockQuantity: nextQty });
+                    
                     // Normalize account statuses according to classification
                     setAccounts((prev) => {
-                      const desiredStatus = next === 'ORDER' ? 'PRE_ORDER' : 'IN_STOCK';
-                      return (prev || []).map(acc => ({ ...acc, status: desiredStatus }));
+                      const validStatuses = getAccountStockOptions(next);
+                      const defaultStatus = next === 'ORDER' ? 'PRE_ORDER' : 'IN_STOCK';
+                      
+                      return (prev || []).map(acc => {
+                        // If current status is valid for new classification, keep it
+                        if (validStatuses.some(opt => opt.value === acc.status)) {
+                          return acc;
+                        }
+                        // Otherwise, set to default status for the classification
+                        return { ...acc, status: defaultStatus };
+                      });
                     });
+                    
+                    // Clear validation errors when classification changes
+                    setValidationErrors({});
+                    
                     if (accounts.length === 0 && nextQty > 0) {
                       generateAccountsFromStock(nextQty);
                     }
@@ -826,7 +855,7 @@ const MultiSteamAccountForm = ({ selectedAccountInfoId = null, selectedAccountIn
                       onChange={(e) => updateAccount(index, 'status', e.target.value)}
                       required
                     >
-                      {(accountStockOptions).map(opt => (
+                      {getAccountStockOptions(commonFields.classify).map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                       ))}
                     </select>

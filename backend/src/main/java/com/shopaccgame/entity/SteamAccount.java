@@ -128,6 +128,11 @@ public class SteamAccount {
         this.updatedAt = updatedAt;
     }
     
+    @PrePersist
+    protected void onCreate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+    
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();

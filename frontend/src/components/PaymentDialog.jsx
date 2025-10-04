@@ -156,8 +156,8 @@ const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess, should
   const transferNote = orders.map(order => order.orderId).join(', ');
 
   // Bank config (matches the info shown below)
-  const bankCode = 'TPB'; // TPBank
-  const accountNumber = '27727998888';
+  const bankCode = 'MBB'; // MBBank
+  const accountNumber = '0764820777';
   const accountName = 'SHOP ACC GAME';
 
   // If there are multiple orders, generate a single VietQR URL; otherwise use the order-provided QR
@@ -244,7 +244,7 @@ const PaymentDialog = ({ account, cartOrders, isOpen, onClose, onSuccess, should
                   </div>
                   
                   <div className="text-center text-sm text-muted-foreground">
-                    <p>Ngân hàng: TPBank</p>
+                    <p>Ngân hàng: MBBank</p>
                     <p>Tài khoản: {accountNumber}</p>
                     <p>Số tiền: {formatPrice(totalAmount)}</p>
                     <p>Nội dung: {transferNote}</p>

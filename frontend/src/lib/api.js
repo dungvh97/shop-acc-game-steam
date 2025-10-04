@@ -513,6 +513,11 @@ export const getMyWalletDeposits = async () => {
   return apiRequest('/wallet/deposits');
 };
 
+// Refund transactions APIs
+export const getMyRefunds = async () => {
+  return apiRequest('/user/refunds');
+};
+
 // User balance APIs
 export const getUserBalance = async () => {
   return apiRequest('/user/balance');

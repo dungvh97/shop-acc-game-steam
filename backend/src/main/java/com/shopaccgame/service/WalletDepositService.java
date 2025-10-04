@@ -65,7 +65,7 @@ public class WalletDepositService {
     }
 
     private String generateQrCodeUrl(String depositId, BigDecimal amount) {
-        return String.format("https://qr.sepay.vn/img?acc=27727998888&bank=TPBank&amount=%s&des=%s",
+        return String.format("https://qr.sepay.vn/img?acc=0764820777&bank=MBBank&amount=%s&des=%s",
             amount.toString(), depositId);
     }
 }

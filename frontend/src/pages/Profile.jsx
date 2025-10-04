@@ -29,7 +29,7 @@ import {
   ExternalLink,
   FileText
 } from 'lucide-react';
-import { getAllUserOrders, getMyWalletDeposits, getUserBalance } from '../lib/api.js';
+import { getAllUserOrders, getMyWalletDeposits, getUserBalance, getMyRefunds } from '../lib/api.js';
 import DepositDialog from '../components/DepositDialog.jsx';
 
 const Profile = () => {
@@ -51,6 +51,8 @@ const Profile = () => {
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [orderPayments, setOrderPayments] = useState([]);
   const [orderPaymentsLoading, setOrderPaymentsLoading] = useState(false);
+  const [refundTransactions, setRefundTransactions] = useState([]);
+  const [refundLoading, setRefundLoading] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orderDetailOpen, setOrderDetailOpen] = useState(false);
   
@@ -257,6 +259,25 @@ const Profile = () => {
     };
 
     fetchWalletDeposits();
+  }, [user]);
+
+  // Fetch refund transactions
+  useEffect(() => {
+    const fetchRefundTransactions = async () => {
+      if (!user) return;
+      setRefundLoading(true);
+      try {
+        const refunds = await getMyRefunds();
+        const refundsArray = Array.isArray(refunds) ? refunds : [];
+        setRefundTransactions(refundsArray);
+      } catch (error) {
+        setRefundTransactions([]);
+      } finally {
+        setRefundLoading(false);
+      }
+    };
+
+    fetchRefundTransactions();
   }, [user]);
 
   // Set initial balance from user object and refresh when user changes
@@ -834,7 +855,7 @@ const Profile = () => {
                           )}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {walletDeposits.filter(d => d.status === 'PAID').length + orderPayments.length} giao dịch thành công
+                          {walletDeposits.filter(d => d.status === 'PAID').length + orderPayments.length + refundTransactions.length} giao dịch thành công
                         </div>
                         <button
                           onClick={refreshUserBalance}
@@ -865,23 +886,39 @@ const Profile = () => {
 
                   <Separator className="my-4" />
 
-                  {walletLoading || orderPaymentsLoading ? (
+                  {walletLoading || orderPaymentsLoading || refundLoading ? (
                     <div className="text-center py-8 text-sm text-muted-foreground">Đang tải...</div>
-                  ) : walletDeposits.length === 0 && orderPayments.length === 0 ? (
+                  ) : walletDeposits.length === 0 && orderPayments.length === 0 && refundTransactions.length === 0 ? (
                     <div className="text-center py-8 text-sm text-muted-foreground">Chưa có giao dịch nào</div>
                   ) : (
                     <div className="space-y-3">
                       {/* Combine and sort all transactions by date */}
-                      {[...walletDeposits.map(d => ({ ...d, type: 'deposit' })), ...orderPayments.map(o => ({ ...o, type: 'order' }))]
+                      {[...walletDeposits.map(d => ({ ...d, type: 'deposit' })), 
+                        ...orderPayments.map(o => ({ ...o, type: 'order' })),
+                        ...refundTransactions.map(r => ({ ...r, type: 'refund' }))]
                         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                         .map((transaction) => (
-                        <div key={transaction.type === 'deposit' ? transaction.depositId : transaction.orderId} className="border rounded-lg p-4 flex items-center justify-between">
+                        <div key={transaction.type === 'deposit' ? transaction.depositId : 
+                                   transaction.type === 'refund' ? transaction.refundId : 
+                                   transaction.orderId} 
+                             className="border rounded-lg p-4 flex items-center justify-between">
                           <div>
                             <div className="text-sm text-muted-foreground">Mã giao dịch</div>
-                            <div className="font-medium">{transaction.type === 'deposit' ? transaction.depositId : transaction.orderId}</div>
+                            <div className="font-medium">
+                              {transaction.type === 'deposit' ? transaction.depositId : 
+                               transaction.type === 'refund' ? transaction.refundId : 
+                               transaction.orderId}
+                            </div>
+                            {transaction.type === 'refund' && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                Hoàn tiền từ đơn hàng: {transaction.orderId}
+                              </div>
+                            )}
                           </div>
                           <div className="text-right">
-                            <div className="font-semibold">{Number(transaction.amount || 0).toLocaleString('vi-VN')} VNĐ</div>
+                            <div className={`font-semibold ${transaction.type === 'refund' ? 'text-green-600' : ''}`}>
+                              {transaction.type === 'refund' ? '+' : ''}{Number(transaction.amount || 0).toLocaleString('vi-VN')} VNĐ
+                            </div>
                             <div className="text-xs text-muted-foreground">
                               {new Date(transaction.createdAt).toLocaleString('vi-VN')}
                             </div>
@@ -896,6 +933,8 @@ const Profile = () => {
                                 ) : (
                                   <span className="text-red-600">Đã hủy</span>
                                 )
+                              ) : transaction.type === 'refund' ? (
+                                <span className="text-green-600">Đã hoàn tiền</span>
                               ) : (
                                 <span className="text-green-600">Đã thanh toán{transaction.paidAt ? ` (${new Date(transaction.paidAt).toLocaleString('vi-VN')})` : ''}</span>
                               )}

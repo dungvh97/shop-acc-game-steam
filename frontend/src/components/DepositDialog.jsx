@@ -105,8 +105,8 @@ const DepositDialog = ({ isOpen, amount, onClose }) => {
                   )}
                 </div>
                 <div className="text-center text-sm text-muted-foreground">
-                  <p>Ngân hàng: TPBank</p>
-                  <p>Số tài khoản: 27727998888</p>
+                  <p>Ngân hàng: MBBank</p>
+                  <p>Số tài khoản: 0764820777</p>
                   <p>Nội dung: {deposit.depositId}</p>
                 </div>
               </div>

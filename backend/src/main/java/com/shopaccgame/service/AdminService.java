@@ -5,11 +5,15 @@ import com.shopaccgame.dto.RevenueStatsDto;
 import com.shopaccgame.dto.DeliveryRequestDto;
 import com.shopaccgame.entity.SteamAccountOrder;
 import com.shopaccgame.entity.SteamAccount;
+import com.shopaccgame.entity.User;
+import com.shopaccgame.entity.RefundTransaction;
 import com.shopaccgame.entity.enums.AccountClassification;
 import com.shopaccgame.entity.enums.AccountStockStatus;
 import com.shopaccgame.entity.enums.OrderStatus;
 import com.shopaccgame.repository.SteamAccountOrderRepository;
 import com.shopaccgame.repository.SteamAccountRepository;
+import com.shopaccgame.repository.UserRepository;
+import com.shopaccgame.repository.RefundTransactionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +40,12 @@ public class AdminService {
     
     @Autowired
     private SteamAccountRepository steamAccountRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private RefundTransactionRepository refundTransactionRepository;
     
     /**
      * Get all orders for admin management
@@ -157,7 +167,7 @@ public class AdminService {
     }
     
     /**
-     * Cancel order
+     * Cancel order and refund
      */
     public void cancelOrder(String orderId) {
         SteamAccountOrder order = orderRepository.findByOrderId(orderId)
@@ -165,6 +175,36 @@ public class AdminService {
         
         if (order.getStatus() == OrderStatus.DELIVERED) {
             throw new RuntimeException("Cannot cancel delivered order");
+        }
+        
+        // Refund money to user's balance
+        User user = order.getUser();
+        if (user != null) {
+            BigDecimal refundAmount = order.getAmount();
+            BigDecimal currentBalance = user.getBalance();
+            BigDecimal newBalance = currentBalance.add(refundAmount);
+            user.setBalance(newBalance);
+            userRepository.save(user);
+            
+            // Create refund transaction record
+            RefundTransaction refundTransaction = new RefundTransaction(user, order, refundAmount);
+            refundTransactionRepository.save(refundTransaction);
+            
+            logger.info("Order {} cancelled and refunded {} to user {} (new balance: {})", 
+                       orderId, refundAmount, user.getUsername(), newBalance);
+        } else {
+            logger.warn("Order {} cancelled but no user found for refund", orderId);
+        }
+        
+        // Update Steam account status to CANCELLED
+        SteamAccount steamAccount = order.getSteamAccount();
+        if (steamAccount != null) {
+            steamAccount.setStatus(AccountStockStatus.CANCELLED);
+            steamAccountRepository.save(steamAccount);
+            logger.info("Steam account {} status updated to CANCELLED for order {}", 
+                       steamAccount.getId(), orderId);
+        } else {
+            logger.warn("Order {} cancelled but no Steam account found", orderId);
         }
         
         order.cancel();
